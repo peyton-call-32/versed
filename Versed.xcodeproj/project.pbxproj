@@ -30,6 +30,7 @@
 		9A05D5DDC9C69485F2E1C099 /* VersedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1214A84BDDB01C93A2637D9C /* VersedApp.swift */; };
 		A3125B1BB335AD5DFB4D1A48 /* bofm.json in Resources */ = {isa = PBXBuildFile; fileRef = 1ABA253A5A766E0E141E6BCC /* bofm.json */; };
 		A5BC1632997F210490099B08 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BDA23AFE56278C14C0B2BFF8 /* Assets.xcassets */; };
+		A6E7ED41BC5D872B835F5E82 /* schedule-2027.json in Resources */ = {isa = PBXBuildFile; fileRef = E7996FA7EC88EA0494273667 /* schedule-2027.json */; };
 		A7057CC524186095DBBFE5A0 /* ScriptureLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29EBE0202008EEC564E4B8E5 /* ScriptureLibraryTests.swift */; };
 		AE1B182DF7FEA42C8EE75E33 /* SavedVersesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C74541F86766C80DFEE1FCA3 /* SavedVersesView.swift */; };
 		B10E380DB9C796E04D935EA4 /* dc.json in Resources */ = {isa = PBXBuildFile; fileRef = 23CA76384BCF373AA6F9C181 /* dc.json */; };
@@ -112,6 +113,7 @@
 		D56CF2440765D2BAF22899CD /* ReadingPositionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingPositionStore.swift; sourceTree = "<group>"; };
 		DA06D5EF2CB15AC34E1A3EFF /* SavedVerseStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedVerseStoreTests.swift; sourceTree = "<group>"; };
 		E14A1D81CE6CFC3D793B03A9 /* VersedTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VersedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E7996FA7EC88EA0494273667 /* schedule-2027.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "schedule-2027.json"; sourceTree = "<group>"; };
 		F1EB2C7EC8FB7F3867B32AA8 /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
 		FFB8B59562485E208AE29875 /* StreakBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakBadge.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -274,6 +276,7 @@
 			isa = PBXGroup;
 			children = (
 				319546785AD215381AF9D636 /* schedule-2026.json */,
+				E7996FA7EC88EA0494273667 /* schedule-2027.json */,
 			);
 			path = Schedules;
 			sourceTree = "<group>";
@@ -392,6 +395,7 @@
 				7DD6C1CBBC5B3E9BE8A67F5D /* ot.json in Resources */,
 				6C2CA0E4B949EB17092EF038 /* pgp.json in Resources */,
 				CAD3171439BCBCAD4342FC28 /* schedule-2026.json in Resources */,
+				A6E7ED41BC5D872B835F5E82 /* schedule-2027.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

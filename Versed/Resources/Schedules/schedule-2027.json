@@ -1,0 +1,318 @@
+{
+  "year": 2027,
+  "course": "New Testament",
+  "weeks": [
+    {
+      "start": "2026-12-28",
+      "title": "Be It unto Me According to Thy Word",
+      "label": "Matthew 1; Luke 1",
+      "readings": ["matt.1", "luke.1"]
+    },
+    {
+      "start": "2027-01-04",
+      "title": "We Have Come to Worship Him",
+      "label": "Matthew 2; Luke 2",
+      "readings": ["matt.2", "luke.2"]
+    },
+    {
+      "start": "2027-01-11",
+      "title": "We Have Found the Messiah",
+      "label": "John 1",
+      "readings": ["john.1"]
+    },
+    {
+      "start": "2027-01-18",
+      "title": "Prepare Ye the Way of the Lord",
+      "label": "Matthew 3; Mark 1; Luke 3",
+      "readings": ["matt.3", "mark.1", "luke.3"]
+    },
+    {
+      "start": "2027-01-25",
+      "title": "The Spirit of the Lord Is upon Me",
+      "label": "Matthew 4; Luke 4–5",
+      "readings": ["matt.4", "luke.4-5"]
+    },
+    {
+      "start": "2027-02-01",
+      "title": "Ye Must Be Born Again",
+      "label": "John 2–4",
+      "readings": ["john.2-4"]
+    },
+    {
+      "start": "2027-02-08",
+      "title": "Blessed Are Ye",
+      "label": "Matthew 5; Luke 6",
+      "readings": ["matt.5", "luke.6"]
+    },
+    {
+      "start": "2027-02-15",
+      "title": "He Taught Them as One Having Authority",
+      "label": "Matthew 6–7",
+      "readings": ["matt.6-7"]
+    },
+    {
+      "start": "2027-02-22",
+      "title": "Thy Faith Hath Saved Thee",
+      "label": "Matthew 8; Mark 2–4; Luke 7",
+      "readings": ["matt.8", "mark.2-4", "luke.7"]
+    },
+    {
+      "start": "2027-03-01",
+      "title": "These Twelve Jesus Sent Forth",
+      "label": "Matthew 9–10; Mark 5; Luke 9",
+      "readings": ["matt.9-10", "mark.5", "luke.9"]
+    },
+    {
+      "start": "2027-03-08",
+      "title": "I Will Give You Rest",
+      "label": "Matthew 11–12; Luke 11",
+      "readings": ["matt.11-12", "luke.11"]
+    },
+    {
+      "start": "2027-03-15",
+      "title": "What Is the Kingdom of God Like?",
+      "label": "Matthew 13; Luke 8; 13",
+      "readings": ["matt.13", "luke.8", "luke.13"]
+    },
+    {
+      "start": "2027-03-22",
+      "title": "O Grave, Where Is Thy Victory?",
+      "label": "Easter Week",
+      "readings": ["matt.21.1-11", "mark.11.1-11", "luke.19.28-40", "john.12.12-15", "matt.21.12-16", "mark.11.15-17", "luke.19.45-46", "matt.22.1-14", "matt.25.31-46", "matt.26.6-13", "john.12.2-8", "matt.26.26-30", "luke.22.15-20", "matt.26.36-46", "mark.14.32-42", "luke.22.39-46", "matt.27.42", "matt.27.54", "mosiah.27.31", "luke.23", "john.19", "1-pet.3.18-20", "dc.138", "matt.28.1-10", "luke.24.13-48", "john.20", "3-ne.11.1-17"]
+    },
+    {
+      "start": "2027-03-29",
+      "title": "Be Not Afraid",
+      "label": "Matthew 14; Mark 6; John 5–6",
+      "readings": ["matt.14", "mark.6", "john.5-6"]
+    },
+    {
+      "start": "2027-04-05",
+      "title": "Thou Art the Christ",
+      "label": "Matthew 15–17; Mark 7–9",
+      "readings": ["matt.15-17", "mark.7-9"]
+    },
+    {
+      "start": "2027-04-12",
+      "title": "What Shall I Do to Inherit Eternal Life?",
+      "label": "Matthew 18; Luke 10",
+      "readings": ["matt.18", "luke.10"]
+    },
+    {
+      "start": "2027-04-19",
+      "title": "I Am the Good Shepherd",
+      "label": "John 7–10",
+      "readings": ["john.7-10"]
+    },
+    {
+      "start": "2027-04-26",
+      "title": "Rejoice with Me; for I Have Found My Sheep Which Was Lost",
+      "label": "Luke 12–17; John 11",
+      "readings": ["luke.12-17", "john.11"]
+    },
+    {
+      "start": "2027-05-03",
+      "title": "What Lack I Yet?",
+      "label": "Matthew 19–20; Mark 10; Luke 18",
+      "readings": ["matt.19-20", "mark.10", "luke.18"]
+    },
+    {
+      "start": "2027-05-10",
+      "title": "Behold, Thy King Cometh",
+      "label": "Matthew 21–23; Mark 11; Luke 19–20; John 12",
+      "readings": ["matt.21-23", "mark.11", "luke.19-20", "john.12"]
+    },
+    {
+      "start": "2027-05-17",
+      "title": "The Son of Man Shall Come",
+      "label": "Joseph Smith—Matthew 1; Matthew 24–25; Mark 12–13; Luke 21",
+      "readings": ["js-m.1", "matt.24-25", "mark.12-13", "luke.21"]
+    },
+    {
+      "start": "2027-05-24",
+      "title": "In Remembrance",
+      "label": "Matthew 26; Mark 14; John 13",
+      "readings": ["matt.26", "mark.14", "john.13"]
+    },
+    {
+      "start": "2027-05-31",
+      "title": "Continue Ye in My Love",
+      "label": "John 14–17",
+      "readings": ["john.14-17"]
+    },
+    {
+      "start": "2027-06-07",
+      "title": "Not My Will, but Thine, Be Done",
+      "label": "Luke 22; John 18",
+      "readings": ["luke.22", "john.18"]
+    },
+    {
+      "start": "2027-06-14",
+      "title": "It Is Finished",
+      "label": "Matthew 27; Mark 15; Luke 23; John 19",
+      "readings": ["matt.27", "mark.15", "luke.23", "john.19"]
+    },
+    {
+      "start": "2027-06-21",
+      "title": "He Is Risen",
+      "label": "Matthew 28; Mark 16; Luke 24; John 20–21",
+      "readings": ["matt.28", "mark.16", "luke.24", "john.20-21"]
+    },
+    {
+      "start": "2027-06-28",
+      "title": "Ye Shall Be Witnesses unto Me",
+      "label": "Acts 1–5",
+      "readings": ["acts.1-5"]
+    },
+    {
+      "start": "2027-07-05",
+      "title": "What Wilt Thou Have Me to Do?",
+      "label": "Acts 6–9",
+      "readings": ["acts.6-9"]
+    },
+    {
+      "start": "2027-07-12",
+      "title": "The Word of God Grew and Multiplied",
+      "label": "Acts 10–15",
+      "readings": ["acts.10-15"]
+    },
+    {
+      "start": "2027-07-19",
+      "title": "The Lord Had Called Us for to Preach the Gospel",
+      "label": "Acts 16–21",
+      "readings": ["acts.16-21"]
+    },
+    {
+      "start": "2027-07-26",
+      "title": "Be of Good Cheer … : Thou Hast Testified of Me",
+      "label": "Acts 22–28",
+      "readings": ["acts.22-28"]
+    },
+    {
+      "start": "2027-08-02",
+      "title": "The Power of God unto Salvation",
+      "label": "Romans 1–6",
+      "readings": ["rom.1-6"]
+    },
+    {
+      "start": "2027-08-09",
+      "title": "Overcome Evil with Good",
+      "label": "Romans 7–16",
+      "readings": ["rom.7-16"]
+    },
+    {
+      "start": "2027-08-16",
+      "title": "Be Perfectly Joined Together",
+      "label": "1 Corinthians 1–7",
+      "readings": ["1-cor.1-7"]
+    },
+    {
+      "start": "2027-08-23",
+      "title": "Ye Are the Body of Christ",
+      "label": "1 Corinthians 8–13",
+      "readings": ["1-cor.8-13"]
+    },
+    {
+      "start": "2027-08-30",
+      "title": "In Christ Shall All Be Made Alive",
+      "label": "1 Corinthians 14–16",
+      "readings": ["1-cor.14-16"]
+    },
+    {
+      "start": "2027-09-06",
+      "title": "Be Ye Reconciled to God",
+      "label": "2 Corinthians 1–7",
+      "readings": ["2-cor.1-7"]
+    },
+    {
+      "start": "2027-09-13",
+      "title": "God Loveth a Cheerful Giver",
+      "label": "2 Corinthians 8–13",
+      "readings": ["2-cor.8-13"]
+    },
+    {
+      "start": "2027-09-20",
+      "title": "Walk in the Spirit",
+      "label": "Galatians",
+      "readings": ["gal.1-6"]
+    },
+    {
+      "start": "2027-09-27",
+      "title": "Gather Together in One All Things in Christ",
+      "label": "Ephesians",
+      "readings": ["eph.1-6"]
+    },
+    {
+      "start": "2027-10-04",
+      "title": "I Can Do All Things through Christ Which Strengtheneth Me",
+      "label": "Philippians; Colossians",
+      "readings": ["philip.1-4", "col.1-4"]
+    },
+    {
+      "start": "2027-10-11",
+      "title": "Perfect That Which Is Lacking in Your Faith",
+      "label": "1 and 2 Thessalonians",
+      "readings": ["1-thes.1-5", "2-thes.1-3"]
+    },
+    {
+      "start": "2027-10-18",
+      "title": "Be Thou an Example of the Believers",
+      "label": "1 and 2 Timothy; Titus; Philemon",
+      "readings": ["1-tim.1-6", "2-tim.1-4", "titus.1-3", "philem.1"]
+    },
+    {
+      "start": "2027-10-25",
+      "title": "Come Boldly unto the Throne of Grace",
+      "label": "Hebrews 1–6",
+      "readings": ["heb.1-6"]
+    },
+    {
+      "start": "2027-11-01",
+      "title": "An High Priest of Good Things to Come",
+      "label": "Hebrews 7–13",
+      "readings": ["heb.7-13"]
+    },
+    {
+      "start": "2027-11-08",
+      "title": "Be Ye Doers of the Word, and Not Hearers Only",
+      "label": "James",
+      "readings": ["james.1-5"]
+    },
+    {
+      "start": "2027-11-15",
+      "title": "Rejoice with Joy Unspeakable and Full of Glory",
+      "label": "1 and 2 Peter",
+      "readings": ["1-pet.1-5", "2-pet.1-3"]
+    },
+    {
+      "start": "2027-11-22",
+      "title": "God Is Love",
+      "label": "1–3 John; Jude",
+      "readings": ["1-jn.1-5", "2-jn.1", "3-jn.1", "jude.1"]
+    },
+    {
+      "start": "2027-11-29",
+      "title": "Glory, and Power, Be unto … the Lamb for Ever",
+      "label": "Revelation 1–5",
+      "readings": ["rev.1-5"]
+    },
+    {
+      "start": "2027-12-06",
+      "title": "They Overcame … by the Blood of the Lamb",
+      "label": "Revelation 6–14",
+      "readings": ["rev.6-14"]
+    },
+    {
+      "start": "2027-12-13",
+      "title": "He That Overcometh Shall Inherit All Things",
+      "label": "Revelation 15–22",
+      "readings": ["rev.15-22"]
+    },
+    {
+      "start": "2027-12-20",
+      "title": "Good Tidings of Great Joy",
+      "label": "Christmas",
+      "readings": ["isa.7.14", "isa.9.6-7", "micah.5.2", "zech.9.9", "zech.12.10", "mosiah.3.5-10", "moro.7.29-32", "1-ne.11.13-15", "alma.7.10", "ether.12.41", "1-ne.11.16-33", "john.17.5", "moses.4.2", "heb.2.7-18", "john.3.16-17", "1-cor.15.21-26", "col.1.12-22", "1-pet.2.21-25", "luke.1.11-20", "luke.1.26-38", "luke.1.46-55", "matt.1.19-25", "luke.2.1-20", "luke.2.25-38", "matt.2.1-12"]
+    }
+  ]
+}
