@@ -60,18 +60,58 @@ final class VersedUITests: XCTestCase {
         saveScreenshot(named: "3-saved")
     }
 
+    func testChoosingAnAppearance() {
+        app.tabBars.buttons["Browse"].tap()
+        app.navigationBars["Browse"].buttons["Settings"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+
+        // Try each choice, ending back on the default so the simulator is left as it was.
+        for option in ["Dark", "Light", "Match Phone"] {
+            app.buttons[option].tap()
+            XCTAssertTrue(app.buttons[option].isSelected)
+            attachScreenshot(named: "appearance-\(option)")
+        }
+
+        app.buttons["Done"].tap()
+        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 5))
+    }
+
+    func testAppearanceIsRememberedAfterRelaunch() {
+        app.tabBars.buttons["Browse"].tap()
+        app.navigationBars["Browse"].buttons["Settings"].tap()
+        app.buttons["Dark"].tap()
+
+        app.terminate()
+        app.launch()
+        XCTAssertTrue(app.staticTexts["Swipe up to read"].waitForExistence(timeout: 10))
+        attachScreenshot(named: "appearance-after-relaunch")
+
+        // Put the default back so the simulator is left as it was.
+        app.tabBars.buttons["Browse"].tap()
+        app.navigationBars["Browse"].buttons["Settings"].tap()
+        XCTAssertTrue(app.buttons["Dark"].isSelected)
+        app.buttons["Match Phone"].tap()
+    }
+
     /// The feed keeps neighboring pages loaded off-screen, so pick the match the reader can actually see.
     private func onScreen(_ query: XCUIElementQuery) -> XCUIElement {
         query.allElementsBoundByIndex.first { $0.isHittable } ?? query.firstMatch
     }
 
-    private func saveScreenshot(named name: String) {
+    /// Keeps a screenshot with the test results, for checking by eye in Xcode's test report.
+    @discardableResult
+    private func attachScreenshot(named name: String) -> XCUIScreenshot {
         let screenshot = XCUIScreen.main.screenshot()
-
         let attachment = XCTAttachment(screenshot: screenshot)
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
+        return screenshot
+    }
+
+    /// Attaches a README screenshot, and saves it as a file when `SCREENSHOT_DIR` is set.
+    private func saveScreenshot(named name: String) {
+        let screenshot = attachScreenshot(named: name)
 
         if let folder = ProcessInfo.processInfo.environment["SCREENSHOT_DIR"] {
             let url = URL(fileURLWithPath: folder).appendingPathComponent("\(name).png")

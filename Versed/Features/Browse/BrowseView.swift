@@ -7,6 +7,7 @@ struct BrowseView: View {
     let library: ScriptureLibrary
 
     @Query private var positions: [ReadingPosition]
+    @State private var showsSettings = false
 
     /// The screens the browse tab can open.
     enum Route: Hashable {
@@ -45,6 +46,14 @@ struct BrowseView: View {
                 }
             }
             .navigationTitle("Browse")
+            .toolbar {
+                Button("Settings", systemImage: "gearshape") {
+                    showsSettings = true
+                }
+            }
+            .sheet(isPresented: $showsSettings) {
+                SettingsView()
+            }
             .navigationDestination(for: Route.self, destination: destination)
         }
     }

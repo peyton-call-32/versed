@@ -17,6 +17,7 @@ Built for Latter-day Saints who want to read a little every day. It opens straig
 - Save verses with a double-tap or the heart button
 - Picks up where you left off
 - Daily reading streak
+- Light or dark mode, or match the phone (Settings, from the gear on the Browse tab)
 
 Everything stays on your phone. No account, no internet needed.
 
@@ -31,7 +32,7 @@ After changing `project.yml`, run `xcodegen` to rebuild the project.
 
 Run the tests with ⌘U. There are two kinds:
 - **Unit tests** (`VersedTests`) check the pieces on their own: loading scripture, the weekly schedule, saved verses, reading position, and the streak.
-- **UI test** (`VersedUITests`) drives the app like a reader: swipes through this week's reading, saves a verse, browses to a chapter, resumes with Continue Reading, and checks the Saved tab. It launches the app with `-ui-testing`, so it starts fresh and never touches real data.
+- **UI tests** (`VersedUITests`) drive the app like a reader: swipe through this week's reading, save a verse, browse to a chapter, resume with Continue Reading, check the Saved tab, and switch between light and dark mode. They launch the app with `-ui-testing`, so reading data starts fresh and real data is never touched.
 
 The UI test also takes the screenshots above. To refresh them:
 

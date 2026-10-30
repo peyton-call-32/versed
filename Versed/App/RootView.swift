@@ -3,6 +3,7 @@ import SwiftUI
 /// The app's top-level screen: loads the scriptures and schedule, then shows the tabs.
 struct RootView: View {
     @State private var content: Content?
+    @AppStorage(Appearance.storageKey) private var appearance: Appearance = .matchPhone
 
     private struct Content {
         let library: ScriptureLibrary
@@ -26,6 +27,7 @@ struct RootView: View {
                 ProgressView()
             }
         }
+        .windowAppearance(appearance)
         .task {
             content = await Task.detached {
                 guard let library = try? ScriptureLibrary.loadBundled(),
