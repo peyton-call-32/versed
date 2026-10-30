@@ -106,5 +106,5 @@ struct BrowseView: View {
 
 #Preview {
     BrowseView(library: try! ScriptureLibrary.loadBundled())
-        .modelContainer(for: [SavedVerse.self, ReadingPosition.self], inMemory: true)
+        .modelContainer(for: [SavedVerse.self, ReadingPosition.self, ReadingDay.self], inMemory: true)
 }

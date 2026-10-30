@@ -43,7 +43,12 @@ struct FeedView: View {
             if let itemID = currentItemID ?? items.first?.id { onPageChange(itemID) }
         }
         .onChange(of: currentItemID) { _, itemID in
-            if let itemID { onPageChange(itemID) }
+            guard let itemID else { return }
+            onPageChange(itemID)
+            // Swiping to a verse counts toward today's reading; just opening the feed doesn't.
+            if FeedItem.verseID(of: itemID) != nil {
+                ReadingStreakStore(context: modelContext).recordReading()
+            }
         }
         .scrollIndicators(.hidden)
         .background(Color(.systemBackground))
@@ -80,5 +85,5 @@ struct FeedView: View {
 #Preview {
     let library = try! ScriptureLibrary.loadBundled()
     FeedView(items: library.feedItems(for: [Passage(bookID: "1-ne", chapters: 3...3)]))
-        .modelContainer(for: [SavedVerse.self, ReadingPosition.self], inMemory: true)
+        .modelContainer(for: [SavedVerse.self, ReadingPosition.self, ReadingDay.self], inMemory: true)
 }

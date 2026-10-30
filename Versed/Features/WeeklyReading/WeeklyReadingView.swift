@@ -31,6 +31,11 @@ struct WeeklyReadingView: View {
             .overlay(alignment: .top) {
                 weekMenu(selected: week)
             }
+            .overlay(alignment: .topTrailing) {
+                StreakBadge()
+                    .padding(.top, 8)
+                    .padding(.trailing, 16)
+            }
         } else {
             ContentUnavailableView("No reading schedule", systemImage: "calendar")
         }
@@ -69,5 +74,5 @@ struct WeeklyReadingView: View {
 
 #Preview {
     WeeklyReadingView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled())
-        .modelContainer(for: [SavedVerse.self, ReadingPosition.self], inMemory: true)
+        .modelContainer(for: [SavedVerse.self, ReadingPosition.self, ReadingDay.self], inMemory: true)
 }

@@ -7,6 +7,6 @@ struct VersedApp: App {
         WindowGroup {
             RootView()
         }
-        .modelContainer(for: [SavedVerse.self, ReadingPosition.self])
+        .modelContainer(for: [SavedVerse.self, ReadingPosition.self, ReadingDay.self])
     }
 }
