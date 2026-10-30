@@ -17,6 +17,8 @@ final class VersedUITests: XCTestCase {
     func testReadingSavingBrowsingAndResuming() {
         // This Week opens on the week's intro card.
         XCTAssertTrue(app.staticTexts["Swipe up to read"].waitForExistence(timeout: 10))
+        XCTAssertTrue(onScreen(app.links.matching(identifier: "Open This Week's Lesson")).isHittable)
+        attachScreenshot(named: "week-intro-with-lesson-link")
 
         // Swipe past the intro and the chapter title card to the second verse, then save it.
         app.swipeUp()

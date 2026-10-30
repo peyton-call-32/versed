@@ -29,6 +29,7 @@
 - Weekly schedule: one file per year in `Versed/Resources/Schedules/schedule-YYYY.json`. Weeks run Monday–Sunday. To add a year, add a new file and rerun XcodeGen. 2026 currently covers Oct 26–Dec 27 only (from the Manna prototype, plus the Christmas week).
 - Christmas 2026 has no official reading block. It uses the passages the official lesson cites: Old Testament promises in lesson order, then other cited scriptures, ending with the Nativity (Luke 1, Matthew 1, Luke 2, Matthew 2). Exodus 12 is trimmed to 12:5.
 - 2027 (New Testament) covers all 52 weeks, Dec 28, 2026 – Dec 26, 2027, from the official 2027 manual's table of contents.
+- Each week in a schedule file has a `lessonURL` (its official lesson on churchofjesuschrist.org), and each file has a `manualURL` (the manual's table of contents) used when a week has none. Links only, never lesson text. In 2027, Easter week is lesson 14 and the week after is lesson 13, as in the official manual. A wrong lesson number still loads (the manual's cover page), so check each page's title when adding links.
 - Easter 2027 (Mar 22–28) and Christmas 2027 (Dec 20–26) have no official reading block either:
   - Easter uses the passages the lesson cites, in lesson order (Palm Sunday through the Resurrection and 3 Nephi 11). The opening quote (Matthew 28:6) is left to its place in Matthew 28:1–10.
   - Christmas follows the 2026 pattern: prophecies, then other cited scriptures, ending with the Nativity in story order (Luke 1, Matthew 1, Luke 2, Matthew 2).

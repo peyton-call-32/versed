@@ -12,6 +12,9 @@ struct ReadingWeek: Identifiable, Hashable, Sendable {
     /// The reading as the schedule prints it, such as "Daniel 1–7".
     let label: String
     let passages: [Passage]
+    /// This week's lesson on churchofjesuschrist.org, or the manual's table of contents
+    /// if the schedule has no link for the week. Opens in Gospel Library when it's installed.
+    let lessonURL: URL
 
     func contains(_ date: Date) -> Bool {
         start <= date && date < end

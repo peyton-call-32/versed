@@ -43,7 +43,8 @@ struct ReadingSchedule: Sendable {
                 end: end,
                 title: week.title,
                 label: week.label,
-                passages: week.readings
+                passages: week.readings,
+                lessonURL: week.lessonURL ?? file.manualURL
             )
         }
     }
@@ -62,10 +63,13 @@ struct ReadingSchedule: Sendable {
             let title: String
             let label: String
             let readings: [Passage]
+            let lessonURL: URL?
         }
 
         let year: Int
         let course: String
+        /// The manual's table of contents, used for any week without its own lesson link.
+        let manualURL: URL
         let weeks: [Week]
     }
 

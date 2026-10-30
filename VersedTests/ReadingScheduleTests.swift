@@ -64,9 +64,26 @@ struct ReadingScheduleTests {
     }
 
     @Test func rejectsWeeksThatDontStartOnMonday() {
-        let json = #"{"year": 2026, "course": "Test", "weeks": [{"start": "2026-12-06", "title": "", "label": "", "readings": []}]}"#
+        let json = #"{"year": 2026, "course": "Test", "manualURL": "https://example.com", "weeks": [{"start": "2026-12-06", "title": "", "label": "", "readings": []}]}"#
         #expect(throws: ReadingSchedule.LoadError.self) {
             try ReadingSchedule.load(from: Data(json.utf8), calendar: calendar)
         }
+    }
+
+    @Test func everyWeekLinksToItsOwnLesson() {
+        let links = schedule.weeks.map(\.lessonURL)
+        #expect(Set(links).count == links.count, "No two weeks should share a lesson link.")
+        for week in schedule.weeks {
+            #expect(week.lessonURL.host() == "www.churchofjesuschrist.org", "\(week.id)")
+            #expect(week.lessonURL.path().hasPrefix("/study/manual/come-follow-me-"), "\(week.id)")
+        }
+        // Easter 2027 comes before lesson 13 in the calendar, so its lesson is numbered 14.
+        #expect(schedule.currentWeek(on: date(2027, 3, 24))?.lessonURL.lastPathComponent == "14")
+    }
+
+    @Test func aWeekWithoutALinkUsesTheManual() throws {
+        let json = #"{"year": 2026, "course": "Test", "manualURL": "https://example.com/manual", "weeks": [{"start": "2026-12-07", "title": "", "label": "", "readings": []}]}"#
+        let weeks = try ReadingSchedule.load(from: Data(json.utf8), calendar: calendar)
+        #expect(weeks.first?.lessonURL == URL(string: "https://example.com/manual"))
     }
 }
