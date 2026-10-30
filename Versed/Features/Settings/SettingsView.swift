@@ -8,6 +8,7 @@ struct SettingsView: View {
     @AppStorage(DailyReminder.minuteOfDayKey) private var reminderMinuteOfDay = DailyReminder.defaultMinuteOfDay
     /// Shown when the reader wants the reminder but iOS notifications are off for Versed.
     @State private var notificationsBlocked = false
+    @State private var showsIntro = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
 
@@ -27,6 +28,10 @@ struct SettingsView: View {
                 }
 
                 reminderSection
+
+                Section("Help") {
+                    Button("Show Intro Again") { showsIntro = true }
+                }
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
@@ -34,6 +39,9 @@ struct SettingsView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
                 }
+            }
+            .fullScreenCover(isPresented: $showsIntro) {
+                IntroView { showsIntro = false }
             }
             .task {
                 if reminderIsOn {

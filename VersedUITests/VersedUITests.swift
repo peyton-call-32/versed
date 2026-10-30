@@ -95,6 +95,38 @@ final class VersedUITests: XCTestCase {
         app.buttons["Match Phone"].tap()
     }
 
+    func testFirstTimeIntro() {
+        relaunch(showingIntro: true)
+        XCTAssertTrue(app.staticTexts["Swipe Up for the Next Verse"].waitForExistence(timeout: 10))
+        saveScreenshot(named: "4-intro")
+
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["Double-Tap to Save"].waitForExistence(timeout: 5))
+        app.buttons["Next"].tap()
+        XCTAssertTrue(app.staticTexts["This Week's Reading, Ready"].waitForExistence(timeout: 5))
+
+        // The last page offers the reminder, with no Skip since Not Now does the same thing.
+        XCTAssertTrue(app.buttons["Not Now"].exists)
+        XCTAssertFalse(app.buttons["Skip"].exists)
+        attachScreenshot(named: "intro-reminder-offer")
+
+        app.buttons["Not Now"].tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to read"].waitForExistence(timeout: 5))
+    }
+
+    func testSkippingTheIntroAndSeeingItAgain() {
+        relaunch(showingIntro: true)
+        app.buttons["Skip"].tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to read"].waitForExistence(timeout: 5))
+
+        app.tabBars.buttons["Browse"].tap()
+        app.navigationBars["Browse"].buttons["Settings"].tap()
+        app.buttons["Show Intro Again"].tap()
+        XCTAssertTrue(app.staticTexts["Swipe Up for the Next Verse"].waitForExistence(timeout: 5))
+        app.buttons["Skip"].tap()
+        XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+    }
+
     func testTurningOnTheDailyReminder() {
         app.tabBars.buttons["Browse"].tap()
         app.navigationBars["Browse"].buttons["Settings"].tap()
@@ -122,6 +154,13 @@ final class VersedUITests: XCTestCase {
         // Turn it back off so the simulator is left as it was.
         reminder.switches.firstMatch.tap()
         XCTAssertFalse(app.buttons["Time Picker"].waitForExistence(timeout: 2))
+    }
+
+    /// Restarts the app, with or without the first-time intro.
+    private func relaunch(showingIntro: Bool) {
+        app.terminate()
+        app.launchArguments = ["-ui-testing"] + (showingIntro ? ["-show-intro"] : [])
+        app.launch()
     }
 
     /// The feed keeps neighboring pages loaded off-screen, so pick the match the reader can actually see.

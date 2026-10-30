@@ -4,10 +4,16 @@ import SwiftUI
 struct RootView: View {
     @State private var content: Content?
     @AppStorage(Appearance.storageKey) private var appearance: Appearance = .matchPhone
+    @AppStorage(IntroView.hasSeenKey) private var hasSeenIntro = false
 
     private struct Content {
         let library: ScriptureLibrary
         let schedule: ReadingSchedule
+    }
+
+    /// The intro shows once, the first time the app opens.
+    private var showsIntro: Binding<Bool> {
+        Binding { !hasSeenIntro } set: { hasSeenIntro = !$0 }
     }
 
     var body: some View {
@@ -22,6 +28,9 @@ struct RootView: View {
 
                     SavedVersesView(library: content.library)
                         .tabItem { Label("Saved", systemImage: "heart") }
+                }
+                .fullScreenCover(isPresented: showsIntro) {
+                    IntroView { hasSeenIntro = true }
                 }
             } else {
                 ProgressView()

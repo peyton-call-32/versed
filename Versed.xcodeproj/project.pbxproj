@@ -17,6 +17,7 @@
 		20171DC2A48F9F0625F89580 /* WindowAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B175E88BEA14206E0BADF984 /* WindowAppearance.swift */; };
 		208A4D5441C446097A37F6BF /* WeeklyReadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA4DDF512F6B45AAA6FB607 /* WeeklyReadingView.swift */; };
 		23D960CEABA4DDC50C27E7D0 /* Scripture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401A45B314AB1A84BB775669 /* Scripture.swift */; };
+		29D2F59E6DCD1C13228C4D9C /* IntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA4C7D46EC0C61DEC2F531CA /* IntroView.swift */; };
 		2CEC929D67BF2B536A26D8AF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1ADF58D40B3A1EE961844D7 /* SettingsView.swift */; };
 		37C6AF645EE8F02FA3BC433E /* SavedVerseStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D319648B0F9FA1A08E6EBDA /* SavedVerseStore.swift */; };
 		432957415B2508E79A88BB18 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55CF08772061DBD147D3B80 /* RootView.swift */; };
@@ -127,10 +128,19 @@
 		E7996FA7EC88EA0494273667 /* schedule-2027.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "schedule-2027.json"; sourceTree = "<group>"; };
 		F1ADF58D40B3A1EE961844D7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F1EB2C7EC8FB7F3867B32AA8 /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
+		FA4C7D46EC0C61DEC2F531CA /* IntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroView.swift; sourceTree = "<group>"; };
 		FFB8B59562485E208AE29875 /* StreakBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakBadge.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		0809AB9C659FF48B8C908CBF /* Intro */ = {
+			isa = PBXGroup;
+			children = (
+				FA4C7D46EC0C61DEC2F531CA /* IntroView.swift */,
+			);
+			path = Intro;
+			sourceTree = "<group>";
+		};
 		098BA33FCADDC7585F33E82C /* Data */ = {
 			isa = PBXGroup;
 			children = (
@@ -209,6 +219,7 @@
 			children = (
 				5BB53D517F8B70F6455C9FC3 /* Browse */,
 				3D2F7E7C555B3DDED4C566CF /* Feed */,
+				0809AB9C659FF48B8C908CBF /* Intro */,
 				8E2DC062B86EEC5B0EB575B7 /* Saved */,
 				6DFB54EFF6B2E452393F5832 /* Settings */,
 				948E0B3669D482703F36CF82 /* WeeklyReading */,
@@ -451,6 +462,7 @@
 				AF0463D93EAC06DE873D427A /* DailyReminderScheduler.swift in Sources */,
 				DBC26FB646523E8A0502135A /* FeedItem.swift in Sources */,
 				EF6B569AE42C38B6FEE132C7 /* FeedView.swift in Sources */,
+				29D2F59E6DCD1C13228C4D9C /* IntroView.swift in Sources */,
 				1A0BED16B6E50C0750F8CDA3 /* Passage.swift in Sources */,
 				5F17E4C13727DF65E5355E27 /* ReadingDay.swift in Sources */,
 				FB716C6D5A6ED519A635E0E5 /* ReadingPosition.swift in Sources */,
