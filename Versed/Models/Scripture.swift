@@ -26,6 +26,11 @@ struct Book: Decodable, Identifiable, Sendable {
         "\(referenceName) \(chapter)"
     }
 
+    /// "Chapter 31" or "Section 76".
+    func heading(chapter: Int) -> String {
+        "\(chapterLabel ?? "Chapter") \(chapter)"
+    }
+
     /// All verses in a chapter, or an empty list if the chapter doesn't exist.
     func verses(inChapter chapter: Int) -> [Verse] {
         guard chapters.indices.contains(chapter - 1) else { return [] }
