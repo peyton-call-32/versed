@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The app's top-level screen: loads the scriptures and schedule, then shows this week's reading.
+/// The app's top-level screen: loads the scriptures and schedule, then shows the tabs.
 struct RootView: View {
     @State private var content: Content?
 
@@ -12,7 +12,13 @@ struct RootView: View {
     var body: some View {
         Group {
             if let content {
-                WeeklyReadingView(library: content.library, schedule: content.schedule)
+                TabView {
+                    WeeklyReadingView(library: content.library, schedule: content.schedule)
+                        .tabItem { Label("This Week", systemImage: "calendar") }
+
+                    BrowseView(library: content.library)
+                        .tabItem { Label("Browse", systemImage: "books.vertical") }
+                }
             } else {
                 ProgressView()
             }

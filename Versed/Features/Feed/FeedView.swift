@@ -45,7 +45,8 @@ struct FeedView: View {
         Label("Swipe up to read", systemImage: "chevron.up")
             .font(.footnote)
             .foregroundStyle(.secondary)
-            .padding(.bottom, 72)
+            // Clears the tab bar, which floats over the bottom of the feed.
+            .padding(.bottom, 120)
     }
 }
 

@@ -29,6 +29,10 @@ struct ScriptureLibrary: Sendable {
         return ScriptureLibrary(volumes: volumes)
     }
 
+    func volume(id: String) -> Volume? {
+        volumes.first { $0.id == id }
+    }
+
     func book(id: String) -> Book? {
         booksByID[id]
     }
