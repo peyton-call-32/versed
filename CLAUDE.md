@@ -40,9 +40,9 @@ Done:
 7. Save verses and a Saved tab
 8. Remember where I left off
 9. Daily reading streak
-
-Remaining:
 10. Finish version 1: app icon, screenshots in the README, and a final check that everything works
+
+Version 1 is complete.
 
 ## Rules
 - Scripture text must come from a public-domain source. The current text is from github.com/bcbooks/scriptures-json (public domain). Don't use the Church's 2013 edition text, footnotes, or chapter summaries without a license.

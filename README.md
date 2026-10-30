@@ -4,7 +4,11 @@ An iPhone app for reading scripture one verse at a time. Swipe up for the next v
 
 Built for Latter-day Saints who want to read a little every day. It opens straight to this week's Come, Follow Me reading.
 
-> Status: in development.
+<p>
+  <img src="docs/screenshots/1-this-week.png" width="240" alt="This week's reading, one verse per screen">
+  <img src="docs/screenshots/2-browse.png" width="240" alt="Browse with Continue Reading">
+  <img src="docs/screenshots/3-saved.png" width="240" alt="Saved verses">
+</p>
 
 ## Features (version 1)
 - One verse per screen, with a title card at the start of each chapter
@@ -25,7 +29,17 @@ Open `Versed.xcodeproj` in Xcode, pick an iPhone simulator, and press Run (⌘R)
 
 After changing `project.yml`, run `xcodegen` to rebuild the project.
 
-Run the tests with ⌘U.
+Run the tests with ⌘U. There are two kinds:
+- **Unit tests** (`VersedTests`) check the pieces on their own: loading scripture, the weekly schedule, saved verses, reading position, and the streak.
+- **UI test** (`VersedUITests`) drives the app like a reader: swipes through this week's reading, saves a verse, browses to a chapter, resumes with Continue Reading, and checks the Saved tab. It launches the app with `-ui-testing`, so it starts fresh and never touches real data.
+
+The UI test also takes the screenshots above. To refresh them:
+
+```sh
+TEST_RUNNER_SCREENSHOT_DIR="$PWD/docs/screenshots" xcodebuild test -project Versed.xcodeproj -scheme Versed -destination 'platform=iOS Simulator,name=iPhone 17'
+```
+
+The app icon is drawn by `Scripts/make_app_icon.swift`. Run `swift Scripts/make_app_icon.swift` to redraw it.
 
 ## Credits
 Scripture text is public domain, from [bcbooks/scriptures-json](https://github.com/bcbooks/scriptures-json) (commit `3bda76e`). `Scripts/build_scriptures.py` converts it into the compact files in `Versed/Resources/Scriptures/`.
