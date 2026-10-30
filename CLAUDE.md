@@ -25,6 +25,7 @@
 ### Tech
 - SwiftUI, iOS 17.
 - Scripture text bundled in the app from github.com/bcbooks/scriptures-json.
+- XcodeGen builds `Versed.xcodeproj` from `project.yml`. It's installed at `~/.local/xcodegen-dl/xcodegen/bin/xcodegen` (no Homebrew on this Mac). Rerun it after adding/removing files or changing `project.yml`.
 - Weekly schedule started from the Manna web prototype (`~/Personal Projects/Archive/Manna (web prototype)/data/weeks.js`). Set up so new years (2027+) can be added.
 
 ## Rules

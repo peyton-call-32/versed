@@ -18,6 +18,12 @@ Everything stays on your phone. No account, no internet needed.
 
 ## Built with
 - SwiftUI (iOS 17)
+- [XcodeGen](https://github.com/yonaskolb/XcodeGen): the Xcode project is generated from `project.yml`
+
+## Running it
+Open `Versed.xcodeproj` in Xcode, pick an iPhone simulator, and press Run (⌘R).
+
+After changing `project.yml`, run `xcodegen` to rebuild the project.
 
 ## Credits
 Scripture text is public domain, from [bcbooks/scriptures-json](https://github.com/bcbooks/scriptures-json).
