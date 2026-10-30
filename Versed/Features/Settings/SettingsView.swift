@@ -32,6 +32,8 @@ struct SettingsView: View {
                 Section("Help") {
                     Button("Show Intro Again") { showsIntro = true }
                 }
+
+                AboutSection()
             }
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)

@@ -127,6 +127,20 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
     }
 
+    func testAboutSection() {
+        app.tabBars.buttons["Browse"].tap()
+        app.navigationBars["Browse"].buttons["Settings"].tap()
+        app.swipeUp()
+
+        XCTAssertTrue(app.staticTexts["Versed is an independent app. It is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.links["Privacy Policy"].exists || app.buttons["Privacy Policy"].exists)
+        // The contact row is one tappable link, so the email may be its label or its value.
+        let email = NSPredicate(format: "label CONTAINS %@ OR value CONTAINS %@", "peytoncall32@icloud.com", "peytoncall32@icloud.com")
+        XCTAssertTrue(app.descendants(matching: .any).matching(email).firstMatch.exists)
+        XCTAssertTrue(app.staticTexts["Version"].exists)
+        attachScreenshot(named: "settings-about")
+    }
+
     func testTurningOnTheDailyReminder() {
         app.tabBars.buttons["Browse"].tap()
         app.navigationBars["Browse"].buttons["Settings"].tap()

@@ -1,0 +1,44 @@
+import SwiftUI
+
+/// The About part of Settings: who made the app, where the text comes from, privacy, and contact.
+struct AboutSection: View {
+    static let scriptureSourceURL = URL(string: "https://github.com/bcbooks/scriptures-json")!
+    static let privacyPolicyURL = URL(string: "https://github.com/peyton-call-32/versed/blob/main/PRIVACY.md")!
+    static let contactEmail = "peytoncall32@icloud.com"
+
+    /// "1.0 (1)": the version people see in the App Store, then the build number.
+    static func versionText(bundle: Bundle = .main) -> String {
+        let version = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "?"
+        let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "?"
+        return "\(version) (\(build))"
+    }
+
+    var body: some View {
+        Section {
+            Text("Versed is an independent app. It is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints.")
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+
+            Link(destination: Self.scriptureSourceURL) {
+                LabeledContent("Scripture Text", value: "bcbooks/scriptures-json")
+            }
+            .accessibilityHint("Public domain. Opens the source in Safari.")
+
+            Link("Privacy Policy", destination: Self.privacyPolicyURL)
+
+            Link(destination: URL(string: "mailto:\(Self.contactEmail)")!) {
+                LabeledContent("Contact", value: Self.contactEmail)
+            }
+
+            LabeledContent("Version", value: Self.versionText())
+        } header: {
+            Text("About")
+        } footer: {
+            Text("Scripture text is in the public domain. Versed collects no data: everything stays on your phone, with no accounts, ads, or tracking.")
+        }
+    }
+}
+
+#Preview {
+    Form { AboutSection() }
+}
