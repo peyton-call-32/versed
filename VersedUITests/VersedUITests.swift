@@ -93,6 +93,35 @@ final class VersedUITests: XCTestCase {
         app.buttons["Match Phone"].tap()
     }
 
+    func testTurningOnTheDailyReminder() {
+        app.tabBars.buttons["Browse"].tap()
+        app.navigationBars["Browse"].buttons["Settings"].tap()
+
+        let reminder = app.switches["Daily reminder"]
+        // Settings stay on the simulator between runs, so start from off in case a run stopped early.
+        if reminder.value as? String == "1" {
+            reminder.switches.firstMatch.tap()
+        }
+        XCTAssertEqual(reminder.value as? String, "0")
+        XCTAssertFalse(app.buttons["Time Picker"].exists, "The time only shows once the reminder is on.")
+
+        reminder.switches.firstMatch.tap()
+
+        // iOS asks for permission the first time only. Allow it if it asks.
+        let allow = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts.buttons["Allow"]
+        if allow.waitForExistence(timeout: 3) {
+            allow.tap()
+        }
+
+        XCTAssertTrue(app.buttons["Time Picker"].waitForExistence(timeout: 5))
+        XCTAssertEqual(reminder.value as? String, "1")
+        attachScreenshot(named: "daily-reminder-on")
+
+        // Turn it back off so the simulator is left as it was.
+        reminder.switches.firstMatch.tap()
+        XCTAssertFalse(app.buttons["Time Picker"].waitForExistence(timeout: 2))
+    }
+
     /// The feed keeps neighboring pages loaded off-screen, so pick the match the reader can actually see.
     private func onScreen(_ query: XCUIElementQuery) -> XCUIElement {
         query.allElementsBoundByIndex.first { $0.isHittable } ?? query.firstMatch

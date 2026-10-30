@@ -48,6 +48,13 @@ Done:
 
 Version 1 is complete.
 
+Before the App Store (one at a time):
+11. Daily reminder: off by default, gentle wording, never guilt about streaks. Ask for notification permission only when turned on. On/off switch and time picker in Settings. Nothing leaves the phone.
+12. "Open this week's lesson" button on each week's intro card. Real link per week stored in the schedule files (manual table of contents if a week's link can't be found). Opens in Gospel Library if installed. Link only, no lesson text.
+13. First-time intro: 2–3 short screens (swipe up, double-tap to save, opens to this week). Last screen offers the daily reminder with a clear "Not now". Shown once, with Skip. Can be replayed from Settings.
+14. About section in Settings: independent-app disclaimer, scripture text credit, privacy policy link (PRIVACY.md), contact email (ask Peyton which), app version.
+15. Text size and accessibility: Dynamic Type up to the largest sizes, VoiceOver labels (verse + reference), readable colors in light and dark, respect Reduce Motion, tests where useful.
+
 ## Rules
 - Scripture text must come from a public-domain source. The current text is from github.com/bcbooks/scriptures-json (public domain). Don't use the Church's 2013 edition text, footnotes, or chapter summaries without a license.
 - Don't use the Church's name, logo, or "Come, Follow Me" as the app name, and nothing should look like an official Church app.
