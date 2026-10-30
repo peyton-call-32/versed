@@ -3,8 +3,6 @@ import SwiftUI
 /// The card shown at the start of each chapter, with the book name and chapter number.
 struct ChapterTitleCard: View {
     let title: ChapterTitle
-    /// Shows a "swipe up" hint on the very first page of the feed.
-    var isFirstPage = false
 
     var body: some View {
         VStack(spacing: 12) {
@@ -22,20 +20,11 @@ struct ChapterTitleCard: View {
         .multilineTextAlignment(.center)
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .overlay(alignment: .bottom) {
-            if isFirstPage {
-                Label("Swipe up to read", systemImage: "chevron.up")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .padding(.bottom, 72)
-            }
-        }
     }
 }
 
 #Preview {
     ChapterTitleCard(
-        title: ChapterTitle(id: ChapterID(bookID: "jer", chapter: 31), bookName: "Jeremiah", heading: "Chapter 31"),
-        isFirstPage: true
+        title: ChapterTitle(id: ChapterID(bookID: "jer", chapter: 31), bookName: "Jeremiah", heading: "Chapter 31")
     )
 }

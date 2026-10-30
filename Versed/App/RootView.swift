@@ -1,25 +1,29 @@
 import SwiftUI
 
-/// The app's top-level screen: loads the scriptures, then shows the feed.
+/// The app's top-level screen: loads the scriptures and schedule, then shows this week's reading.
 struct RootView: View {
-    @State private var library: ScriptureLibrary?
+    @State private var content: Content?
 
-    /// Temporary sample reading until the weekly schedule is added.
-    private let sampleChapters = [
-        ChapterID(bookID: "jer", chapter: 31),
-        ChapterID(bookID: "jer", chapter: 32),
-    ]
+    private struct Content {
+        let library: ScriptureLibrary
+        let schedule: ReadingSchedule
+    }
 
     var body: some View {
         Group {
-            if let library {
-                FeedView(items: library.feedItems(for: sampleChapters))
+            if let content {
+                WeeklyReadingView(library: content.library, schedule: content.schedule)
             } else {
                 ProgressView()
             }
         }
         .task {
-            library = await Task.detached { try? ScriptureLibrary.loadBundled() }.value
+            content = await Task.detached {
+                guard let library = try? ScriptureLibrary.loadBundled(),
+                      let schedule = try? ReadingSchedule.loadBundled()
+                else { return nil }
+                return Content(library: library, schedule: schedule)
+            }.value
         }
     }
 }

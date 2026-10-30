@@ -13,6 +13,11 @@ struct FeedView: View {
                 ForEach(items) { item in
                     page(for: item)
                         .containerRelativeFrame([.horizontal, .vertical])
+                        .overlay(alignment: .bottom) {
+                            if item.id == items.first?.id {
+                                swipeHint
+                            }
+                        }
                 }
             }
             .scrollTargetLayout()
@@ -27,15 +32,24 @@ struct FeedView: View {
     @ViewBuilder
     private func page(for item: FeedItem) -> some View {
         switch item {
+        case .weekIntro(let week):
+            WeekIntroCard(week: week)
         case .chapterTitle(let title):
-            ChapterTitleCard(title: title, isFirstPage: item.id == items.first?.id)
+            ChapterTitleCard(title: title)
         case .verse(let verse):
             VerseCard(verse: verse)
         }
+    }
+
+    private var swipeHint: some View {
+        Label("Swipe up to read", systemImage: "chevron.up")
+            .font(.footnote)
+            .foregroundStyle(.secondary)
+            .padding(.bottom, 72)
     }
 }
 
 #Preview {
     let library = try! ScriptureLibrary.loadBundled()
-    FeedView(items: library.feedItems(for: [ChapterID(bookID: "1-ne", chapter: 3)]))
+    FeedView(items: library.feedItems(for: [Passage(bookID: "1-ne", chapters: 3...3)]))
 }

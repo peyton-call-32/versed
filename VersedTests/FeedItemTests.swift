@@ -5,7 +5,7 @@ struct FeedItemTests {
     let library = try! ScriptureLibrary.loadBundled()
 
     @Test func eachChapterStartsWithATitleCard() {
-        let items = library.feedItems(for: [ChapterID(bookID: "jer", chapter: 31), ChapterID(bookID: "jer", chapter: 32)])
+        let items = library.feedItems(for: [Passage(bookID: "jer", chapters: 31...32)])
 
         // Jeremiah 31 has 40 verses and Jeremiah 32 has 44, plus one title card each.
         #expect(items.count == 1 + 40 + 1 + 44)
@@ -15,7 +15,7 @@ struct FeedItemTests {
     }
 
     @Test func titleCardUsesTheBooksChapterLabel() throws {
-        let items = library.feedItems(for: [ChapterID(bookID: "dc", chapter: 76)])
+        let items = library.feedItems(for: [Passage(bookID: "dc", chapters: 76...76)])
         guard case .chapterTitle(let title) = try #require(items.first) else {
             Issue.record("First item should be a title card")
             return
@@ -24,7 +24,27 @@ struct FeedItemTests {
         #expect(title.heading == "Section 76")
     }
 
-    @Test func skipsChaptersThatDontExist() {
-        #expect(library.feedItems(for: [ChapterID(bookID: "jer", chapter: 99)]).isEmpty)
+    @Test func versesFromTheMiddleOfAChapterHaveNoTitleCard() {
+        let items = library.feedItems(for: [Passage(bookID: "isa", chapters: 53...53, verses: 3...5)])
+        #expect(items.map(\.id) == ["verse:isa.53.3", "verse:isa.53.4", "verse:isa.53.5"])
+    }
+
+    @Test func versesFromTheStartOfAChapterHaveATitleCard() {
+        let items = library.feedItems(for: [Passage(bookID: "luke", chapters: 2...2, verses: 1...20)])
+        #expect(items.first?.id == "chapter:luke.2")
+        #expect(items.count == 21)
+    }
+
+    @Test func repeatedVersesAppearOnce() {
+        let items = library.feedItems(for: [
+            Passage(bookID: "ps", chapters: 23...23),
+            Passage(bookID: "ps", chapters: 23...23, verses: 1...1),
+        ])
+        #expect(items.count == 1 + 6)
+    }
+
+    @Test func skipsPassagesThatDontExist() {
+        #expect(library.feedItems(for: [Passage(bookID: "jer", chapters: 99...99)]).isEmpty)
+        #expect(library.feedItems(for: [Passage(bookID: "nope", chapters: 1...1)]).isEmpty)
     }
 }
