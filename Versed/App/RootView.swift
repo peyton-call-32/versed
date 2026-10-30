@@ -18,6 +18,9 @@ struct RootView: View {
 
                     BrowseView(library: content.library)
                         .tabItem { Label("Browse", systemImage: "books.vertical") }
+
+                    SavedVersesView(library: content.library)
+                        .tabItem { Label("Saved", systemImage: "heart") }
                 }
             } else {
                 ProgressView()
@@ -36,4 +39,5 @@ struct RootView: View {
 
 #Preview {
     RootView()
+        .modelContainer(for: SavedVerse.self, inMemory: true)
 }

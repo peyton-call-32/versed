@@ -12,8 +12,13 @@ enum FeedItem: Identifiable, Hashable, Sendable {
         switch self {
         case .weekIntro(let week): "week:\(week.id)"
         case .chapterTitle(let title): "chapter:\(title.id.rawValue)"
-        case .verse(let verse): "verse:\(verse.id.rawValue)"
+        case .verse(let verse): Self.id(for: verse.id)
         }
+    }
+
+    /// The feed ID of a verse's page, for jumping straight to it.
+    static func id(for verseID: VerseID) -> ID {
+        "verse:\(verseID.rawValue)"
     }
 }
 

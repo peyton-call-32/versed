@@ -1,8 +1,15 @@
 import SwiftUI
 
-/// One verse, filling the screen.
+/// One verse, filling the screen. Double-tap or tap the heart to save it.
 struct VerseCard: View {
     let verse: Verse
+    let isSaved: Bool
+    /// Double-tapping always saves (it never un-saves), like most feed apps.
+    let onDoubleTap: () -> Void
+    /// The heart button saves or un-saves.
+    let onHeartTap: () -> Void
+
+    @State private var showsHeartBurst = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -19,6 +26,46 @@ struct VerseCard: View {
         .padding(.horizontal, 32)
         .padding(.vertical, 96)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .contentShape(Rectangle())
+        .onTapGesture(count: 2) {
+            onDoubleTap()
+            showHeartBurst()
+        }
+        .overlay {
+            if showsHeartBurst {
+                Image(systemName: "heart.fill")
+                    .font(.system(size: 96))
+                    .foregroundStyle(.red)
+                    .transition(.scale(scale: 0.5).combined(with: .opacity))
+                    .allowsHitTesting(false)
+            }
+        }
+        .overlay(alignment: .bottomTrailing) {
+            heartButton
+        }
+        .sensoryFeedback(.impact(weight: .light), trigger: isSaved)
+    }
+
+    private var heartButton: some View {
+        Button(action: onHeartTap) {
+            Image(systemName: isSaved ? "heart.fill" : "heart")
+                .font(.title)
+                .foregroundStyle(isSaved ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
+                .contentTransition(.symbolEffect(.replace))
+                .frame(width: 56, height: 56)
+        }
+        .accessibilityLabel(isSaved ? "Remove from saved" : "Save verse")
+        // Clears the tab bar, which floats over the bottom of the feed.
+        .padding(.trailing, 16)
+        .padding(.bottom, 110)
+    }
+
+    private func showHeartBurst() {
+        withAnimation(.spring(duration: 0.3)) { showsHeartBurst = true }
+        Task {
+            try? await Task.sleep(for: .milliseconds(600))
+            withAnimation(.easeOut(duration: 0.3)) { showsHeartBurst = false }
+        }
     }
 
     /// Shorter verses get bigger text so every verse fills the screen comfortably.
@@ -33,9 +80,15 @@ struct VerseCard: View {
 }
 
 #Preview {
-    VerseCard(verse: Verse(
-        id: VerseID(bookID: "1-ne", chapter: 3, verse: 7),
-        bookName: "1 Nephi",
-        text: "And it came to pass that I, Nephi, said unto my father: I will go and do the things which the Lord hath commanded, for I know that the Lord giveth no commandments unto the children of men, save he shall prepare a way for them that they may accomplish the thing which he commandeth them."
-    ))
+    @Previewable @State var isSaved = false
+    VerseCard(
+        verse: Verse(
+            id: VerseID(bookID: "1-ne", chapter: 3, verse: 7),
+            bookName: "1 Nephi",
+            text: "And it came to pass that I, Nephi, said unto my father: I will go and do the things which the Lord hath commanded, for I know that the Lord giveth no commandments unto the children of men, save he shall prepare a way for them that they may accomplish the thing which he commandeth them."
+        ),
+        isSaved: isSaved,
+        onDoubleTap: { isSaved = true },
+        onHeartTap: { isSaved.toggle() }
+    )
 }
