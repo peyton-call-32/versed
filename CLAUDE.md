@@ -29,6 +29,21 @@
 - Weekly schedule: one file per year in `Versed/Resources/Schedules/schedule-YYYY.json`. Weeks run Monday–Sunday. To add a year, add a new file and rerun XcodeGen. 2026 currently covers Oct 26–Dec 27 only (from the Manna prototype, plus the Christmas week).
 - Christmas 2026 has no official reading block. It uses the passages the official lesson cites: Old Testament promises in lesson order, then other cited scriptures, ending with the Nativity (Luke 1, Matthew 1, Luke 2, Matthew 2). Exodus 12 is trimmed to 12:5.
 
+## Build plan
+Done:
+1. Project guide, README, gitignore
+2. Xcode project with a placeholder home screen
+3. Bundle the scriptures and a library to read them
+4. Swipe-up verse feed with chapter title cards
+5. Open to this week's reading, with a week picker
+6. Browse tab for any book and chapter
+7. Save verses and a Saved tab
+8. Remember where I left off
+
+Remaining:
+9. Daily reading streak
+10. Finish version 1: app icon, screenshots in the README, and a final check that everything works
+
 ## Rules
 - Scripture text must come from a public-domain source. The current text is from github.com/bcbooks/scriptures-json (public domain). Don't use the Church's 2013 edition text, footnotes, or chapter summaries without a license.
 - Don't use the Church's name, logo, or "Come, Follow Me" as the app name, and nothing should look like an official Church app.
