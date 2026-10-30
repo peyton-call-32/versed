@@ -28,7 +28,7 @@ struct SavedVersesView: View {
             .navigationTitle("Saved")
             .navigationDestination(for: VerseID.self) { id in
                 if let book = library.book(id: id.bookID) {
-                    ChapterReadingView(library: library, book: book, startChapter: id.chapter, startVerse: id.verse)
+                    ChapterReadingView(library: library, book: book, startChapter: id.chapter, startItem: FeedItem.id(for: id))
                 }
             }
         }
@@ -56,5 +56,5 @@ struct SavedVersesView: View {
 
 #Preview {
     SavedVersesView(library: try! ScriptureLibrary.loadBundled())
-        .modelContainer(for: SavedVerse.self, inMemory: true)
+        .modelContainer(for: [SavedVerse.self, ReadingPosition.self], inMemory: true)
 }

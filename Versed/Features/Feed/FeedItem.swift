@@ -20,6 +20,25 @@ enum FeedItem: Identifiable, Hashable, Sendable {
     static func id(for verseID: VerseID) -> ID {
         "verse:\(verseID.rawValue)"
     }
+
+    /// The verse a page shows, read back from its feed ID, or `nil` if it isn't a verse page.
+    static func verseID(of id: ID) -> VerseID? {
+        id.dropPrefix("verse:").flatMap(VerseID.init(rawValue:))
+    }
+
+    /// The chapter a page belongs to, read back from its feed ID, or `nil` for a week intro.
+    static func chapterID(of id: ID) -> ChapterID? {
+        if let verseID = verseID(of: id) {
+            return ChapterID(bookID: verseID.bookID, chapter: verseID.chapter)
+        }
+        return id.dropPrefix("chapter:").flatMap(ChapterID.init(rawValue:))
+    }
+}
+
+private extension String {
+    func dropPrefix(_ prefix: String) -> String? {
+        hasPrefix(prefix) ? String(dropFirst(prefix.count)) : nil
+    }
 }
 
 struct ChapterTitle: Hashable, Sendable {

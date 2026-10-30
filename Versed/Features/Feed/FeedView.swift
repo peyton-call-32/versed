@@ -4,6 +4,8 @@ import SwiftUI
 /// A full-screen, swipe-up feed with one verse per page.
 struct FeedView: View {
     let items: [FeedItem]
+    /// Called with the opening page, then with each page the reader swipes to.
+    let onPageChange: (FeedItem.ID) -> Void
 
     @Environment(\.modelContext) private var modelContext
     @Query private var savedVerses: [SavedVerse]
@@ -11,10 +13,11 @@ struct FeedView: View {
     /// The ID of the page currently on screen.
     @State private var currentItemID: FeedItem.ID?
 
-    /// - Parameter itemID: The page to open on, or `nil` for the first page.
-    init(items: [FeedItem], startingAt itemID: FeedItem.ID? = nil) {
+    /// - Parameter itemID: The page to open on, or `nil` for the first page. Ignored if it isn't in `items`.
+    init(items: [FeedItem], startingAt itemID: FeedItem.ID? = nil, onPageChange: @escaping (FeedItem.ID) -> Void = { _ in }) {
         self.items = items
-        _currentItemID = State(initialValue: itemID)
+        self.onPageChange = onPageChange
+        _currentItemID = State(initialValue: items.contains { $0.id == itemID } ? itemID : nil)
     }
 
     var body: some View {
@@ -36,6 +39,12 @@ struct FeedView: View {
         }
         .scrollTargetBehavior(.paging)
         .scrollPosition(id: $currentItemID)
+        .onAppear {
+            if let itemID = currentItemID ?? items.first?.id { onPageChange(itemID) }
+        }
+        .onChange(of: currentItemID) { _, itemID in
+            if let itemID { onPageChange(itemID) }
+        }
         .scrollIndicators(.hidden)
         .background(Color(.systemBackground))
         .ignoresSafeArea()
@@ -71,5 +80,5 @@ struct FeedView: View {
 #Preview {
     let library = try! ScriptureLibrary.loadBundled()
     FeedView(items: library.feedItems(for: [Passage(bookID: "1-ne", chapters: 3...3)]))
-        .modelContainer(for: SavedVerse.self, inMemory: true)
+        .modelContainer(for: [SavedVerse.self, ReadingPosition.self], inMemory: true)
 }

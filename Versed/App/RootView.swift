@@ -39,5 +39,5 @@ struct RootView: View {
 
 #Preview {
     RootView()
-        .modelContainer(for: SavedVerse.self, inMemory: true)
+        .modelContainer(for: [SavedVerse.self, ReadingPosition.self], inMemory: true)
 }

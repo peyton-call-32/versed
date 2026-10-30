@@ -48,3 +48,20 @@ struct FeedItemTests {
         #expect(library.feedItems(for: [Passage(bookID: "nope", chapters: 1...1)]).isEmpty)
     }
 }
+
+struct FeedItemIDTests {
+    @Test func readsTheVerseAndChapterBackFromAVersePage() {
+        let id = FeedItem.id(for: VerseID(bookID: "1-ne", chapter: 3, verse: 7))
+        #expect(FeedItem.verseID(of: id) == VerseID(bookID: "1-ne", chapter: 3, verse: 7))
+        #expect(FeedItem.chapterID(of: id) == ChapterID(bookID: "1-ne", chapter: 3))
+    }
+
+    @Test func readsTheChapterBackFromATitleCard() {
+        #expect(FeedItem.verseID(of: "chapter:jer.31") == nil)
+        #expect(FeedItem.chapterID(of: "chapter:jer.31") == ChapterID(bookID: "jer", chapter: 31))
+    }
+
+    @Test func aWeekIntroHasNoChapter() {
+        #expect(FeedItem.chapterID(of: "week:2026-10-26") == nil)
+    }
+}
