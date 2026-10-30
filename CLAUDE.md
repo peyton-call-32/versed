@@ -39,9 +39,9 @@ Done:
 6. Browse tab for any book and chapter
 7. Save verses and a Saved tab
 8. Remember where I left off
+9. Daily reading streak
 
 Remaining:
-9. Daily reading streak
 10. Finish version 1: app icon, screenshots in the README, and a final check that everything works
 
 ## Rules
