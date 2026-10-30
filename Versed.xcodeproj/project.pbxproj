@@ -7,25 +7,92 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		00B9F1995997D369A54C1641 /* nt.json in Resources */ = {isa = PBXBuildFile; fileRef = 2663EBF64C136EA30C3B185F /* nt.json */; };
+		23D960CEABA4DDC50C27E7D0 /* Scripture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401A45B314AB1A84BB775669 /* Scripture.swift */; };
 		432957415B2508E79A88BB18 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B55CF08772061DBD147D3B80 /* RootView.swift */; };
+		6C2CA0E4B949EB17092EF038 /* pgp.json in Resources */ = {isa = PBXBuildFile; fileRef = 321BD67D54DFDEA0B66CFC9B /* pgp.json */; };
+		7DD6C1CBBC5B3E9BE8A67F5D /* ot.json in Resources */ = {isa = PBXBuildFile; fileRef = 27B34587C8B21EF51F5C3C6F /* ot.json */; };
 		9A05D5DDC9C69485F2E1C099 /* VersedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1214A84BDDB01C93A2637D9C /* VersedApp.swift */; };
+		A3125B1BB335AD5DFB4D1A48 /* bofm.json in Resources */ = {isa = PBXBuildFile; fileRef = 1ABA253A5A766E0E141E6BCC /* bofm.json */; };
 		A5BC1632997F210490099B08 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BDA23AFE56278C14C0B2BFF8 /* Assets.xcassets */; };
+		A7057CC524186095DBBFE5A0 /* ScriptureLibraryTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29EBE0202008EEC564E4B8E5 /* ScriptureLibraryTests.swift */; };
+		B10E380DB9C796E04D935EA4 /* dc.json in Resources */ = {isa = PBXBuildFile; fileRef = 23CA76384BCF373AA6F9C181 /* dc.json */; };
+		F268165DC0FD5A4EE9D08DCD /* ScriptureLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B7899BDE47F6968F2FEE7AA /* ScriptureLibrary.swift */; };
+		F4DF404E863DFF4A21F0998F /* VerseID.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7CBE99ECE7EA3FC4D9E38437 /* VerseID.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2F1F1B5A91FBE623EA9FCBA1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B06E945063B8C0D3E0F6243A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EE3333C4F19D44055DE5ABB8;
+			remoteInfo = Versed;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		1214A84BDDB01C93A2637D9C /* VersedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersedApp.swift; sourceTree = "<group>"; };
+		1ABA253A5A766E0E141E6BCC /* bofm.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = bofm.json; sourceTree = "<group>"; };
+		1B7899BDE47F6968F2FEE7AA /* ScriptureLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureLibrary.swift; sourceTree = "<group>"; };
+		23CA76384BCF373AA6F9C181 /* dc.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = dc.json; sourceTree = "<group>"; };
+		2663EBF64C136EA30C3B185F /* nt.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = nt.json; sourceTree = "<group>"; };
+		27B34587C8B21EF51F5C3C6F /* ot.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = ot.json; sourceTree = "<group>"; };
+		29EBE0202008EEC564E4B8E5 /* ScriptureLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureLibraryTests.swift; sourceTree = "<group>"; };
+		321BD67D54DFDEA0B66CFC9B /* pgp.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = pgp.json; sourceTree = "<group>"; };
+		401A45B314AB1A84BB775669 /* Scripture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Scripture.swift; sourceTree = "<group>"; };
+		7CBE99ECE7EA3FC4D9E38437 /* VerseID.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseID.swift; sourceTree = "<group>"; };
 		A245BDA0B58829A33EE8BC67 /* Versed.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Versed.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B55CF08772061DBD147D3B80 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		BDA23AFE56278C14C0B2BFF8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		E14A1D81CE6CFC3D793B03A9 /* VersedTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VersedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		098BA33FCADDC7585F33E82C /* Data */ = {
+			isa = PBXGroup;
+			children = (
+				1B7899BDE47F6968F2FEE7AA /* ScriptureLibrary.swift */,
+			);
+			path = Data;
+			sourceTree = "<group>";
+		};
+		13EA5A6374C579342535C984 /* VersedTests */ = {
+			isa = PBXGroup;
+			children = (
+				29EBE0202008EEC564E4B8E5 /* ScriptureLibraryTests.swift */,
+			);
+			path = VersedTests;
+			sourceTree = "<group>";
+		};
+		18EF242E5E268C4933CBD5BA /* Scriptures */ = {
+			isa = PBXGroup;
+			children = (
+				1ABA253A5A766E0E141E6BCC /* bofm.json */,
+				23CA76384BCF373AA6F9C181 /* dc.json */,
+				2663EBF64C136EA30C3B185F /* nt.json */,
+				27B34587C8B21EF51F5C3C6F /* ot.json */,
+				321BD67D54DFDEA0B66CFC9B /* pgp.json */,
+			);
+			path = Scriptures;
+			sourceTree = "<group>";
+		};
 		395EAE2CA9F3F8A1D36F7DC4 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
 				BDA23AFE56278C14C0B2BFF8 /* Assets.xcassets */,
+				18EF242E5E268C4933CBD5BA /* Scriptures */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		6E2B38C64491A5F4B5F36BC3 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				401A45B314AB1A84BB775669 /* Scripture.swift */,
+				7CBE99ECE7EA3FC4D9E38437 /* VerseID.swift */,
+			);
+			path = Models;
 			sourceTree = "<group>";
 		};
 		90EDCBA4897A68B87B95825D /* App */ = {
@@ -41,6 +108,7 @@
 			isa = PBXGroup;
 			children = (
 				B51E569A373506DBDD33B3CA /* Versed */,
+				13EA5A6374C579342535C984 /* VersedTests */,
 				D715D7F53BA8A4E9BB4AD7AB /* Products */,
 			);
 			sourceTree = "<group>";
@@ -49,6 +117,8 @@
 			isa = PBXGroup;
 			children = (
 				90EDCBA4897A68B87B95825D /* App */,
+				098BA33FCADDC7585F33E82C /* Data */,
+				6E2B38C64491A5F4B5F36BC3 /* Models */,
 				395EAE2CA9F3F8A1D36F7DC4 /* Resources */,
 			);
 			path = Versed;
@@ -58,6 +128,7 @@
 			isa = PBXGroup;
 			children = (
 				A245BDA0B58829A33EE8BC67 /* Versed.app */,
+				E14A1D81CE6CFC3D793B03A9 /* VersedTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -65,6 +136,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		601824792870C4888455D410 /* VersedTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AB1C6775F8CAA4A3E7A6CD46 /* Build configuration list for PBXNativeTarget "VersedTests" */;
+			buildPhases = (
+				F6710ACDE16B9252653990BC /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				CE77B6F4EA965F20DE0732E0 /* PBXTargetDependency */,
+			);
+			name = VersedTests;
+			packageProductDependencies = (
+			);
+			productName = VersedTests;
+			productReference = E14A1D81CE6CFC3D793B03A9 /* VersedTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		EE3333C4F19D44055DE5ABB8 /* Versed */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 79678C4F6E2DD7753F7D206B /* Build configuration list for PBXNativeTarget "Versed" */;
@@ -109,6 +198,7 @@
 			projectRoot = "";
 			targets = (
 				EE3333C4F19D44055DE5ABB8 /* Versed */,
+				601824792870C4888455D410 /* VersedTests */,
 			);
 		};
 /* End PBXProject section */
@@ -119,6 +209,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				A5BC1632997F210490099B08 /* Assets.xcassets in Resources */,
+				A3125B1BB335AD5DFB4D1A48 /* bofm.json in Resources */,
+				B10E380DB9C796E04D935EA4 /* dc.json in Resources */,
+				00B9F1995997D369A54C1641 /* nt.json in Resources */,
+				7DD6C1CBBC5B3E9BE8A67F5D /* ot.json in Resources */,
+				6C2CA0E4B949EB17092EF038 /* pgp.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -130,13 +225,49 @@
 			buildActionMask = 2147483647;
 			files = (
 				432957415B2508E79A88BB18 /* RootView.swift in Sources */,
+				23D960CEABA4DDC50C27E7D0 /* Scripture.swift in Sources */,
+				F268165DC0FD5A4EE9D08DCD /* ScriptureLibrary.swift in Sources */,
+				F4DF404E863DFF4A21F0998F /* VerseID.swift in Sources */,
 				9A05D5DDC9C69485F2E1C099 /* VersedApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F6710ACDE16B9252653990BC /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A7057CC524186095DBBFE5A0 /* ScriptureLibraryTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		CE77B6F4EA965F20DE0732E0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EE3333C4F19D44055DE5ABB8 /* Versed */;
+			targetProxy = 2F1F1B5A91FBE623EA9FCBA1 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		24ED77C324057DA6A4DE4AEB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peytoncall.VersedTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Versed.app/Versed";
+			};
+			name = Release;
+		};
 		4D5869068CB4FB4793AAD129 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -199,6 +330,23 @@
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		612A505BE9A996316482F99D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peytoncall.VersedTests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Versed.app/Versed";
 			};
 			name = Debug;
 		};
@@ -308,6 +456,15 @@
 			buildConfigurations = (
 				A2653EA3A28D89AE22AC2316 /* Debug */,
 				CC112360F954DEFF69D62C3A /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		AB1C6775F8CAA4A3E7A6CD46 /* Build configuration list for PBXNativeTarget "VersedTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				612A505BE9A996316482F99D /* Debug */,
+				24ED77C324057DA6A4DE4AEB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

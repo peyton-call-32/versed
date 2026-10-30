@@ -25,7 +25,9 @@ Open `Versed.xcodeproj` in Xcode, pick an iPhone simulator, and press Run (⌘R)
 
 After changing `project.yml`, run `xcodegen` to rebuild the project.
 
+Run the tests with ⌘U.
+
 ## Credits
-Scripture text is public domain, from [bcbooks/scriptures-json](https://github.com/bcbooks/scriptures-json).
+Scripture text is public domain, from [bcbooks/scriptures-json](https://github.com/bcbooks/scriptures-json) (commit `3bda76e`). `Scripts/build_scriptures.py` converts it into the compact files in `Versed/Resources/Scriptures/`.
 
 Versed is an independent project and is not affiliated with or endorsed by The Church of Jesus Christ of Latter-day Saints.
