@@ -1,0 +1,81 @@
+import XCTest
+
+/// Walks through the whole app the way a reader would, and captures the README screenshots on the way.
+///
+/// The app launches with `-ui-testing`, so it starts with nothing saved and never touches real data.
+/// To save the screenshots as files, run the tests with `TEST_RUNNER_SCREENSHOT_DIR` set to a folder.
+@MainActor
+final class VersedUITests: XCTestCase {
+    let app = XCUIApplication()
+
+    override func setUp() async throws {
+        continueAfterFailure = false
+        app.launchArguments = ["-ui-testing"]
+        app.launch()
+    }
+
+    func testReadingSavingBrowsingAndResuming() {
+        // This Week opens on the week's intro card.
+        XCTAssertTrue(app.staticTexts["Swipe up to read"].waitForExistence(timeout: 10))
+
+        // Swipe past the intro and the chapter title card to the second verse, then save it.
+        app.swipeUp()
+        app.swipeUp()
+        app.swipeUp()
+        XCTAssertTrue(app.buttons["Save verse"].waitForExistence(timeout: 5))
+        onScreen(app.buttons.matching(identifier: "Save verse")).tap()
+        XCTAssertTrue(app.buttons["Remove from saved"].waitForExistence(timeout: 5))
+
+        // Reading a verse starts the streak.
+        XCTAssertTrue(app.staticTexts["1-day reading streak"].waitForExistence(timeout: 5))
+        saveScreenshot(named: "1-this-week")
+
+        // Browse to Alma 32 and read to verse 2.
+        app.tabBars.buttons["Browse"].tap()
+        app.staticTexts["Book of Mormon"].tap()
+        app.staticTexts["Alma"].tap()
+        app.buttons["Alma 32"].tap()
+        XCTAssertTrue(app.staticTexts["Chapter 32"].waitForExistence(timeout: 5))
+        app.swipeUp()
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["Alma 32:2"].waitForExistence(timeout: 5))
+
+        // Back on the Browse list, Continue Reading points to where we stopped.
+        while app.navigationBars.buttons.firstMatch.exists, !app.navigationBars["Browse"].exists {
+            app.navigationBars.buttons.firstMatch.tap()
+        }
+        let continueReading = app.buttons["Alma 32:2"]
+        XCTAssertTrue(continueReading.waitForExistence(timeout: 5))
+        saveScreenshot(named: "2-browse")
+
+        // Continue Reading reopens the feed on that verse.
+        continueReading.tap()
+        XCTAssertTrue(app.staticTexts["Alma 32:2"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Chapter 32"].isHittable)
+
+        // The saved verse shows on the Saved tab.
+        app.tabBars.buttons["Saved"].tap()
+        XCTAssertTrue(app.navigationBars["Saved"].waitForExistence(timeout: 5))
+        XCTAssertEqual(app.cells.count, 1)
+        saveScreenshot(named: "3-saved")
+    }
+
+    /// The feed keeps neighboring pages loaded off-screen, so pick the match the reader can actually see.
+    private func onScreen(_ query: XCUIElementQuery) -> XCUIElement {
+        query.allElementsBoundByIndex.first { $0.isHittable } ?? query.firstMatch
+    }
+
+    private func saveScreenshot(named name: String) {
+        let screenshot = XCUIScreen.main.screenshot()
+
+        let attachment = XCTAttachment(screenshot: screenshot)
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+
+        if let folder = ProcessInfo.processInfo.environment["SCREENSHOT_DIR"] {
+            let url = URL(fileURLWithPath: folder).appendingPathComponent("\(name).png")
+            XCTAssertNoThrow(try screenshot.pngRepresentation.write(to: url))
+        }
+    }
+}

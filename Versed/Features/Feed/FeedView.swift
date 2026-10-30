@@ -85,5 +85,5 @@ struct FeedView: View {
 #Preview {
     let library = try! ScriptureLibrary.loadBundled()
     FeedView(items: library.feedItems(for: [Passage(bookID: "1-ne", chapters: 3...3)]))
-        .modelContainer(for: [SavedVerse.self, ReadingPosition.self, ReadingDay.self], inMemory: true)
+        .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }

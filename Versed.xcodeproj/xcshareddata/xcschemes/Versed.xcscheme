@@ -50,6 +50,17 @@
                ReferencedContainer = "container:Versed.xcodeproj">
             </BuildableReference>
          </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "EA1D1C502707E4F137A9D31B"
+               BuildableName = "VersedUITests.xctest"
+               BlueprintName = "VersedUITests"
+               ReferencedContainer = "container:Versed.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
       </Testables>
       <CommandLineArguments>
       </CommandLineArguments>

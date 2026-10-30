@@ -42,6 +42,18 @@ targets:
       base:
         GENERATE_INFOPLIST_FILE: YES
 
+  VersedUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - VersedUITests
+    dependencies:
+      - target: Versed
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_TARGET_NAME: Versed
+
 schemes:
   Versed:
     build:
@@ -50,3 +62,4 @@ schemes:
     test:
       targets:
         - VersedTests
+        - VersedUITests

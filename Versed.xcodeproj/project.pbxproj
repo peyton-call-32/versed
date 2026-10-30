@@ -24,6 +24,7 @@
 		660A9466C0A477EE521C97E6 /* ChapterReadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 417C384930A861295CB95831 /* ChapterReadingView.swift */; };
 		6C2CA0E4B949EB17092EF038 /* pgp.json in Resources */ = {isa = PBXBuildFile; fileRef = 321BD67D54DFDEA0B66CFC9B /* pgp.json */; };
 		764C6FEFD78229ED805883E4 /* ReadingWeek.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D3E86D40FE19EADCA38B096 /* ReadingWeek.swift */; };
+		7CDC80AA942758736805A4BA /* VersedUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34DBD24ECF75DF0F3C63FF9C /* VersedUITests.swift */; };
 		7DD6C1CBBC5B3E9BE8A67F5D /* ot.json in Resources */ = {isa = PBXBuildFile; fileRef = 27B34587C8B21EF51F5C3C6F /* ot.json */; };
 		7FC22A724782E37FEC89B5EE /* ReadingStreak.swift in Sources */ = {isa = PBXBuildFile; fileRef = 512E6008D1BFBCCDF8482DDA /* ReadingStreak.swift */; };
 		9A05D5DDC9C69485F2E1C099 /* VersedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1214A84BDDB01C93A2637D9C /* VersedApp.swift */; };
@@ -58,6 +59,13 @@
 			remoteGlobalIDString = EE3333C4F19D44055DE5ABB8;
 			remoteInfo = Versed;
 		};
+		47408D09F8065045F162C28A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = B06E945063B8C0D3E0F6243A /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EE3333C4F19D44055DE5ABB8;
+			remoteInfo = Versed;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -76,6 +84,7 @@
 		29EBE0202008EEC564E4B8E5 /* ScriptureLibraryTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureLibraryTests.swift; sourceTree = "<group>"; };
 		319546785AD215381AF9D636 /* schedule-2026.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "schedule-2026.json"; sourceTree = "<group>"; };
 		321BD67D54DFDEA0B66CFC9B /* pgp.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = pgp.json; sourceTree = "<group>"; };
+		34DBD24ECF75DF0F3C63FF9C /* VersedUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersedUITests.swift; sourceTree = "<group>"; };
 		36231AEE0A980899FB8E3D40 /* FeedItemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedItemTests.swift; sourceTree = "<group>"; };
 		38C6604306AEB70EFA6335AC /* ReadingDay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingDay.swift; sourceTree = "<group>"; };
 		395EAC65581863D5D7C6B069 /* BookListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BookListView.swift; sourceTree = "<group>"; };
@@ -99,6 +108,7 @@
 		B55CF08772061DBD147D3B80 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		BDA23AFE56278C14C0B2BFF8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		C74541F86766C80DFEE1FCA3 /* SavedVersesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedVersesView.swift; sourceTree = "<group>"; };
+		CEA40A4489951383053903E2 /* VersedUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VersedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D56CF2440765D2BAF22899CD /* ReadingPositionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingPositionStore.swift; sourceTree = "<group>"; };
 		DA06D5EF2CB15AC34E1A3EFF /* SavedVerseStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedVerseStoreTests.swift; sourceTree = "<group>"; };
 		E14A1D81CE6CFC3D793B03A9 /* VersedTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VersedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -235,8 +245,17 @@
 			children = (
 				B51E569A373506DBDD33B3CA /* Versed */,
 				13EA5A6374C579342535C984 /* VersedTests */,
+				AA49DB910AA7F4DC1601ED53 /* VersedUITests */,
 				D715D7F53BA8A4E9BB4AD7AB /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		AA49DB910AA7F4DC1601ED53 /* VersedUITests */ = {
+			isa = PBXGroup;
+			children = (
+				34DBD24ECF75DF0F3C63FF9C /* VersedUITests.swift */,
+			);
+			path = VersedUITests;
 			sourceTree = "<group>";
 		};
 		B51E569A373506DBDD33B3CA /* Versed */ = {
@@ -264,6 +283,7 @@
 			children = (
 				A245BDA0B58829A33EE8BC67 /* Versed.app */,
 				E14A1D81CE6CFC3D793B03A9 /* VersedTests.xctest */,
+				CEA40A4489951383053903E2 /* VersedUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -288,6 +308,24 @@
 			productName = VersedTests;
 			productReference = E14A1D81CE6CFC3D793B03A9 /* VersedTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		EA1D1C502707E4F137A9D31B /* VersedUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 684F1FCE2C7074AEF8C068E1 /* Build configuration list for PBXNativeTarget "VersedUITests" */;
+			buildPhases = (
+				040E3C636400B9F19B906C6C /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				593779F61B7DF896D1CEB428 /* PBXTargetDependency */,
+			);
+			name = VersedUITests;
+			packageProductDependencies = (
+			);
+			productName = VersedUITests;
+			productReference = CEA40A4489951383053903E2 /* VersedUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
 		};
 		EE3333C4F19D44055DE5ABB8 /* Versed */ = {
 			isa = PBXNativeTarget;
@@ -316,6 +354,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					EA1D1C502707E4F137A9D31B = {
+						TestTargetID = EE3333C4F19D44055DE5ABB8;
+					};
 				};
 			};
 			buildConfigurationList = E6830AFB9E56182F413B077A /* Build configuration list for PBXProject "Versed" */;
@@ -334,6 +375,7 @@
 			targets = (
 				EE3333C4F19D44055DE5ABB8 /* Versed */,
 				601824792870C4888455D410 /* VersedTests */,
+				EA1D1C502707E4F137A9D31B /* VersedUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -356,6 +398,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		040E3C636400B9F19B906C6C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7CDC80AA942758736805A4BA /* VersedUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		7CE46BB285179651739EBDE0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -407,6 +457,11 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		593779F61B7DF896D1CEB428 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EE3333C4F19D44055DE5ABB8 /* Versed */;
+			targetProxy = 47408D09F8065045F162C28A /* PBXContainerItemProxy */;
+		};
 		CE77B6F4EA965F20DE0732E0 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = EE3333C4F19D44055DE5ABB8 /* Versed */;
@@ -592,6 +647,23 @@
 			};
 			name = Release;
 		};
+		BE385FA425503F66BC3DA359 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peytoncall.VersedUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Versed;
+			};
+			name = Debug;
+		};
 		CC112360F954DEFF69D62C3A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -612,9 +684,35 @@
 			};
 			name = Release;
 		};
+		CF9F25972EB1FB41B3ADE868 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peytoncall.VersedUITests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Versed;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		684F1FCE2C7074AEF8C068E1 /* Build configuration list for PBXNativeTarget "VersedUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				BE385FA425503F66BC3DA359 /* Debug */,
+				CF9F25972EB1FB41B3ADE868 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		79678C4F6E2DD7753F7D206B /* Build configuration list for PBXNativeTarget "Versed" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

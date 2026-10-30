@@ -74,5 +74,5 @@ struct WeeklyReadingView: View {
 
 #Preview {
     WeeklyReadingView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled())
-        .modelContainer(for: [SavedVerse.self, ReadingPosition.self, ReadingDay.self], inMemory: true)
+        .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }
