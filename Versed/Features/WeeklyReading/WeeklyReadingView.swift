@@ -8,6 +8,7 @@ struct WeeklyReadingView: View {
     let schedule: ReadingSchedule
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     /// The week picked from the menu, or `nil` to show this week.
     @State private var selectedWeekID: ReadingWeek.ID?
@@ -29,16 +30,32 @@ struct WeeklyReadingView: View {
             // A new identity per week reopens each week's feed at its own saved page.
             .id(week.id)
             .overlay(alignment: .top) {
-                weekMenu(selected: week)
-            }
-            .overlay(alignment: .topTrailing) {
-                StreakBadge()
-                    .padding(.top, 8)
-                    .padding(.trailing, 16)
+                topBar(selected: week)
             }
         } else {
             ContentUnavailableView("No reading schedule", systemImage: "calendar")
         }
+    }
+
+    /// The week menu, centered, with the streak badge on the right. At accessibility text sizes
+    /// the menu is too wide to center beside the badge, so it moves to the left.
+    private func topBar(selected: ReadingWeek) -> some View {
+        Group {
+            if dynamicTypeSize.isAccessibilitySize {
+                HStack(alignment: .top) {
+                    weekMenu(selected: selected)
+                    Spacer(minLength: 8)
+                    StreakBadge()
+                }
+            } else {
+                weekMenu(selected: selected)
+                    .frame(maxWidth: .infinity)
+                    .overlay(alignment: .topTrailing) { StreakBadge() }
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
     }
 
     private func weekMenu(selected: ReadingWeek) -> some View {
@@ -68,7 +85,8 @@ struct WeeklyReadingView: View {
             .padding(.vertical, 8)
             .background(.regularMaterial, in: Capsule())
         }
-        .padding(.top, 8)
+        .accessibilityLabel("Week of \(selected.dateRangeText)")
+        .accessibilityHint("Picks another week's reading.")
     }
 }
 

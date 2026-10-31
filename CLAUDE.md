@@ -49,7 +49,7 @@ Done:
 
 Version 1 is complete.
 
-Before the App Store (one at a time):
+Before the App Store (done):
 11. Daily reminder: off by default, gentle wording, never guilt about streaks. Ask for notification permission only when turned on. On/off switch and time picker in Settings. Nothing leaves the phone.
 12. "Open this week's lesson" button on each week's intro card. Real link per week stored in the schedule files (manual table of contents if a week's link can't be found). Opens in Gospel Library if installed. Link only, no lesson text.
 13. First-time intro: 2–3 short screens (swipe up, double-tap to save, opens to this week). Last screen offers the daily reminder with a clear "Not now". Shown once, with Skip. Can be replayed from Settings.
@@ -61,3 +61,4 @@ Before the App Store (one at a time):
 - Don't use the Church's name, logo, or "Come, Follow Me" as the app name, and nothing should look like an official Church app.
 - Youth safety: youth groups need two adult leaders, parents can see group activity, and there are no private messages between adults and youth.
 - Collect as little user data as possible.
+- Accessibility: feed pages use `ShrinkToFit` so text grows with the iPhone's text size but each page still fits on one screen. Use `.secondaryText` (not `.secondary`) for gray text so it stays readable. Respect Reduce Motion for any new animation. `AccessibilityUITests` runs Apple's accessibility audit on every screen in light and dark mode.

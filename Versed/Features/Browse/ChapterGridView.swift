@@ -4,7 +4,10 @@ import SwiftUI
 struct ChapterGridView: View {
     let book: Book
 
-    private let columns = [GridItem(.adaptive(minimum: 56), spacing: 12)]
+    /// Grows with the reader's text size so big chapter numbers still fit.
+    @ScaledMetric(relativeTo: .body) private var cellSize = 56.0
+
+    private var columns: [GridItem] { [GridItem(.adaptive(minimum: cellSize), spacing: 12)] }
 
     var body: some View {
         ScrollView {
@@ -14,7 +17,7 @@ struct ChapterGridView: View {
                         Text("\(chapter)")
                             .font(.body.weight(.medium))
                             .monospacedDigit()
-                            .frame(maxWidth: .infinity, minHeight: 56)
+                            .frame(maxWidth: .infinity, minHeight: cellSize)
                             .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 12))
                     }
                     .buttonStyle(.plain)

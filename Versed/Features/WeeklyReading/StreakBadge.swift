@@ -8,13 +8,18 @@ struct StreakBadge: View {
     var body: some View {
         let streak = ReadingStreak.count(readDays: Set(readingDays.map(\.day)))
         if streak > 0 {
-            Label("\(streak)", systemImage: "flame.fill")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.orange)
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(.regularMaterial, in: Capsule())
-                .accessibilityLabel("\(streak)-day reading streak")
+            Label {
+                Text("\(streak)")
+            } icon: {
+                // Orange text is hard to read in light mode, so only the flame is orange.
+                Image(systemName: "flame.fill")
+                    .foregroundStyle(.orange)
+            }
+            .font(.subheadline.weight(.semibold))
+            .padding(.horizontal, 12)
+            .padding(.vertical, 8)
+            .background(.regularMaterial, in: Capsule())
+            .accessibilityLabel("\(streak)-day reading streak")
         }
     }
 }

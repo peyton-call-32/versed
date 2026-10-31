@@ -17,7 +17,7 @@ struct AboutSection: View {
         Section {
             Text("Versed is an independent app. It is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints.")
                 .font(.footnote)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(.secondaryText)
 
             Link(destination: Self.scriptureSourceURL) {
                 LabeledContent("Scripture Text", value: "bcbooks/scriptures-json")
@@ -35,6 +35,7 @@ struct AboutSection: View {
             Text("About")
         } footer: {
             Text("Scripture text is in the public domain. Versed collects no data: everything stays on your phone, with no accounts, ads, or tracking.")
+                .foregroundStyle(.secondaryText)
         }
     }
 }

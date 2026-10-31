@@ -10,21 +10,29 @@ struct VerseCard: View {
     let onHeartTap: () -> Void
 
     @State private var showsHeartBurst = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
-        VStack(spacing: 20) {
-            Text(verse.text)
-                .font(.system(textStyle, design: .serif))
-                .lineSpacing(6)
-                .minimumScaleFactor(0.6)
+        ShrinkToFit {
+            VStack(spacing: 20) {
+                Text(verse.text)
+                    .font(.system(textStyle, design: .serif))
+                    .lineSpacing(6)
 
-            Text(verse.reference)
-                .font(.subheadline.weight(.medium))
-                .foregroundStyle(.secondary)
+                Text(verse.reference)
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(.secondaryText)
+            }
+            // VoiceOver reads the reference, then the verse, as one item.
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(verse.reference)
+            .accessibilityValue(verse.text)
+            .accessibilityAction(named: isSaved ? "Remove from Saved" : "Save Verse", onHeartTap)
         }
         .multilineTextAlignment(.center)
         .padding(.horizontal, 32)
-        .padding(.vertical, 96)
+        .padding(.top, FeedInsets.top)
+        .padding(.bottom, FeedInsets.bottom)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .contentShape(Rectangle())
         .onTapGesture(count: 2) {
@@ -36,8 +44,10 @@ struct VerseCard: View {
                 Image(systemName: "heart.fill")
                     .font(.system(size: 96))
                     .foregroundStyle(.red)
-                    .transition(.scale(scale: 0.5).combined(with: .opacity))
+                    // With Reduce Motion on, the heart fades in place instead of growing.
+                    .transition(reduceMotion ? .opacity : .scale(scale: 0.5).combined(with: .opacity))
                     .allowsHitTesting(false)
+                    .accessibilityHidden(true)
             }
         }
         .overlay(alignment: .bottomTrailing) {
@@ -50,18 +60,19 @@ struct VerseCard: View {
         Button(action: onHeartTap) {
             Image(systemName: isSaved ? "heart.fill" : "heart")
                 .font(.title)
-                .foregroundStyle(isSaved ? AnyShapeStyle(.red) : AnyShapeStyle(.secondary))
+                .foregroundStyle(isSaved ? AnyShapeStyle(.red) : AnyShapeStyle(.secondaryText))
                 .contentTransition(.symbolEffect(.replace))
                 .frame(width: 56, height: 56)
         }
         .accessibilityLabel(isSaved ? "Remove from saved" : "Save verse")
+        .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         // Clears the tab bar, which floats over the bottom of the feed.
         .padding(.trailing, 16)
         .padding(.bottom, 110)
     }
 
     private func showHeartBurst() {
-        withAnimation(.spring(duration: 0.3)) { showsHeartBurst = true }
+        withAnimation(reduceMotion ? .easeIn(duration: 0.2) : .spring(duration: 0.3)) { showsHeartBurst = true }
         Task {
             try? await Task.sleep(for: .milliseconds(600))
             withAnimation(.easeOut(duration: 0.3)) { showsHeartBurst = false }

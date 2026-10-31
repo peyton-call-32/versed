@@ -21,6 +21,7 @@ Built for Latter-day Saints who want to read a little every day. It opens straig
 - An optional daily reminder at a time you pick (off until you turn it on)
 - A button on each week's intro card that opens the official lesson, in Gospel Library if it's installed
 - A short first-time intro, which can be replayed from Settings
+- Works with larger text sizes, VoiceOver, and Reduce Motion
 
 Everything stays on your phone. No account, no ads, no tracking, no internet needed. See the [privacy policy](PRIVACY.md).
 
@@ -35,7 +36,7 @@ After changing `project.yml`, run `xcodegen` to rebuild the project.
 
 Run the tests with ⌘U. There are two kinds:
 - **Unit tests** (`VersedTests`) check the pieces on their own: loading scripture, the weekly schedule and its lesson links, saved verses, reading position, the streak, the reminder time, and the About section.
-- **UI tests** (`VersedUITests`) drive the app like a reader: swipe through this week's reading, save a verse, browse to a chapter, resume with Continue Reading, check the Saved tab, switch between light and dark mode, turn the daily reminder on and off, go through the first-time intro, and check the About section. They launch the app with `-ui-testing`, so reading data starts fresh and real data is never touched.
+- **UI tests** (`VersedUITests`) drive the app like a reader: swipe through this week's reading, save a verse, browse to a chapter, resume with Continue Reading, check the Saved tab, switch between light and dark mode, turn the daily reminder on and off, go through the first-time intro, and check the About section. `AccessibilityUITests` runs Apple's accessibility audit on every screen in light and dark mode, and checks that pages still fit at the largest text size. They launch the app with `-ui-testing`, so reading data starts fresh and real data is never touched.
 
 The UI test also takes the screenshots above. To refresh them:
 

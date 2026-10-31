@@ -74,6 +74,7 @@ struct SettingsView: View {
             Text(notificationsBlocked
                  ? "Notifications for Versed are turned off on this iPhone."
                  : "A gentle note once a day. Nothing leaves your phone.")
+                .foregroundStyle(.secondaryText)
         }
     }
 

@@ -76,10 +76,19 @@ struct FeedView: View {
     private var swipeHint: some View {
         Label("Swipe up to read", systemImage: "chevron.up")
             .font(.footnote)
-            .foregroundStyle(.secondary)
+            .foregroundStyle(.secondaryText)
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
             // Clears the tab bar, which floats over the bottom of the feed.
             .padding(.bottom, 120)
     }
+}
+
+/// Room the feed's pages leave for what floats over them: the week menu at the top, and the
+/// tab bar, heart button, and swipe hint at the bottom. Those are capped at the first
+/// accessibility text size, so these fit them at every size.
+enum FeedInsets {
+    static let top: CGFloat = 130
+    static let bottom: CGFloat = 170
 }
 
 #Preview {

@@ -42,7 +42,7 @@ struct SavedVersesView: View {
                     .lineLimit(3)
                 Text(verse.reference)
                     .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.secondaryText)
             }
             .padding(.vertical, 4)
         }

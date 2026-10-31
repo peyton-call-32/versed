@@ -12,7 +12,7 @@ struct BookListView: View {
                     Spacer()
                     Text("\(book.chapterCount)")
                         .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(.secondaryText)
                         .monospacedDigit()
                 }
             }

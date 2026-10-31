@@ -38,7 +38,7 @@ struct BrowseView: View {
                                     .font(.system(.title3, design: .serif))
                                 Text(subtitle(for: volume))
                                     .font(.subheadline)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(.secondaryText)
                             }
                             .padding(.vertical, 4)
                         }

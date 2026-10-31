@@ -6,30 +6,41 @@ struct WeekIntroCard: View {
     let week: ReadingWeek
 
     var body: some View {
-        VStack(spacing: 16) {
-            Text(week.dateRangeText.uppercased())
-                .font(.footnote.weight(.semibold))
-                .tracking(1.5)
-                .foregroundStyle(.tint)
+        ShrinkToFit {
+            VStack(spacing: 16) {
+                VStack(spacing: 16) {
+                    Text(week.dateRangeText.uppercased())
+                        .font(.footnote.weight(.semibold))
+                        .tracking(1.5)
+                        .foregroundStyle(.tint)
+                        // Read as "Oct 26 – Nov 1", not spelled out in capitals.
+                        .accessibilityLabel(week.dateRangeText)
 
-            Text(week.title)
-                .font(.system(.largeTitle, design: .serif, weight: .semibold))
+                    Text(week.title)
+                        .font(.system(.largeTitle, design: .serif, weight: .semibold))
 
-            Text(week.label)
-                .font(.title3)
-                .foregroundStyle(.secondary)
+                    Text(week.label)
+                        .font(.title3)
+                        .foregroundStyle(.secondaryText)
+                }
+                // VoiceOver reads the dates, title, and reading as one heading.
+                .accessibilityElement(children: .combine)
+                .accessibilityAddTraits(.isHeader)
 
-            // Only a link: the lesson itself opens in Gospel Library if it's installed
-            // (iOS hands churchofjesuschrist.org links to it), otherwise in Safari.
-            Link(destination: week.lessonURL) {
-                Label("Open This Week's Lesson", systemImage: "arrow.up.right.square")
+                // Only a link: the lesson itself opens in Gospel Library if it's installed
+                // (iOS hands churchofjesuschrist.org links to it), otherwise in Safari.
+                Link(destination: week.lessonURL) {
+                    Label("Open This Week's Lesson", systemImage: "arrow.up.right.square")
+                }
+                .buttonStyle(.bordered)
+                .padding(.top, 8)
+                .accessibilityHint("Opens the lesson in Gospel Library or Safari.")
             }
-            .buttonStyle(.bordered)
-            .padding(.top, 8)
-            .accessibilityHint("Opens the lesson in Gospel Library or Safari.")
         }
         .multilineTextAlignment(.center)
-        .padding(32)
+        .padding(.horizontal, 32)
+        .padding(.top, FeedInsets.top)
+        .padding(.bottom, FeedInsets.bottom)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 }
