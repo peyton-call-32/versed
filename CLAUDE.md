@@ -56,7 +56,7 @@ Before the App Store (done):
 14. About section in Settings: independent-app disclaimer, scripture text credit, privacy policy link (PRIVACY.md), contact email (ask Peyton which), app version.
 15. Text size and accessibility: Dynamic Type up to the largest sizes, VoiceOver labels (verse + reference), readable colors in light and dark, respect Reduce Motion, tests where useful.
 
-App Store release (in progress). Peyton's Apple Developer account is approved and signed in to Xcode. Go step by step and explain each step in plain language:
+App Store release (in progress; 16–19 done). Peyton's Apple Developer account is approved and signed in to Xcode. Go step by step and explain each step in plain language:
 16. Privacy policy URL: https://github.com/peyton-call-32/versed/blob/main/PRIVACY.md (same link as in Settings).
 17. App Store listing draft in `docs/app-store/listing.md`: subtitle, description, keywords, what's new. No Church name or "Come, Follow Me" in the app name, and nothing that looks official.
 18. App Store screenshots from the simulator at the sizes Apple requires, saved in `docs/app-store/screenshots/`.
