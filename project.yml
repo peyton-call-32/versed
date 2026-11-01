@@ -13,6 +13,9 @@ settings:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "1"
+    # Peyton's Apple Developer team. Xcode makes and renews the signing certificates itself.
+    DEVELOPMENT_TEAM: 49K5VLD6N9
+    CODE_SIGN_STYLE: Automatic
 
 targets:
   Versed:
@@ -28,6 +31,8 @@ targets:
         INFOPLIST_KEY_CFBundleDisplayName: Versed
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
+        # Versed uses no encryption beyond what iOS provides, so App Store Connect won't ask on each upload.
+        INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
 
