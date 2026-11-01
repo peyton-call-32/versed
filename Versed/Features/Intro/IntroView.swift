@@ -58,8 +58,10 @@ struct IntroView: View {
                         .tag(index)
                 }
             }
-            .tabViewStyle(.page(indexDisplayMode: .always))
-            .indexViewStyle(.page(backgroundDisplayMode: .always))
+            // The page dots get their own row below, so long text never slides under them.
+            .tabViewStyle(.page(indexDisplayMode: .never))
+
+            pageDots
 
             if !isLastPage {
                 nextButton
@@ -71,36 +73,62 @@ struct IntroView: View {
         .background(Color(.systemBackground))
     }
 
-    /// One page. The last page also offers the reminder, inside the scrolling area
-    /// so its buttons stay reachable at the largest text sizes.
+    /// One page, centered when it fits. At the largest text sizes it scrolls instead,
+    /// starting from the top so nothing is cut off.
     private func pageView(_ page: Page, offersReminder: Bool) -> some View {
-        ScrollView {
-            VStack(spacing: 20) {
-                Image(systemName: page.symbol)
-                    .font(.system(size: 64))
-                    .foregroundStyle(.tint)
-                    .accessibilityHidden(true)
-
-                Text(page.title)
-                    .font(.system(.title, design: .serif, weight: .semibold))
-                    .accessibilityAddTraits(.isHeader)
-
-                Text(page.message)
-                    .font(.body)
-                    .foregroundStyle(.secondaryText)
-
-                if offersReminder {
-                    reminderOffer
-                        .padding(.top, 24)
-                }
+        GeometryReader { proxy in
+            ScrollView {
+                // Full height so short pages sit centered; never squeezed, so long pages scroll.
+                pageContent(page, offersReminder: offersReminder)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(minHeight: proxy.size.height)
             }
-            .multilineTextAlignment(.center)
-            .padding(32)
-            .padding(.bottom, 40)
-            .frame(maxWidth: .infinity)
+            .scrollBounceBehavior(.basedOnSize)
         }
-        .defaultScrollAnchor(.center)
-        .scrollBounceBehavior(.basedOnSize)
+    }
+
+    /// The last page also offers the reminder, in the same column so its buttons
+    /// stay reachable at the largest text sizes.
+    private func pageContent(_ page: Page, offersReminder: Bool) -> some View {
+        VStack(spacing: 20) {
+            Image(systemName: page.symbol)
+                .font(.system(size: 64))
+                .foregroundStyle(.tint)
+                .accessibilityHidden(true)
+
+            Text(page.title)
+                .font(.system(.title, design: .serif, weight: .semibold))
+                .accessibilityAddTraits(.isHeader)
+
+            Text(page.message)
+                .font(.body)
+                .foregroundStyle(.secondaryText)
+
+            if offersReminder {
+                reminderOffer
+                    .padding(.top, 24)
+            }
+        }
+        .multilineTextAlignment(.center)
+        .padding(32)
+        .frame(maxWidth: .infinity)
+    }
+
+    /// Shows which page the reader is on. VoiceOver reads it as "Page 1 of 3".
+    private var pageDots: some View {
+        HStack(spacing: 8) {
+            ForEach(pages.indices, id: \.self) { index in
+                Circle()
+                    .fill(index == page ? Color.primary : Color.secondaryText.opacity(0.4))
+                    .frame(width: 8, height: 8)
+            }
+        }
+        // Room around the dots, and big enough to meet the minimum touch size.
+        .frame(minWidth: 44, minHeight: 44)
+        .contentShape(Rectangle())
+        .accessibilityElement()
+        .accessibilityLabel("Page \(page + 1) of \(pages.count)")
+        .accessibilityIdentifier("Intro page dots")
     }
 
     private var reminderOffer: some View {

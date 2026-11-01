@@ -84,6 +84,37 @@ final class AccessibilityUITests: XCTestCase {
         attachScreenshot(named: "largest-text-settings")
     }
 
+    /// At the largest accessibility text size, each intro page starts at the top and,
+    /// scrolled to its end, stops above the page dots instead of sliding under them.
+    func testIntroFitsAtTheLargestTextSize() {
+        launch(extraArguments: ["-show-intro", "-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
+        let skip = app.buttons["Skip"]
+        XCTAssertTrue(skip.waitForExistence(timeout: 10))
+        let top = skip.frame.maxY
+        let dots = app.descendants(matching: .any)["Intro page dots"]
+
+        // Each page's heading, and the last line on that page.
+        let pages = [
+            ("Swipe Up for the Next Verse", "Versed shows one verse at a time. Swipe up to keep reading."),
+            ("Double-Tap to Save", "Double-tap a verse, or tap the heart, to keep it in your Saved tab."),
+            ("This Week's Reading, Ready", "You can change this anytime in Settings."),
+        ]
+        for (number, (heading, lastLine)) in zip(1..., pages) {
+            let headingText = app.staticTexts[heading]
+            XCTAssertTrue(headingText.waitForExistence(timeout: 5))
+            assertFits(headingText, between: top, and: dots.frame.minY, "intro page \(number) heading")
+
+            // Scroll to the end of the page (extra swipes do nothing once there).
+            for _ in 1...4 { app.swipeUp() }
+            attachScreenshot(named: "largest-text-intro-page-\(number)")
+            assertFits(app.staticTexts[lastLine], between: top, and: dots.frame.minY, "intro page \(number) last line")
+
+            if number < pages.count {
+                app.buttons["Next"].tap()
+            }
+        }
+    }
+
     /// VoiceOver reads each verse as its reference followed by the text.
     func testVoiceOverReadsTheVerseWithItsReference() {
         launch()
