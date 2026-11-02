@@ -24,22 +24,41 @@ struct ReadingWeek: Identifiable, Hashable, Sendable {
         label.replacingOccurrences(of: #"(\d)–(\d)"#, with: "$1\u{2060}–\u{2060}$2", options: .regularExpression)
     }
 
-    /// The reading with each book on its own line, for the week's opening card:
+    /// The reading split by book, for the week's opening card:
     /// "Jeremiah 31–33; 36–39" then "Lamentations 1; 3".
     ///
-    /// A part after a semicolon starts a new book when it begins with a name ("Lamentations 1",
-    /// "1 Kings 3"); bare chapters ("36–39") stay with the book before them.
+    /// A part after a semicolon starts a new book when it has any letters in it ("Lamentations 1",
+    /// "1–3 John"); bare chapters ("36–39") stay with the book before them.
     var displayLabelByBook: [String] {
         var books: [String] = []
         for part in displayLabel.components(separatedBy: "; ") {
-            let startsWithBookName = part.range(of: #"^(\d )?\p{L}"#, options: .regularExpression) != nil
-            if startsWithBookName || books.isEmpty {
+            if part.contains(where: \.isLetter) || books.isEmpty {
                 books.append(part)
             } else {
                 books[books.count - 1] += "; " + part
             }
         }
         return books
+    }
+
+    /// Each book in the reading with its chapters, such as "Ezekiel" with "1–3", "33–34",
+    /// "36–37", and "47". A book read whole ("Amos", "1 and 2 Peter") has no chapters, and so
+    /// does a label with no book at all ("Christmas").
+    var readingByBook: [BookReading] {
+        displayLabelByBook.map { book in
+            var parts = book.components(separatedBy: "; ")
+            let first = parts.removeFirst()
+            // The first part's chapters are the numbers after the name's last letter:
+            // "Joseph Smith—Matthew 1" is "Joseph Smith—Matthew" and "1". Only digits, dashes,
+            // and punctuation count, so "1 and 2 Peter" stays whole.
+            let pattern = #"^(.*\p{L})\s+([\d\u{2060}–:, ]+)$"#
+            guard let match = first.firstMatch(of: try! Regex(pattern)),
+                  let name = match.output[1].substring, let chapters = match.output[2].substring
+            else {
+                return BookReading(name: first, chapters: parts)
+            }
+            return BookReading(name: String(name), chapters: [String(chapters)] + parts)
+        }
     }
 
     func contains(_ date: Date) -> Bool {
@@ -58,4 +77,11 @@ struct ReadingWeek: Identifiable, Hashable, Sendable {
         }
         return "\(startText) – \(lastDay.formatted(month)) \(lastDayNumber)"
     }
+}
+
+/// One book in a week's reading: its name and the chapters read from it.
+struct BookReading: Hashable, Sendable {
+    let name: String
+    /// Chapters or chapter ranges, such as "1–3" and "47". Empty when the book is read whole.
+    let chapters: [String]
 }

@@ -81,17 +81,54 @@ struct ReadingScheduleTests {
         #expect(schedule.weeks.first { $0.id == "2026-12-21" }?.displayLabel == "Christmas")
     }
 
-    @Test func splitsTheReadingIntoOneLinePerBook() {
-        func books(_ label: String) -> [String] {
-            let week = schedule.weeks.first { $0.label == label }!
-            // Drop the invisible word joiners so the expectations are easy to read.
-            return week.displayLabelByBook.map { $0.replacingOccurrences(of: "\u{2060}", with: "") }
+    /// The week with this label, split by book, with the invisible word joiners dropped
+    /// so the expectations are easy to read.
+    private func books(_ label: String) -> [BookReading] {
+        let week = schedule.weeks.first { $0.label == label }!
+        let plain = { (text: String) in text.replacingOccurrences(of: "\u{2060}", with: "") }
+        return week.readingByBook.map { BookReading(name: plain($0.name), chapters: $0.chapters.map(plain)) }
+    }
+
+    @Test func splitsEachBookIntoItsNameAndChapters() {
+        #expect(books("Ezekiel 1–3; 33–34; 36–37; 47") == [BookReading(name: "Ezekiel", chapters: ["1–3", "33–34", "36–37", "47"])])
+        #expect(books("Jeremiah 31–33; 36–39; Lamentations 1; 3") == [
+            BookReading(name: "Jeremiah", chapters: ["31–33", "36–39"]),
+            BookReading(name: "Lamentations", chapters: ["1", "3"]),
+        ])
+        #expect(books("Matthew 21–23; Mark 11; Luke 19–20; John 12").map(\.name) == ["Matthew", "Mark", "Luke", "John"])
+    }
+
+    @Test func handlesTrickyBookNames() {
+        #expect(books("Joseph Smith—Matthew 1; Matthew 24–25; Mark 12–13; Luke 21").first
+            == BookReading(name: "Joseph Smith—Matthew", chapters: ["1"]))
+        #expect(books("1 Corinthians 1–7") == [BookReading(name: "1 Corinthians", chapters: ["1–7"])])
+        #expect(books("1–3 John; Jude") == [BookReading(name: "1–3 John", chapters: []), BookReading(name: "Jude", chapters: [])])
+        #expect(books("1 and 2 Thessalonians") == [BookReading(name: "1 and 2 Thessalonians", chapters: [])])
+        #expect(books("Hosea 1–6; 10–14; Joel") == [
+            BookReading(name: "Hosea", chapters: ["1–6", "10–14"]),
+            BookReading(name: "Joel", chapters: []),
+        ])
+    }
+
+    @Test func booksReadWholeAndHolidaysHaveNoChapters() {
+        #expect(books("Amos; Obadiah; Jonah") == ["Amos", "Obadiah", "Jonah"].map { BookReading(name: $0, chapters: []) })
+        #expect(books("Christmas") == [BookReading(name: "Christmas", chapters: [])])
+        #expect(books("Easter Week") == [BookReading(name: "Easter Week", chapters: [])])
+    }
+
+    /// Every week in every schedule file: putting the books and chapters back together gives
+    /// the original reading, and no book name ends in a stray number that should be a chapter.
+    @Test func everyWeekSplitsCleanly() {
+        for week in schedule.weeks {
+            let rebuilt = week.readingByBook
+                .map { ([$0.name] + ($0.chapters.isEmpty ? [] : [$0.chapters.joined(separator: "; ")])).joined(separator: " ") }
+                .joined(separator: "; ")
+                .replacingOccurrences(of: "\u{2060}", with: "")
+            #expect(rebuilt == week.label)
+            for book in week.readingByBook {
+                #expect(book.name.last?.isLetter == true, "\(week.label): \"\(book.name)\"")
+            }
         }
-        #expect(books("Jeremiah 31–33; 36–39; Lamentations 1; 3") == ["Jeremiah 31–33; 36–39", "Lamentations 1; 3"])
-        #expect(books("Ezekiel 1–3; 33–34; 36–37; 47") == ["Ezekiel 1–3; 33–34; 36–37; 47"])
-        #expect(books("Micah; Nahum; Habakkuk; Zephaniah") == ["Micah", "Nahum", "Habakkuk", "Zephaniah"])
-        #expect(books("Joseph Smith—Matthew 1; Matthew 24–25; Mark 12–13; Luke 21")
-            == ["Joseph Smith—Matthew 1", "Matthew 24–25", "Mark 12–13", "Luke 21"])
     }
 
         @Test func groupsWeeksByCourse() {

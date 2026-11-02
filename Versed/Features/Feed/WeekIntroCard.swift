@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The first page of a week's reading: a small label with the dates, then the chapters.
+/// The first page of a week's reading: a small label with the dates, then each book and its chapters.
 /// The link to the week's lesson waits at the end of the reading, on `WeekEndCard`.
 struct WeekIntroCard: View {
     let week: ReadingWeek
@@ -17,22 +17,28 @@ struct WeekIntroCard: View {
 
     var body: some View {
         ShrinkToFit {
-            VStack(spacing: 14) {
+            VStack(spacing: 18) {
                 Text(label)
                     .font(.footnote.weight(.semibold))
                     .tracking(1.5)
                     .textCase(.uppercase)
                     .foregroundStyle(.tint)
 
-                // One book per line, so it's easy to see where each book starts. At the
-                // standard text size every book fits on one line; a longer one wraps but
-                // stays grouped, with a little more space before the next book.
-                VStack(spacing: 6) {
-                    ForEach(week.displayLabelByBook, id: \.self) { book in
-                        Text(book)
+                // Each book on its own: the name, then its chapters in a smaller, lighter line.
+                // More space between books than within one, so each pair reads as a group.
+                VStack(spacing: 18) {
+                    ForEach(Array(week.readingByBook.enumerated()), id: \.offset) { _, book in
+                        VStack(spacing: 4) {
+                            Text(book.name)
+                                .font(.system(.title, design: .serif, weight: .semibold))
+                            if !book.chapters.isEmpty {
+                                Text(book.chapters.joined(separator: " · "))
+                                    .font(.title3)
+                                    .foregroundStyle(.secondaryText)
+                            }
+                        }
                     }
                 }
-                .font(.system(.title, design: .serif, weight: .semibold))
             }
             // VoiceOver reads "This Week, Daniel 1–7, Nov 9–15" as one heading
             // ("Week Of, …" for other weeks), in normal case rather than capitals.
