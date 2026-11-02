@@ -1,0 +1,52 @@
+/* Shared look for the Versed webpages (privacy policy and support). Colors match the app icon. */
+:root {
+  --background: #fbf8f1;
+  --text: #1c2a4b;
+  --muted: #4a5571;
+  --link: #1f4fb8;
+  --rule: #e3dccb;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #141c30;
+    --text: #f3ebd9;
+    --muted: #c4bca9;
+    --link: #8fb3ff;
+    --rule: #2c3753;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--text);
+  font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+}
+
+main {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 40px 16px 64px;
+}
+
+h1, h2 {
+  font-family: Georgia, "Times New Roman", serif;
+  line-height: 1.25;
+}
+
+h1 { font-size: 2rem; margin: 0 0 4px; }
+h2 { font-size: 1.25rem; margin: 32px 0 8px; }
+
+a { color: var(--link); }
+
+.updated, footer { color: var(--muted); }
+
+.updated { margin-top: 0; font-size: 0.9rem; }
+
+footer {
+  margin-top: 48px;
+  padding-top: 16px;
+  border-top: 1px solid var(--rule);
+  font-size: 0.9rem;
+}

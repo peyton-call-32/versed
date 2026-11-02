@@ -24,7 +24,7 @@ Built for Latter-day Saints who want to read a little every day. It opens straig
 - A short first-time intro, which can be replayed from Settings
 - Works with larger text sizes, VoiceOver, and Reduce Motion
 
-Everything stays on your phone. No account, no ads, no tracking, no internet needed. See the [privacy policy](PRIVACY.md).
+Everything stays on your phone. No account, no ads, no tracking, no internet needed. See the [privacy policy](https://peyton-call-32.github.io/versed/privacy/) and [support page](https://peyton-call-32.github.io/versed/support/).
 
 ## Built with
 - SwiftUI (iOS 17)

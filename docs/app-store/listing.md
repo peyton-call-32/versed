@@ -62,8 +62,8 @@ First release: read scripture one verse at a time, with this week's reading read
 ## Other fields
 - **Primary category:** Reference
 - **Secondary category:** Books
-- **Privacy policy URL:** https://github.com/peyton-call-32/versed/blob/main/PRIVACY.md
-- **Support URL:** https://github.com/peyton-call-32/versed
+- **Privacy policy URL:** https://peyton-call-32.github.io/versed/privacy/
+- **Support URL:** https://peyton-call-32.github.io/versed/support/
 - **Copyright:** 2026 Peyton Call
 - **Price:** Free
 - **App Privacy:** Data Not Collected
