@@ -1,26 +1,32 @@
 import SwiftUI
 
-/// The card shown at the start of each chapter, with the book name and chapter number.
+/// The card shown at the start of each chapter: "CHAPTER", a large number, a thin ornament, then the book name.
 struct ChapterTitleCard: View {
     let title: ChapterTitle
 
+    /// The big chapter number grows and shrinks with the iPhone's text size.
+    @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 104
+
     var body: some View {
         ShrinkToFit {
-            VStack(spacing: 12) {
+            VStack(spacing: 8) {
+                SmallCapsLabel(title.label)
+
+                Text("\(title.id.chapter)")
+                    .font(.system(size: numberSize, weight: .light, design: .serif))
+                    .foregroundStyle(.brand)
+
+                Ornament()
+                    .padding(.bottom, 8)
+
                 Text(title.bookName)
                     .font(.system(.largeTitle, design: .serif, weight: .semibold))
-
-                Rectangle()
-                    .fill(.tint)
-                    .frame(width: 40, height: 2)
-
-                Text(title.heading)
-                    .font(.title3)
-                    .foregroundStyle(.secondaryText)
+                    .foregroundStyle(.brand)
             }
         }
         // VoiceOver reads "Alma, Chapter 32" as one heading.
-        .accessibilityElement(children: .combine)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title.bookName), \(title.heading)")
         .accessibilityAddTraits(.isHeader)
         .multilineTextAlignment(.center)
         .padding(.horizontal, 32)
@@ -32,6 +38,6 @@ struct ChapterTitleCard: View {
 
 #Preview {
     ChapterTitleCard(
-        title: ChapterTitle(id: ChapterID(bookID: "jer", chapter: 31), bookName: "Jeremiah", heading: "Chapter 31")
+        title: ChapterTitle(id: ChapterID(bookID: "jer", chapter: 31), bookName: "Jeremiah", label: "Chapter")
     )
 }

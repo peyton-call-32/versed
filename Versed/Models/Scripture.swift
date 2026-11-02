@@ -26,9 +26,12 @@ struct Book: Decodable, Identifiable, Sendable {
         "\(referenceName) \(chapter)"
     }
 
+    /// "Chapter", or "Section" for the Doctrine and Covenants.
+    var chapterWord: String { chapterLabel ?? "Chapter" }
+
     /// "Chapter 31" or "Section 76".
     func heading(chapter: Int) -> String {
-        "\(chapterLabel ?? "Chapter") \(chapter)"
+        "\(chapterWord) \(chapter)"
     }
 
     /// All verses in a chapter, or an empty list if the chapter doesn't exist.

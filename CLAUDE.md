@@ -67,8 +67,9 @@ App Store release (in progress; 16–19 done). Peyton's Apple Developer account 
 21. Walk Peyton through uploading a build to TestFlight and testing it on their own iPhone before submitting for review.
 
 ## Design
-- Navy and cream, matching the app icon: off-white page with white cards in light mode, deep navy with lighter navy cards in dark mode.
-- All colors and button styles live in `Versed/Features/Shared/AppColors.swift` (`.brand`, `.appBackground`, `.cardBackground`, `.secondaryText`, `.hairline`, `SectionHeader`, `.pillBackground()`, `.versedListStyle()`, `.primary`/`.secondary` button styles). New screens use these. Don't add new colors or one-off styles; if something's missing, add it there.
+- Navy and cream, matching the app icon. Simple and classy: no extra colors, soft white pills with a faint outline (no shadows: the accessibility check flags them), verse and title text in navy ink, small spaced capitals for references, a thin line-and-diamond `Ornament`, and a large light chapter number on chapter cards.
+- Colors: off-white page with white cards in light mode, deep navy with lighter navy cards in dark mode.
+- All colors and button styles live in `Versed/Features/Shared/AppColors.swift` (`.brand`, `.appBackground`, `.cardBackground`, `.secondaryText`, `.hairline`, `SectionHeader`, `SmallCapsLabel`, `Ornament`, `.pillBackground()`, `.versedListStyle()`, `.primary`/`.secondary` button styles). New screens use these. Don't add new colors or one-off styles; if something's missing, add it there.
 
 ## Testing
 - After a change, only run the tests related to it, then save to GitHub.

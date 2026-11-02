@@ -18,10 +18,14 @@ struct VerseCard: View {
                 Text(verse.text)
                     .font(.system(textStyle, design: .serif))
                     .lineSpacing(6)
+                    // Deep navy ink rather than black (cream in dark mode).
+                    .foregroundStyle(.brand)
 
-                Text(verse.reference)
-                    .font(.subheadline.weight(.medium))
-                    .foregroundStyle(.secondaryText)
+                VStack(spacing: 14) {
+                    Ornament()
+                    SmallCapsLabel(verse.reference)
+                }
+                .padding(.top, 6)
             }
             // VoiceOver reads the reference, then the verse, as one item.
             .accessibilityElement(children: .ignore)

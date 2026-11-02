@@ -47,8 +47,11 @@ private extension String {
 struct ChapterTitle: Hashable, Sendable {
     let id: ChapterID
     let bookName: String
+    /// "Chapter" or "Section" (Doctrine and Covenants).
+    let label: String
+
     /// "Chapter 31" or "Section 76".
-    let heading: String
+    var heading: String { "\(label) \(id.chapter)" }
 }
 
 extension ScriptureLibrary {
@@ -77,7 +80,7 @@ extension ScriptureLibrary {
 
                 if firstVerse.id.verse == 1 {
                     let chapterID = ChapterID(bookID: book.id, chapter: chapter)
-                    append(.chapterTitle(ChapterTitle(id: chapterID, bookName: book.name, heading: book.heading(chapter: chapter))))
+                    append(.chapterTitle(ChapterTitle(id: chapterID, bookName: book.name, label: book.chapterWord)))
                 }
                 verses.forEach { append(.verse($0)) }
             }

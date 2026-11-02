@@ -32,6 +32,7 @@ extension View {
     }
 
     /// A small rounded pill, like the week picker and streak badge at the top of the feed.
+    /// No shadow: the accessibility check reads a soft shadow as a blurry, low-contrast edge.
     func pillBackground() -> some View {
         background(Color.cardBackground, in: Capsule())
             .overlay(Capsule().strokeBorder(Color.hairline))
@@ -52,6 +53,43 @@ struct SectionHeader: View {
             .tracking(1.5)
             .textCase(.uppercase)
             .foregroundStyle(.secondaryText)
+    }
+}
+
+/// A small, spaced-out, all-caps label used inside the feed, like "JEREMIAH 31:2" under a verse
+/// or "CHAPTER" above a chapter number. Same look as `SectionHeader`, but a touch larger.
+struct SmallCapsLabel: View {
+    let text: String
+
+    init(_ text: String) {
+        self.text = text
+    }
+
+    var body: some View {
+        Text(text)
+            .font(.footnote.weight(.semibold))
+            .tracking(3)
+            .textCase(.uppercase)
+            .foregroundStyle(.secondaryText)
+    }
+}
+
+/// A thin line with a small diamond in the middle, in faint navy (faint cream in dark mode).
+/// Decoration only: VoiceOver skips it.
+struct Ornament: View {
+    var body: some View {
+        HStack(spacing: 10) {
+            line
+            Image(systemName: "diamond.fill")
+                .font(.system(size: 6))
+            line
+        }
+        .foregroundStyle(Color.brand.opacity(0.35))
+        .accessibilityHidden(true)
+    }
+
+    private var line: some View {
+        Rectangle().frame(width: 32, height: 1)
     }
 }
 

@@ -39,7 +39,7 @@ final class VersedUITests: XCTestCase {
         app.staticTexts["Book of Mormon"].tap()
         app.staticTexts["Alma"].tap()
         app.buttons["Alma 32"].tap()
-        XCTAssertTrue(app.staticTexts["Chapter 32"].waitForExistence(timeout: 5))
+        XCTAssertTrue(chapterHeading("Alma, Chapter 32").waitForExistence(timeout: 5))
         app.swipeUp()
         app.swipeUp()
         XCTAssertTrue(app.staticTexts["Alma 32:2"].waitForExistence(timeout: 5))
@@ -55,7 +55,7 @@ final class VersedUITests: XCTestCase {
         // Continue Reading reopens the feed on that verse.
         continueReading.tap()
         XCTAssertTrue(app.staticTexts["Alma 32:2"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.staticTexts["Chapter 32"].isHittable)
+        XCTAssertFalse(chapterHeading("Alma, Chapter 32").isHittable)
 
         // The saved verse shows on the Saved tab.
         app.tabBars.buttons["Saved"].tap()
@@ -101,8 +101,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(weekHeading(containing: "Week Of").exists)
         XCTAssertTrue(app.buttons["Week of Nov 9–15"].exists)
         app.swipeUp()
-        XCTAssertTrue(app.staticTexts["Daniel"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["Chapter 1"].exists)
+        XCTAssertTrue(chapterHeading("Daniel, Chapter 1").waitForExistence(timeout: 5))
 
         // Browse's This Week row goes back to this week.
         app.tabBars.buttons["Browse"].tap()
@@ -153,7 +152,7 @@ final class VersedUITests: XCTestCase {
         // Swiping up from its opening card starts at the beginning again.
         XCTAssertTrue(weekHeading(containing: "John 1").waitForExistence(timeout: 5))
         app.swipeUp()
-        XCTAssertTrue(app.staticTexts["Chapter 1"].waitForExistence(timeout: 5))
+        XCTAssertTrue(chapterHeading("John, Chapter 1").waitForExistence(timeout: 5))
         app.swipeUp()
         XCTAssertTrue(app.staticTexts["John 1:1"].waitForExistence(timeout: 5))
     }
@@ -303,6 +302,11 @@ final class VersedUITests: XCTestCase {
     static let independenceNotice = "This Week follows the Come, Follow Me reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."
 
     /// The week intro card's heading, which VoiceOver reads as one line: "This Week, Daniel 1–7, Nov 9–15".
+    /// A chapter's title card, which VoiceOver reads as one heading: "Alma, Chapter 32".
+    private func chapterHeading(_ label: String) -> XCUIElement {
+        app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", label)).firstMatch
+    }
+
     private func weekHeading(containing text: String) -> XCUIElement {
         let match = NSPredicate(format: "label CONTAINS %@", text)
         return onScreen(app.descendants(matching: .any).matching(match).matching(NSPredicate(format: "label CONTAINS %@", ",")))
