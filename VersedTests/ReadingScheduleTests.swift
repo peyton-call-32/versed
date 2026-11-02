@@ -81,6 +81,19 @@ struct ReadingScheduleTests {
         #expect(schedule.weeks.first { $0.id == "2026-12-21" }?.displayLabel == "Christmas")
     }
 
+    @Test func splitsTheReadingIntoOneLinePerBook() {
+        func books(_ label: String) -> [String] {
+            let week = schedule.weeks.first { $0.label == label }!
+            // Drop the invisible word joiners so the expectations are easy to read.
+            return week.displayLabelByBook.map { $0.replacingOccurrences(of: "\u{2060}", with: "") }
+        }
+        #expect(books("Jeremiah 31–33; 36–39; Lamentations 1; 3") == ["Jeremiah 31–33; 36–39", "Lamentations 1; 3"])
+        #expect(books("Ezekiel 1–3; 33–34; 36–37; 47") == ["Ezekiel 1–3; 33–34; 36–37; 47"])
+        #expect(books("Micah; Nahum; Habakkuk; Zephaniah") == ["Micah", "Nahum", "Habakkuk", "Zephaniah"])
+        #expect(books("Joseph Smith—Matthew 1; Matthew 24–25; Mark 12–13; Luke 21")
+            == ["Joseph Smith—Matthew 1", "Matthew 24–25", "Mark 12–13", "Luke 21"])
+    }
+
         @Test func groupsWeeksByCourse() {
         #expect(schedule.weeks.first { $0.id == "2026-12-21" }?.course == "Old Testament 2026")
         // The New Testament year starts the Monday after Christmas 2026.

@@ -24,8 +24,15 @@ struct WeekIntroCard: View {
                     .textCase(.uppercase)
                     .foregroundStyle(.tint)
 
-                Text(week.displayLabel)
-                    .font(.system(.largeTitle, design: .serif, weight: .semibold))
+                // One book per line, so it's easy to see where each book starts. At the
+                // standard text size every book fits on one line; a longer one wraps but
+                // stays grouped, with a little more space before the next book.
+                VStack(spacing: 6) {
+                    ForEach(week.displayLabelByBook, id: \.self) { book in
+                        Text(book)
+                    }
+                }
+                .font(.system(.title, design: .serif, weight: .semibold))
             }
             // VoiceOver reads "This Week, Daniel 1–7, Nov 9–15" as one heading
             // ("Week Of, …" for other weeks), in normal case rather than capitals.

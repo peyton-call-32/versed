@@ -24,6 +24,24 @@ struct ReadingWeek: Identifiable, Hashable, Sendable {
         label.replacingOccurrences(of: #"(\d)–(\d)"#, with: "$1\u{2060}–\u{2060}$2", options: .regularExpression)
     }
 
+    /// The reading with each book on its own line, for the week's opening card:
+    /// "Jeremiah 31–33; 36–39" then "Lamentations 1; 3".
+    ///
+    /// A part after a semicolon starts a new book when it begins with a name ("Lamentations 1",
+    /// "1 Kings 3"); bare chapters ("36–39") stay with the book before them.
+    var displayLabelByBook: [String] {
+        var books: [String] = []
+        for part in displayLabel.components(separatedBy: "; ") {
+            let startsWithBookName = part.range(of: #"^(\d )?\p{L}"#, options: .regularExpression) != nil
+            if startsWithBookName || books.isEmpty {
+                books.append(part)
+            } else {
+                books[books.count - 1] += "; " + part
+            }
+        }
+        return books
+    }
+
     func contains(_ date: Date) -> Bool {
         start <= date && date < end
     }
