@@ -67,8 +67,8 @@ App Store release (in progress; 16–19 done). Peyton's Apple Developer account 
 21. Walk Peyton through uploading a build to TestFlight and testing it on their own iPhone before submitting for review.
 
 ## Testing
-- While working on a change, only run the tests related to that change.
-- Run the full test suite once at the end, before saving to GitHub.
+- After a change, only run the tests related to it, then save to GitHub.
+- Don't run the full test suite unless Peyton asks for it, or right before uploading a build to TestFlight or the App Store.
 - Only take largest-text-size and dark-mode screenshots when a change affects how a screen looks, not for every change.
 
 ## Rules
