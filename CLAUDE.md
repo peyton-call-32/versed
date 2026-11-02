@@ -66,6 +66,11 @@ App Store release (in progress; 16–19 done). Peyton's Apple Developer account 
 20. Walk Peyton through App Store Connect: create the app, fill in the listing, answer the privacy questions ("Data Not Collected"), and set the age rating.
 21. Walk Peyton through uploading a build to TestFlight and testing it on their own iPhone before submitting for review.
 
+## Testing
+- While working on a change, only run the tests related to that change.
+- Run the full test suite once at the end, before saving to GitHub.
+- Only take largest-text-size and dark-mode screenshots when a change affects how a screen looks, not for every change.
+
 ## Rules
 - Scripture text must come from a public-domain source. The current text is from github.com/bcbooks/scriptures-json (public domain). Don't use the Church's 2013 edition text, footnotes, or chapter summaries without a license.
 - Don't use the Church's name, logo, or "Come, Follow Me" as the app name, and nothing should look like an official Church app.
