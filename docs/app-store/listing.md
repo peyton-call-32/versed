@@ -79,4 +79,4 @@ In `screenshots/`, 1320 × 2868 (the 6.9-inch iPhone size Apple requires; it shr
 3. `3-browse.png`: Browse, with Continue Reading
 4. `4-saved.png`: the Saved tab
 
-To retake them: run `testReadingSavingBrowsingAndResuming` on the iPhone 18 Pro Max simulator, with the status bar set to 9:41 and a full battery (`xcrun simctl status_bar booted override --time 9:41 --batteryState charged --batteryLevel 100 --cellularMode active --cellularBars 4 --wifiBars 3`). The This Week shot is the test's `week-intro` attachment..
+To retake them: run `testReadingSavingBrowsingAndResuming` on the iPhone 18 Pro Max simulator, with the status bar set to 9:41 and a full battery (`xcrun simctl status_bar booted override --time 9:41 --batteryState charged --batteryLevel 100 --cellularMode active --cellularBars 4 --wifiBars 3`). The This Week shot is the test's `week-intro` attachment.
