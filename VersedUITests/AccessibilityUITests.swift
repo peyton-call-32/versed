@@ -64,13 +64,11 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
         let top = weekMenu.frame.maxY
 
-        // The week's intro card: its heading and lesson button sit between the menu and the swipe hint.
+        // The week's intro card: its heading sits between the menu and the swipe hint.
         let heading = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "Jeremiah 31–33")).firstMatch
-        let lessonLink = app.links["Open This Week's Lesson"].firstMatch
         let hint = app.staticTexts["Swipe up to read"]
         attachScreenshot(named: "largest-text-intro")
         assertFits(heading, between: top, and: hint.frame.minY, "week heading")
-        assertFits(lessonLink, between: top, and: hint.frame.minY, "lesson button")
 
         // The chapter title card, then the first verse. SwiftUI reports the verse's frame as the
         // whole page, so the verse itself is checked by eye in this screenshot; the heart button
@@ -93,6 +91,27 @@ final class AccessibilityUITests: XCTestCase {
         app.swipeUp()
         app.swipeUp()
         attachScreenshot(named: "largest-text-settings")
+    }
+
+    /// The closing card after a week's last verse, with the lesson link: it passes the audit
+    /// in light and dark mode, and at the largest text size the link still sits above the tab bar.
+    func testWeekEndCardInLightDarkAndLargestText() throws {
+        let largest = ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"]
+        for (name, appearance, arguments) in [("light", "Light", [String]()), ("dark", "Dark", []), ("largest text", "Match Phone", largest)] {
+            launch(extraArguments: arguments)
+            setAppearance(appearance)
+            app.openWeekFromSchedule(XCUIApplication.shortWeek.row)
+            app.swipeToEndOfWeek(pageCount: XCUIApplication.shortWeek.pageCount)
+
+            let lessonLink = onScreen(app.links.matching(identifier: "Open This Week's Lesson"))
+            XCTAssertTrue(lessonLink.waitForExistence(timeout: 5))
+            try audit("week end card, \(name)", except: Self.shrinkToFitIssues)
+            let top = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Week of")).firstMatch.frame.maxY
+            assertFits(lessonLink, between: top, and: app.tabBars.firstMatch.frame.minY, "lesson button, \(name)")
+        }
+        // Relaunch so Browse is back on its main list, then put the default back.
+        launch()
+        setAppearance("Match Phone")
     }
 
     /// At the largest accessibility text size, each intro page starts at the top and,

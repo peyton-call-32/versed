@@ -17,6 +17,13 @@ struct ReadingWeek: Identifiable, Hashable, Sendable {
     /// if the schedule has no link for the week. Opens in Gospel Library when it's installed.
     let lessonURL: URL
 
+    /// The reading for showing on screen. Ranges like "36–37" never split across two lines:
+    /// an invisible "word joiner" on each side of the dash tells iOS not to break there.
+    /// VoiceOver labels use `label` instead, so nothing extra is read aloud.
+    var displayLabel: String {
+        label.replacingOccurrences(of: #"(\d)–(\d)"#, with: "$1\u{2060}–\u{2060}$2", options: .regularExpression)
+    }
+
     func contains(_ date: Date) -> Bool {
         start <= date && date < end
     }

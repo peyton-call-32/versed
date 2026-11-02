@@ -60,6 +60,8 @@ struct FeedView: View {
         switch item {
         case .weekIntro(let week):
             WeekIntroCard(week: week)
+        case .weekEnd(let week):
+            WeekEndCard(week: week)
         case .chapterTitle(let title):
             ChapterTitleCard(title: title)
         case .verse(let verse):

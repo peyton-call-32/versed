@@ -17,10 +17,10 @@ final class VersedUITests: XCTestCase {
     }
 
     func testReadingSavingBrowsingAndResuming() {
-        // This Week opens on the week's intro card.
+        // This Week opens on the week's intro card, which keeps the lesson link for the end.
         XCTAssertTrue(app.staticTexts["Swipe up to read"].waitForExistence(timeout: 10))
-        XCTAssertTrue(onScreen(app.links.matching(identifier: "Open This Week's Lesson")).isHittable)
-        attachScreenshot(named: "week-intro-with-lesson-link")
+        XCTAssertFalse(onScreen(app.links.matching(identifier: "Open This Week's Lesson")).isHittable)
+        attachScreenshot(named: "week-intro")
 
         // Swipe past the intro and the chapter title card to the second verse, then save it.
         app.swipeUp()
@@ -109,6 +109,18 @@ final class VersedUITests: XCTestCase {
         app.navigationBars.buttons.firstMatch.tap()
         app.collectionViews.buttons["This Week"].tap()
         XCTAssertTrue(app.buttons["Week of Oct 26 – Nov 1"].waitForExistence(timeout: 5))
+    }
+
+    func testLessonLinkWaitsAtTheEndOfTheReading() {
+        app.openWeekFromSchedule(XCUIApplication.shortWeek.row)
+        XCTAssertTrue(weekHeading(containing: "John 1").waitForExistence(timeout: 5))
+        app.swipeToEndOfWeek(pageCount: XCUIApplication.shortWeek.pageCount)
+
+        // After John 1:51, the closing card shows the lesson link.
+        let end = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "End of the Week's Reading, John 1")).firstMatch
+        XCTAssertTrue(end.waitForExistence(timeout: 5))
+        XCTAssertTrue(onScreen(app.links.matching(identifier: "Open This Week's Lesson")).isHittable)
+        attachScreenshot(named: "week-end-with-lesson-link")
     }
 
     func testChoosingAnAppearance() {

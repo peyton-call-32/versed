@@ -59,7 +59,7 @@ struct ReadingScheduleView: View {
                     Text(week.dateRangeText())
                         .font(.headline)
                         .foregroundStyle(Color.primary)
-                    Text(week.label)
+                    Text(week.displayLabel)
                         .font(.subheadline)
                         .foregroundStyle(.secondaryText)
                 }

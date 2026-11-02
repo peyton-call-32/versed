@@ -23,7 +23,7 @@ struct WeeklyReadingView: View {
         if let week = selectedWeek {
             let positions = ReadingPositionStore(context: modelContext)
             FeedView(
-                items: [.weekIntro(week)] + library.feedItems(for: week.passages),
+                items: [.weekIntro(week)] + library.feedItems(for: week.passages) + [.weekEnd(week)],
                 startingAt: positions.position(in: .week(week.id)),
                 onPageChange: { positions.setPosition($0, in: .week(week.id)) }
             )
@@ -70,7 +70,7 @@ struct WeeklyReadingView: View {
                     } else {
                         Text(dates)
                     }
-                    Text(week.label)
+                    Text(week.displayLabel)
                 }
             }
         } label: {

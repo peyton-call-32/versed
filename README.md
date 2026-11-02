@@ -20,7 +20,7 @@ Built for Latter-day Saints who want to read a little every day. It opens straig
 - Daily reading streak
 - Light or dark mode, or match the phone (Settings, from the gear on the Browse tab)
 - An optional daily reminder at a time you pick (off until you turn it on)
-- A button on each week's intro card that opens the official lesson, in Gospel Library if it's installed
+- A button at the end of each week's reading that opens the official lesson, in Gospel Library if it's installed
 - A short first-time intro, which can be replayed from Settings
 - Works with larger text sizes, VoiceOver, and Reduce Motion
 

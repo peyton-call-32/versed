@@ -72,7 +72,16 @@ struct ReadingScheduleTests {
         #expect(dates("2026-12-28") == "Dec 28 – Jan 3")
     }
 
-    @Test func groupsWeeksByCourse() {
+    @Test func chapterRangesStayOnOneLine() {
+        let week = schedule.weeks.first { $0.id == "2026-11-02" }!
+        #expect(week.label == "Ezekiel 1–3; 33–34; 36–37; 47")
+        // A word joiner on each side of every dash keeps "36–37" from splitting across lines.
+        #expect(week.displayLabel == "Ezekiel 1\u{2060}–\u{2060}3; 33\u{2060}–\u{2060}34; 36\u{2060}–\u{2060}37; 47")
+        // Names without number ranges are left alone.
+        #expect(schedule.weeks.first { $0.id == "2026-12-21" }?.displayLabel == "Christmas")
+    }
+
+        @Test func groupsWeeksByCourse() {
         #expect(schedule.weeks.first { $0.id == "2026-12-21" }?.course == "Old Testament 2026")
         // The New Testament year starts the Monday after Christmas 2026.
         #expect(schedule.weeks.first { $0.id == "2026-12-28" }?.course == "New Testament 2027")

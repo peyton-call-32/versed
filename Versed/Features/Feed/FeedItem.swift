@@ -4,6 +4,8 @@ import Foundation
 enum FeedItem: Identifiable, Hashable, Sendable {
     /// The opening card for a week's reading.
     case weekIntro(ReadingWeek)
+    /// The closing card after a week's last verse, with the link to the week's lesson.
+    case weekEnd(ReadingWeek)
     /// The card shown before the first verse of a chapter.
     case chapterTitle(ChapterTitle)
     case verse(Verse)
@@ -11,6 +13,7 @@ enum FeedItem: Identifiable, Hashable, Sendable {
     var id: String {
         switch self {
         case .weekIntro(let week): "week:\(week.id)"
+        case .weekEnd(let week): "week-end:\(week.id)"
         case .chapterTitle(let title): "chapter:\(title.id.rawValue)"
         case .verse(let verse): Self.id(for: verse.id)
         }
@@ -26,7 +29,7 @@ enum FeedItem: Identifiable, Hashable, Sendable {
         id.dropPrefix("verse:").flatMap(VerseID.init(rawValue:))
     }
 
-    /// The chapter a page belongs to, read back from its feed ID, or `nil` for a week intro.
+    /// The chapter a page belongs to, read back from its feed ID, or `nil` for a week's opening or closing card.
     static func chapterID(of id: ID) -> ChapterID? {
         if let verseID = verseID(of: id) {
             return ChapterID(bookID: verseID.bookID, chapter: verseID.chapter)

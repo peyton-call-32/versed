@@ -78,7 +78,7 @@ struct BrowseView: View {
                             Text("This Week")
                                 .font(.system(.title3, design: .serif))
                                 .foregroundStyle(Color.primary)
-                            Text(week.label)
+                            Text(week.displayLabel)
                                 .font(.subheadline)
                                 .foregroundStyle(.secondaryText)
                             Text(week.dateRangeText())

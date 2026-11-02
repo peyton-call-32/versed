@@ -70,7 +70,7 @@ First release: read scripture one verse at a time, with this week's reading read
 - **Age rating:** 4+ (answer "None" or "No" to every question)
 
 ## Notes for the App Review team
-Versed has no account or login, and works offline. To see the main features: swipe up on This Week to read, double-tap a verse to save it, then open the Saved tab. The gear on the Browse tab opens Settings. "Open This Week's Lesson" links to the matching public lesson page on churchofjesuschrist.org. The scripture text is public domain (github.com/bcbooks/scriptures-json).
+Versed has no account or login, and works offline. To see the main features: swipe up on This Week to read, double-tap a verse to save it, then open the Saved tab. The gear on the Browse tab opens Settings. "Open This Week's Lesson", on the card after each week's last verse, links to the matching public lesson page on churchofjesuschrist.org. The scripture text is public domain (github.com/bcbooks/scriptures-json).
 
 ## Screenshots
 In `screenshots/`, 1320 × 2868 (the 6.9-inch iPhone size Apple requires; it shrinks them for smaller iPhones). Upload in this order:
