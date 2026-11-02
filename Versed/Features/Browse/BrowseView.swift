@@ -106,9 +106,6 @@ struct BrowseView: View {
                 }
             }
             .accessibilityIdentifier("Reading Schedule")
-        } header: {
-            Text("Weekly Reading")
-                .foregroundStyle(.secondaryText)
         }
     }
 
