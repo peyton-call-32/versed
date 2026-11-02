@@ -3,11 +3,7 @@
 Everything to paste into App Store Connect. Character limits are Apple's; counts are in brackets.
 
 ## App name [30 max]
-**Versed: Daily Scripture** [23]
-
-App names must be unique on the App Store. If it's taken, try:
-- Versed: One Verse at a Time [27]
-- Versed Scripture [16]
+**Versed: Scripture Feed** [22] (already created in App Store Connect)
 
 ## Subtitle [30 max]
 Scripture, one verse at a time [30]
