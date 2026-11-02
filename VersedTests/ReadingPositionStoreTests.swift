@@ -28,4 +28,19 @@ struct ReadingPositionStoreTests {
         #expect(store.position(in: .week("2026-11-02")) == "verse:dan.8.1")
         #expect(store.position(in: .browse) == "verse:john.3.16")
     }
+
+    @Test func clearingForgetsOnlyThatFeed() {
+        store.setPosition("verse:dan.1.8", in: .week("2026-10-26"))
+        store.setPosition("verse:john.3.16", in: .browse)
+
+        store.clearPosition(in: .week("2026-10-26"))
+
+        #expect(store.position(in: .week("2026-10-26")) == nil)
+        #expect(store.position(in: .browse) == "verse:john.3.16")
+    }
+
+    @Test func positionsAreWrittenRightAway() {
+        store.setPosition("verse:dan.1.8", in: .week("2026-10-26"))
+        #expect(!container.mainContext.hasChanges)
+    }
 }

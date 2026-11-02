@@ -2,7 +2,9 @@ import SwiftData
 import SwiftUI
 
 /// Opens to this week's reading, with a menu at the top to pick another week.
-/// Each week reopens on the page where the reader left off.
+///
+/// Each week opens on its opening card. Swiping up goes to the page where the reader left off,
+/// or to the start once the week has been read to its closing card.
 struct WeeklyReadingView: View {
     let library: ScriptureLibrary
     let schedule: ReadingSchedule
@@ -25,7 +27,15 @@ struct WeeklyReadingView: View {
             FeedView(
                 items: [.weekIntro(week)] + library.feedItems(for: week.passages) + [.weekEnd(week)],
                 startingAt: positions.position(in: .week(week.id)),
-                onPageChange: { positions.setPosition($0, in: .week(week.id)) }
+                showsFirstPageOnResume: true,
+                onPageChange: { itemID in
+                    // Reaching the closing card finishes the week, so next time it starts over.
+                    if itemID == FeedItem.weekEnd(week).id {
+                        positions.clearPosition(in: .week(week.id))
+                    } else {
+                        positions.setPosition(itemID, in: .week(week.id))
+                    }
+                }
             )
             // A new identity per week reopens each week's feed at its own saved page.
             .id(week.id)

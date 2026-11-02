@@ -2,6 +2,8 @@ import Foundation
 import SwiftData
 
 /// Remembers the last page read in each feed. Each feed keeps one position.
+///
+/// Changes are written to the phone right away, so the place isn't lost if the app is closed.
 @MainActor
 struct ReadingPositionStore {
     let context: ModelContext
@@ -18,6 +20,14 @@ struct ReadingPositionStore {
         } else {
             context.insert(ReadingPosition(feed: feed, itemID: itemID))
         }
+        try? context.save()
+    }
+
+    /// Forgets the place in `feed`, so it opens at the start next time.
+    func clearPosition(in feed: ReadingFeed) {
+        guard let existing = record(for: feed) else { return }
+        context.delete(existing)
+        try? context.save()
     }
 
     private func record(for feed: ReadingFeed) -> ReadingPosition? {

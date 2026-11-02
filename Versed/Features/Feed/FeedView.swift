@@ -8,16 +8,32 @@ struct FeedView: View {
     let onPageChange: (FeedItem.ID) -> Void
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Query private var savedVerses: [SavedVerse]
 
     /// The ID of the page currently on screen.
     @State private var currentItemID: FeedItem.ID?
+    /// Whether the first page is laid over the feed, hiding the page it opened on.
+    @State private var showsCover: Bool
+    /// How far the cover has been dragged up, while the reader swipes it away.
+    @State private var coverOffset: CGFloat = 0
 
-    /// - Parameter itemID: The page to open on, or `nil` for the first page. Ignored if it isn't in `items`.
-    init(items: [FeedItem], startingAt itemID: FeedItem.ID? = nil, onPageChange: @escaping (FeedItem.ID) -> Void = { _ in }) {
+    /// - Parameters:
+    ///   - itemID: The page to open on, or `nil` for the first page. Ignored if it isn't in `items`.
+    ///   - showsFirstPageOnResume: When opening partway through, show the first page anyway, laid over
+    ///     the feed. The feed is already at `itemID` underneath, so swiping the cover away lands there
+    ///     without a glimpse of the pages in between.
+    init(
+        items: [FeedItem],
+        startingAt itemID: FeedItem.ID? = nil,
+        showsFirstPageOnResume: Bool = false,
+        onPageChange: @escaping (FeedItem.ID) -> Void = { _ in }
+    ) {
         self.items = items
         self.onPageChange = onPageChange
-        _currentItemID = State(initialValue: items.contains { $0.id == itemID } ? itemID : nil)
+        let start = items.contains { $0.id == itemID } ? itemID : nil
+        _currentItemID = State(initialValue: start)
+        _showsCover = State(initialValue: showsFirstPageOnResume && start != nil && start != items.first?.id)
     }
 
     var body: some View {
@@ -45,14 +61,74 @@ struct FeedView: View {
         .onChange(of: currentItemID) { _, itemID in
             guard let itemID else { return }
             onPageChange(itemID)
-            // Swiping to a verse counts toward today's reading; just opening the feed doesn't.
-            if FeedItem.verseID(of: itemID) != nil {
-                ReadingStreakStore(context: modelContext).recordReading()
-            }
+            recordReading(on: itemID)
         }
         .scrollIndicators(.hidden)
         .background(Color(.systemBackground))
         .ignoresSafeArea()
+        .accessibilityHidden(showsCover)
+        .overlay {
+            if showsCover, let first = items.first {
+                cover(showing: first)
+            }
+        }
+    }
+
+    /// Swiping to a verse counts toward today's reading; just opening the feed doesn't.
+    private func recordReading(on itemID: FeedItem.ID) {
+        if FeedItem.verseID(of: itemID) != nil {
+            ReadingStreakStore(context: modelContext).recordReading()
+        }
+    }
+
+    /// The first page, laid over the feed. It follows the reader's finger up, like a page of the
+    /// feed, and a swipe past a third of the screen sends it off the top.
+    private func cover(showing item: FeedItem) -> some View {
+        GeometryReader { geometry in
+            let height = geometry.size.height
+            page(for: item, savedIDs: [])
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .overlay(alignment: .bottom) { swipeHint }
+                .background(Color(.systemBackground))
+                .contentShape(Rectangle())
+                .offset(y: coverOffset)
+                .gesture(
+                    DragGesture(minimumDistance: 10)
+                        .onChanged { drag in
+                            coverOffset = min(0, drag.translation.height)
+                        }
+                        .onEnded { drag in
+                            if min(drag.translation.height, drag.predictedEndTranslation.height) < -height / 3 {
+                                dismissCover(height: height)
+                            } else {
+                                withAnimation(reduceMotion ? nil : .snappy) { coverOffset = 0 }
+                            }
+                        }
+                )
+                // VoiceOver reads the card and hint together, and a three-finger swipe or the
+                // "Continue Reading" action moves on, since the drag can't be used with VoiceOver on.
+                .accessibilityElement(children: .combine)
+                .accessibilityAction(named: "Continue Reading") { dismissCover(height: height) }
+                .accessibilityScrollAction { _ in dismissCover(height: height) }
+        }
+        .ignoresSafeArea()
+    }
+
+    /// Slides the cover off the top (or just removes it with Reduce Motion on), showing the page underneath.
+    private func dismissCover(height: CGFloat) {
+        let finish = {
+            showsCover = false
+            if let currentItemID { recordReading(on: currentItemID) }
+        }
+        if reduceMotion {
+            finish()
+        } else {
+            withAnimation(.easeOut(duration: 0.25)) {
+                coverOffset = -height
+            } completion: {
+                finish()
+            }
+        }
     }
 
     @ViewBuilder

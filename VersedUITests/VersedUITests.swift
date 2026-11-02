@@ -111,6 +111,53 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Week of Oct 26 – Nov 1"].waitForExistence(timeout: 5))
     }
 
+    func testThisWeekPicksUpWhereTheReaderStopped() {
+        // Read to Jeremiah 31:3: past the opening card, the chapter title, and two verses.
+        XCTAssertTrue(app.staticTexts["Swipe up to read"].waitForExistence(timeout: 10))
+        for _ in 1...4 { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].waitForExistence(timeout: 5))
+
+        // Leave for another week, then come back to this one.
+        app.openWeekFromSchedule("Nov 9–15, Daniel 1–7")
+        XCTAssertTrue(weekHeading(containing: "Daniel 1–7").waitForExistence(timeout: 5))
+        app.tabBars.buttons["Browse"].tap()
+        app.navigationBars.buttons.firstMatch.tap()
+        app.collectionViews.buttons["This Week"].tap()
+
+        // It opens on the This Week card, with the saved verse hidden underneath.
+        XCTAssertTrue(weekHeading(containing: "This Week").waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Jeremiah 31:3"].exists)
+
+        // One swipe up lands on the saved verse, and the verses before it are still there.
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].isHittable)
+        app.swipeDown()
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:2"].waitForExistence(timeout: 5))
+    }
+
+    func testFinishedWeekStartsOverFromTheFirstVerse() {
+        app.openWeekFromSchedule(XCUIApplication.shortWeek.row)
+        XCTAssertTrue(weekHeading(containing: "John 1").waitForExistence(timeout: 5))
+        app.swipeToEndOfWeek(pageCount: XCUIApplication.shortWeek.pageCount)
+        let end = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "End of the Week's Reading, John 1")).firstMatch
+        XCTAssertTrue(end.waitForExistence(timeout: 5))
+
+        // Go to this week, then reopen the finished week.
+        app.tabBars.buttons["Browse"].tap()
+        app.navigationBars.buttons.firstMatch.tap()
+        app.collectionViews.buttons["This Week"].tap()
+        XCTAssertTrue(weekHeading(containing: "This Week").waitForExistence(timeout: 5))
+        app.openWeekFromSchedule(XCUIApplication.shortWeek.row)
+
+        // Swiping up from its opening card starts at the beginning again.
+        XCTAssertTrue(weekHeading(containing: "John 1").waitForExistence(timeout: 5))
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["Chapter 1"].waitForExistence(timeout: 5))
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["John 1:1"].waitForExistence(timeout: 5))
+    }
+
     func testLessonLinkWaitsAtTheEndOfTheReading() {
         app.openWeekFromSchedule(XCUIApplication.shortWeek.row)
         XCTAssertTrue(weekHeading(containing: "John 1").waitForExistence(timeout: 5))
