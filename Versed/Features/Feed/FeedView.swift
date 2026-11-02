@@ -82,10 +82,12 @@ struct FeedView: View {
     }
 
     /// The first page, laid over the feed. It follows the reader's finger up, like a page of the
-    /// feed, and a swipe past a third of the screen sends it off the top.
+    /// feed, and a swipe past a third of the screen sends it off the top. The distance is capped
+    /// so the same swipe works in a tall window, like an iPhone app running on an iPad.
     private func cover(showing item: FeedItem) -> some View {
         GeometryReader { geometry in
             let height = geometry.size.height
+            let dismissDistance = min(height / 3, 250)
             page(for: item, savedIDs: [])
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .overlay(alignment: .bottom) { swipeHint }
@@ -98,7 +100,7 @@ struct FeedView: View {
                             coverOffset = min(0, drag.translation.height)
                         }
                         .onEnded { drag in
-                            if min(drag.translation.height, drag.predictedEndTranslation.height) < -height / 3 {
+                            if min(drag.translation.height, drag.predictedEndTranslation.height) < -dismissDistance {
                                 dismissCover(height: height)
                             } else {
                                 withAnimation(reduceMotion ? nil : .snappy) { coverOffset = 0 }

@@ -3,7 +3,7 @@ import SwiftUI
 /// The About part of Settings: who made the app, where the text comes from, privacy, and contact.
 struct AboutSection: View {
     static let scriptureSourceURL = URL(string: "https://github.com/bcbooks/scriptures-json")!
-    static let privacyPolicyURL = URL(string: "https://github.com/peyton-call-32/versed/blob/main/PRIVACY.md")!
+    static let privacyPolicyURL = URL(string: "https://peyton-call-32.github.io/versed/privacy/")!
     static let contactEmail = "peytoncall32@icloud.com"
 
     /// The only place the app names the Come, Follow Me schedule: a plain description, never a name

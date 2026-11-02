@@ -9,7 +9,7 @@ struct AboutSectionTests {
     }
 
     @Test func linksPointToTheRightPlaces() {
-        #expect(AboutSection.privacyPolicyURL.lastPathComponent == "PRIVACY.md")
+        #expect(AboutSection.privacyPolicyURL.absoluteString == "https://peyton-call-32.github.io/versed/privacy/")
         #expect(AboutSection.scriptureSourceURL.path() == "/bcbooks/scriptures-json")
     }
 
