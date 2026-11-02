@@ -6,6 +6,13 @@ extension XCUIApplication {
     /// (opening card, chapter title, verses, closing card).
     static let shortWeek = (row: "Jan 11–17, John 1", pageCount: 54)
 
+    /// Opens Settings from the gear at the top of This Week.
+    func openSettings() {
+        tabBars.buttons["This Week"].tap()
+        buttons["Settings"].tap()
+        XCTAssertTrue(navigationBars["Settings"].waitForExistence(timeout: 5))
+    }
+
     /// Opens a week from Browse > Reading Schedule, by its row's VoiceOver label ("Nov 9–15, Daniel 1–7").
     func openWeekFromSchedule(_ rowLabel: String) {
         tabBars.buttons["Browse"].tap()

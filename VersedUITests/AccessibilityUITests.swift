@@ -37,8 +37,7 @@ final class AccessibilityUITests: XCTestCase {
             app.tabBars.buttons["Saved"].tap()
             try audit("Saved, \(appearance)")
 
-            app.tabBars.buttons["Browse"].tap()
-            app.navigationBars["Browse"].buttons["Settings"].tap()
+            app.openSettings()
             try audit("Settings, \(appearance)")
             app.buttons["Done"].tap()
         }
@@ -64,6 +63,11 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
         let top = weekMenu.frame.maxY
 
+        // The header row still fits: the menu and Settings sit side by side without overlapping.
+        let settings = app.buttons["Settings"]
+        XCTAssertLessThanOrEqual(weekMenu.frame.maxX, settings.frame.minX, "week menu runs into Settings")
+        XCTAssertLessThanOrEqual(settings.frame.maxX, app.frame.maxX, "Settings runs off the screen")
+
         // The week's intro card: its heading sits between the menu and the swipe hint.
         let heading = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "Jeremiah 31–33")).firstMatch
         let hint = app.staticTexts["Swipe up to read"]
@@ -87,7 +91,7 @@ final class AccessibilityUITests: XCTestCase {
         attachScreenshot(named: "largest-text-reading-schedule")
         app.navigationBars.buttons.firstMatch.tap()
 
-        app.navigationBars["Browse"].buttons["Settings"].tap()
+        app.openSettings()
         app.swipeUp()
         app.swipeUp()
         attachScreenshot(named: "largest-text-settings")
@@ -172,8 +176,7 @@ final class AccessibilityUITests: XCTestCase {
     }
 
     private func setAppearance(_ option: String) {
-        app.tabBars.buttons["Browse"].tap()
-        app.navigationBars["Browse"].buttons["Settings"].tap()
+        app.openSettings()
         app.buttons[option].tap()
         app.buttons["Done"].tap()
     }

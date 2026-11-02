@@ -170,10 +170,34 @@ final class VersedUITests: XCTestCase {
         attachScreenshot(named: "week-end-with-lesson-link")
     }
 
-    func testChoosingAnAppearance() {
-        app.tabBars.buttons["Browse"].tap()
-        app.navigationBars["Browse"].buttons["Settings"].tap()
+    func testThisWeekHeader() {
+        // Streak on the left, week menu in the middle, Settings on the right.
+        // With no streak yet, the menu is still centered on the screen.
+        let weekMenu = app.buttons["Week of Oct 26 – Nov 1"]
+        let settings = app.buttons["Settings"]
+        XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
+        XCTAssertFalse(app.staticTexts["1-day reading streak"].exists)
+        XCTAssertEqual(weekMenu.frame.midX, app.frame.midX, accuracy: 1)
+        XCTAssertGreaterThan(settings.frame.minX, weekMenu.frame.maxX)
+
+        // Once the streak shows, the menu stays put and nothing overlaps.
+        for _ in 1...3 { app.swipeUp() }
+        let streak = app.staticTexts["1-day reading streak"]
+        XCTAssertTrue(streak.waitForExistence(timeout: 5))
+        XCTAssertEqual(weekMenu.frame.midX, app.frame.midX, accuracy: 1)
+        XCTAssertLessThan(streak.frame.maxX, weekMenu.frame.minX)
+        attachScreenshot(named: "this-week-header")
+
+        // Settings lives only here now, not on Browse.
+        settings.tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
+        app.buttons["Done"].tap()
+        app.tabBars.buttons["Browse"].tap()
+        XCTAssertFalse(app.navigationBars["Browse"].buttons["Settings"].exists)
+    }
+
+    func testChoosingAnAppearance() {
+        app.openSettings()
 
         // Try each choice, ending back on the default so the simulator is left as it was.
         for option in ["Dark", "Light", "Match Phone"] {
@@ -183,12 +207,11 @@ final class VersedUITests: XCTestCase {
         }
 
         app.buttons["Done"].tap()
-        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Settings"].waitForExistence(timeout: 5))
     }
 
     func testAppearanceIsRememberedAfterRelaunch() {
-        app.tabBars.buttons["Browse"].tap()
-        app.navigationBars["Browse"].buttons["Settings"].tap()
+        app.openSettings()
         app.buttons["Dark"].tap()
 
         app.terminate()
@@ -197,8 +220,7 @@ final class VersedUITests: XCTestCase {
         attachScreenshot(named: "appearance-after-relaunch")
 
         // Put the default back so the simulator is left as it was.
-        app.tabBars.buttons["Browse"].tap()
-        app.navigationBars["Browse"].buttons["Settings"].tap()
+        app.openSettings()
         XCTAssertTrue(app.buttons["Dark"].isSelected)
         app.buttons["Match Phone"].tap()
     }
@@ -230,8 +252,7 @@ final class VersedUITests: XCTestCase {
         app.buttons["Skip"].tap()
         XCTAssertTrue(app.staticTexts["Swipe up to read"].waitForExistence(timeout: 5))
 
-        app.tabBars.buttons["Browse"].tap()
-        app.navigationBars["Browse"].buttons["Settings"].tap()
+        app.openSettings()
         app.buttons["Show Intro Again"].tap()
         XCTAssertTrue(app.staticTexts["Swipe Up for the Next Verse"].waitForExistence(timeout: 5))
         app.buttons["Skip"].tap()
@@ -239,8 +260,7 @@ final class VersedUITests: XCTestCase {
     }
 
     func testAboutSection() {
-        app.tabBars.buttons["Browse"].tap()
-        app.navigationBars["Browse"].buttons["Settings"].tap()
+        app.openSettings()
         app.swipeUp()
 
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@", Self.independenceNotice)).firstMatch.waitForExistence(timeout: 5))
@@ -253,8 +273,7 @@ final class VersedUITests: XCTestCase {
     }
 
     func testTurningOnTheDailyReminder() {
-        app.tabBars.buttons["Browse"].tap()
-        app.navigationBars["Browse"].buttons["Settings"].tap()
+        app.openSettings()
 
         let reminder = app.switches["Daily reminder"]
         // Settings stay on the simulator between runs, so start from off in case a run stopped early.
