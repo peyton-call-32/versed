@@ -66,6 +66,10 @@ App Store release (in progress; 16–19 done). Peyton's Apple Developer account 
 20. Walk Peyton through App Store Connect: create the app, fill in the listing, answer the privacy questions ("Data Not Collected"), and set the age rating.
 21. Walk Peyton through uploading a build to TestFlight and testing it on their own iPhone before submitting for review.
 
+## Design
+- Navy and cream, matching the app icon: off-white page with white cards in light mode, deep navy with lighter navy cards in dark mode.
+- All colors and button styles live in `Versed/Features/Shared/AppColors.swift` (`.brand`, `.appBackground`, `.cardBackground`, `.secondaryText`, `.hairline`, `SectionHeader`, `.pillBackground()`, `.versedListStyle()`, `.primary`/`.secondary` button styles). New screens use these. Don't add new colors or one-off styles; if something's missing, add it there.
+
 ## Testing
 - After a change, only run the tests related to it, then save to GitHub.
 - Don't run the full test suite unless Peyton asks for it, or right before uploading a build to TestFlight or the App Store.
