@@ -12,8 +12,6 @@ struct WeeklyReadingView: View {
 
     @Environment(\.modelContext) private var modelContext
     @State private var showsSettings = false
-    /// The Settings button matches the height of the week and streak pills as text grows.
-    @ScaledMetric(relativeTo: .subheadline) private var settingsButtonSize = 36.0
 
     /// The week picked from the menu or the schedule in Browse, or `nil` to show this week.
     @Binding var selectedWeekID: ReadingWeek.ID?
@@ -61,29 +59,12 @@ struct WeeklyReadingView: View {
                 .headerRowSlot(.leading)
             weekMenu(selected: selected)
                 .headerRowSlot(.middle)
-            settingsButton
+            SettingsButton { showsSettings = true }
                 .headerRowSlot(.trailing)
         }
         .padding(.horizontal, 16)
         .padding(.top, 8)
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-    }
-
-    private var settingsButton: some View {
-        Button {
-            showsSettings = true
-        } label: {
-            Label("Settings", systemImage: "gearshape")
-                .labelStyle(.iconOnly)
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.primary)
-                .frame(width: settingsButtonSize, height: settingsButtonSize)
-                .pillBackground()
-                // A slightly bigger tap area than the circle, so it's easy to hit.
-                .frame(minWidth: 44, minHeight: 44)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
     }
 
     private func weekMenu(selected: ReadingWeek) -> some View {
@@ -117,6 +98,30 @@ struct WeeklyReadingView: View {
         .tint(.primary)
         .accessibilityLabel("Week of \(selected.dateRangeText())")
         .accessibilityHint("Picks another week's reading.")
+    }
+}
+
+/// The gear at the right of the header. It's its own view so its size follows the header's
+/// text size cap; a size worked out in `WeeklyReadingView` itself would ignore the cap.
+private struct SettingsButton: View {
+    let action: () -> Void
+
+    /// Matches the height of the week and streak pills as text grows.
+    @ScaledMetric(relativeTo: .subheadline) private var size = 36.0
+
+    var body: some View {
+        Button(action: action) {
+            Label("Settings", systemImage: "gearshape")
+                .labelStyle(.iconOnly)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.primary)
+                .frame(width: size, height: size)
+                .pillBackground()
+                // A slightly bigger tap area than the circle, so it's easy to hit.
+                .frame(minWidth: 44, minHeight: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
     }
 }
 
