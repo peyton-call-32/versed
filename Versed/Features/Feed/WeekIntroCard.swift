@@ -1,33 +1,36 @@
 import SwiftUI
 
-/// The first page of a week's reading: "This Week", what's being read, and the dates.
+/// The first page of a week's reading: a small label with the dates, then the chapters.
 /// The link to the week's lesson waits at the end of the reading, on `WeekEndCard`.
 struct WeekIntroCard: View {
     let week: ReadingWeek
 
-    /// "This Week" for the current week, and "Week Of" for any other week picked from the schedule.
-    private var heading: String {
-        week.contains(VersedApp.today) ? "This Week" : "Week Of"
+    private var isThisWeek: Bool {
+        week.contains(VersedApp.today)
+    }
+
+    /// "This Week · Nov 2–8" for the current week, or just "Nov 9–15" for any other week.
+    /// Shown in small capitals.
+    private var label: String {
+        isThisWeek ? "This Week · \(week.dateRangeText())" : week.dateRangeText()
     }
 
     var body: some View {
         ShrinkToFit {
-            VStack(spacing: 16) {
-                Text(heading.uppercased())
+            VStack(spacing: 14) {
+                Text(label)
                     .font(.footnote.weight(.semibold))
                     .tracking(1.5)
+                    .textCase(.uppercase)
                     .foregroundStyle(.tint)
 
                 Text(week.displayLabel)
                     .font(.system(.largeTitle, design: .serif, weight: .semibold))
-
-                Text(week.dateRangeText())
-                    .font(.title3)
-                    .foregroundStyle(.secondaryText)
             }
-            // VoiceOver reads "This Week, Daniel 1–7, Nov 9–15" as one heading.
+            // VoiceOver reads "This Week, Daniel 1–7, Nov 9–15" as one heading
+            // ("Week Of, …" for other weeks), in normal case rather than capitals.
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("\(heading), \(week.label), \(week.dateRangeText())")
+            .accessibilityLabel("\(isThisWeek ? "This Week" : "Week Of"), \(week.label), \(week.dateRangeText())")
             .accessibilityAddTraits(.isHeader)
         }
         .multilineTextAlignment(.center)
