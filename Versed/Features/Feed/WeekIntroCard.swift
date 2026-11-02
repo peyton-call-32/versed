@@ -24,17 +24,25 @@ struct WeekIntroCard: View {
                     .textCase(.uppercase)
                     .foregroundStyle(.tint)
 
-                // Each book on its own: the name, then its chapters in a smaller, lighter line.
+                // Each book on its own: the name, then each chapter range in its own pill,
+                // so separate sections ("1–3", "33–34") are easy to tell apart.
                 // More space between books than within one, so each pair reads as a group.
-                VStack(spacing: 18) {
+                VStack(spacing: 24) {
                     ForEach(Array(week.readingByBook.enumerated()), id: \.offset) { _, book in
-                        VStack(spacing: 4) {
+                        VStack(spacing: 12) {
                             Text(book.name)
                                 .font(.system(.title, design: .serif, weight: .semibold))
                             if !book.chapters.isEmpty {
-                                Text(book.chapters.joined(separator: " · "))
-                                    .font(.title3)
-                                    .foregroundStyle(.secondaryText)
+                                CenteredFlowLayout(spacing: 8, rowSpacing: 8) {
+                                    ForEach(book.chapters, id: \.self) { chapters in
+                                        Text(chapters)
+                                            .font(.title3.weight(.medium))
+                                            .monospacedDigit()
+                                            .padding(.vertical, 6)
+                                            .padding(.horizontal, 14)
+                                            .pillBackground()
+                                    }
+                                }
                             }
                         }
                     }
