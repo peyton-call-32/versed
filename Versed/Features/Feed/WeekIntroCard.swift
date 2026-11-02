@@ -24,25 +24,17 @@ struct WeekIntroCard: View {
                     .textCase(.uppercase)
                     .foregroundStyle(.tint)
 
-                // Each book on its own: the name, then each chapter range in its own pill,
-                // so separate sections ("1–3", "33–34") are easy to tell apart.
-                // More space between books than within one, so each pair reads as a group.
+                // Each book on its own: the name, then its chapter sections in the same light
+                // navy serif as the chapter card's number. More space between books than within
+                // one, so each name and its chapters read as a group.
                 VStack(spacing: 24) {
                     ForEach(Array(week.readingByBook.enumerated()), id: \.offset) { _, book in
-                        VStack(spacing: 12) {
+                        VStack(spacing: 10) {
                             Text(book.name)
                                 .font(.system(.title, design: .serif, weight: .semibold))
+                                .foregroundStyle(.brand)
                             if !book.chapters.isEmpty {
-                                CenteredFlowLayout(spacing: 8, rowSpacing: 8) {
-                                    ForEach(book.chapters, id: \.self) { chapters in
-                                        Text(chapters)
-                                            .font(.title3.weight(.medium))
-                                            .monospacedDigit()
-                                            .padding(.vertical, 6)
-                                            .padding(.horizontal, 14)
-                                            .pillBackground()
-                                    }
-                                }
+                                ChapterSections(sections: book.chapters)
                             }
                         }
                     }
@@ -59,6 +51,35 @@ struct WeekIntroCard: View {
         .padding(.top, FeedInsets.top)
         .padding(.bottom, FeedInsets.bottom)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+}
+
+/// A book's chapter sections, such as "1–3 ◆ 33–34 ◆ 36–37 ◆ 47", with a small diamond
+/// between each so they're easy to tell apart. When they don't fit on one line (at large
+/// text sizes), each section gets its own line instead.
+private struct ChapterSections: View {
+    let sections: [String]
+
+    var body: some View {
+        ViewThatFits(in: .horizontal) {
+            HStack(spacing: 12) {
+                ForEach(Array(sections.enumerated()), id: \.offset) { index, section in
+                    if index > 0 { OrnamentDiamond() }
+                    sectionText(section)
+                }
+            }
+            VStack(spacing: 4) {
+                ForEach(sections, id: \.self) { sectionText($0) }
+            }
+        }
+    }
+
+    private func sectionText(_ section: String) -> some View {
+        Text(section)
+            .font(.system(.title2, design: .serif, weight: .light))
+            .monospacedDigit()
+            .foregroundStyle(.brand)
+            .fixedSize()
     }
 }
 

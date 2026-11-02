@@ -80,16 +80,27 @@ struct Ornament: View {
     var body: some View {
         HStack(spacing: 10) {
             line
-            Image(systemName: "diamond.fill")
-                .font(.system(size: 6))
+            OrnamentDiamond()
             line
         }
-        .foregroundStyle(Color.brand.opacity(0.35))
         .accessibilityHidden(true)
     }
 
     private var line: some View {
-        Rectangle().frame(width: 32, height: 1)
+        Rectangle()
+            .frame(width: 32, height: 1)
+            .foregroundStyle(Color.brand.opacity(0.35))
+    }
+}
+
+/// The small faint diamond from `Ornament`, on its own. Also used between chapter sections
+/// on the week card ("1–3 ◆ 33–34"). Decoration only: VoiceOver skips it.
+struct OrnamentDiamond: View {
+    var body: some View {
+        Image(systemName: "diamond.fill")
+            .font(.system(size: 6))
+            .foregroundStyle(Color.brand.opacity(0.35))
+            .accessibilityHidden(true)
     }
 }
 

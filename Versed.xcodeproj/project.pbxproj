@@ -14,7 +14,6 @@
 		10622328D65835CBD1481645 /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FBF410BFC7EE8EBFD096C42 /* Appearance.swift */; };
 		11AC7430904C6190BCD5BB7C /* AboutSectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D404920C6AE2EB9B87176B /* AboutSectionTests.swift */; };
 		13E2D3099B8B938E2BEAA8E9 /* SavedVerseStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA06D5EF2CB15AC34E1A3EFF /* SavedVerseStoreTests.swift */; };
-		14B4A15D4F68DD1E9E1A185D /* CenteredFlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA92AEBEF1FB9D1248A12B2C /* CenteredFlowLayout.swift */; };
 		1A0BED16B6E50C0750F8CDA3 /* Passage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B826123DF4DBC78B96F6E9F /* Passage.swift */; };
 		1C46E45D0E1C6EFDA5892C3D /* ReadingStreakTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644798A7072B0E37BBDBC5BA /* ReadingStreakTests.swift */; };
 		20171DC2A48F9F0625F89580 /* WindowAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B175E88BEA14206E0BADF984 /* WindowAppearance.swift */; };
@@ -147,7 +146,6 @@
 		F1EB2C7EC8FB7F3867B32AA8 /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
 		F367AD189CDD67681D7C30AE /* DisclosureChevron.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosureChevron.swift; sourceTree = "<group>"; };
 		FA4C7D46EC0C61DEC2F531CA /* IntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroView.swift; sourceTree = "<group>"; };
-		FA92AEBEF1FB9D1248A12B2C /* CenteredFlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CenteredFlowLayout.swift; sourceTree = "<group>"; };
 		FF7355C4C79664759661A138 /* AppColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppColors.swift; sourceTree = "<group>"; };
 		FFB8B59562485E208AE29875 /* StreakBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakBadge.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -359,7 +357,6 @@
 			isa = PBXGroup;
 			children = (
 				FF7355C4C79664759661A138 /* AppColors.swift */,
-				FA92AEBEF1FB9D1248A12B2C /* CenteredFlowLayout.swift */,
 				F367AD189CDD67681D7C30AE /* DisclosureChevron.swift */,
 				D623E81C88B3290F8EE72F76 /* ShrinkToFit.swift */,
 			);
@@ -506,7 +503,6 @@
 				10622328D65835CBD1481645 /* Appearance.swift in Sources */,
 				08CA5D42E3C0961373496DA5 /* BookListView.swift in Sources */,
 				5B00C94309BC08409D52FA86 /* BrowseView.swift in Sources */,
-				14B4A15D4F68DD1E9E1A185D /* CenteredFlowLayout.swift in Sources */,
 				DE282F9E7C82E44C485EAD78 /* ChapterGridView.swift in Sources */,
 				4E375507DDF74B2DA3DC3264 /* ChapterID.swift in Sources */,
 				660A9466C0A477EE521C97E6 /* ChapterReadingView.swift in Sources */,
