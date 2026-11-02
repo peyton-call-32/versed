@@ -17,12 +17,16 @@ struct SavedVersesView: View {
                         systemImage: "heart",
                         description: Text("Double-tap a verse or tap its heart to save it here.")
                     )
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                    .background(Color.appBackground)
                 } else {
                     List(savedVerses) { saved in
                         if let id = saved.verse, let verse = library.verse(id) {
                             row(for: verse)
+                                .listRowBackground(Color.cardBackground)
                         }
                     }
+                    .versedListStyle()
                 }
             }
             .navigationTitle("Saved")

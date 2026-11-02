@@ -1,5 +1,6 @@
 import SwiftData
 import SwiftUI
+import UIKit
 
 @main
 struct VersedApp: App {
@@ -21,10 +22,25 @@ struct VersedApp: App {
     }
 
     init() {
+        Self.useSerifScreenTitles()
+
         // UI tests skip the first-time intro unless they launch with `-show-intro` to test it.
         if Self.isUITesting {
             let showsIntro = ProcessInfo.processInfo.arguments.contains("-show-intro")
             UserDefaults.standard.set(!showsIntro, forKey: IntroView.hasSeenKey)
+        }
+    }
+
+    /// Screen titles like "Browse" and "Saved" use the same serif typeface as the verses.
+    private static func useSerifScreenTitles() {
+        let navigationBar = UINavigationBar.appearance()
+        if let large = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .largeTitle)
+            .withDesign(.serif)?.withSymbolicTraits(.traitBold) {
+            navigationBar.largeTitleTextAttributes = [.font: UIFont(descriptor: large, size: 0)]
+        }
+        if let inline = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .headline)
+            .withDesign(.serif) {
+            navigationBar.titleTextAttributes = [.font: UIFont(descriptor: inline, size: 0)]
         }
     }
 

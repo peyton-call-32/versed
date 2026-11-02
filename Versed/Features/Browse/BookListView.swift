@@ -16,7 +16,9 @@ struct BookListView: View {
                         .monospacedDigit()
                 }
             }
+            .listRowBackground(Color.cardBackground)
         }
+        .versedListStyle()
         .navigationTitle(volume.title)
     }
 

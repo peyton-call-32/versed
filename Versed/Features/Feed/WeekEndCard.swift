@@ -30,7 +30,7 @@ struct WeekEndCard: View {
                 Link(destination: week.lessonURL) {
                     Label("Open This Week's Lesson", systemImage: "arrow.up.right.square")
                 }
-                .buttonStyle(.bordered)
+                .buttonStyle(.secondary)
                 .padding(.top, 8)
                 .accessibilityHint("Opens the lesson in Gospel Library or Safari.")
             }

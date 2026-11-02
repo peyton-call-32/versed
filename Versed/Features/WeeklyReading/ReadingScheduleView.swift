@@ -25,14 +25,17 @@ struct ReadingScheduleView: View {
         ScrollViewReader { proxy in
             List {
                 ForEach(courses, id: \.name) { course in
-                    Section(course.name) {
+                    Section {
                         ForEach(course.weeks) { week in
                             row(for: week, isThisWeek: week.id == thisWeekID)
                                 .id(week.id)
                         }
+                    } header: {
+                        SectionHeader(course.name)
                     }
                 }
             }
+            .versedListStyle()
             .navigationTitle("Reading Schedule")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
@@ -68,7 +71,7 @@ struct ReadingScheduleView: View {
             }
             .padding(.vertical, 2)
         }
-        .listRowBackground(isThisWeek ? Color.accentColor.opacity(0.12) : nil)
+        .listRowBackground(isThisWeek ? Color.brand.opacity(0.1) : Color.cardBackground)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(isThisWeek ? "This week, " : "")\(week.dateRangeText()), \(week.label)")
         .accessibilityAddTraits(isThisWeek ? .isSelected : [])

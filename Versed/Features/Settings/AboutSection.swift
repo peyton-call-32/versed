@@ -36,11 +36,12 @@ struct AboutSection: View {
 
             LabeledContent("Version", value: Self.versionText())
         } header: {
-            Text("About")
+            SectionHeader("About")
         } footer: {
             Text("Scripture text is in the public domain. Versed collects no data: everything stays on your phone, with no accounts, ads, or tracking.")
                 .foregroundStyle(.secondaryText)
         }
+        .listRowBackground(Color.cardBackground)
     }
 }
 

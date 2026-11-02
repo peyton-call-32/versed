@@ -93,8 +93,10 @@ struct WeeklyReadingView: View {
             .foregroundStyle(.primary)
             .padding(.horizontal, 14)
             .padding(.vertical, 8)
-            .background(.regularMaterial, in: Capsule())
+            .pillBackground()
         }
+        // Plain ink, not the accent color, so the pill stays quiet like the streak badge.
+        .tint(.primary)
         .accessibilityLabel("Week of \(selected.dateRangeText())")
         .accessibilityHint("Picks another week's reading.")
     }

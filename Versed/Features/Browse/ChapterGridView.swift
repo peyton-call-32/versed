@@ -18,7 +18,8 @@ struct ChapterGridView: View {
                             .font(.body.weight(.medium))
                             .monospacedDigit()
                             .frame(maxWidth: .infinity, minHeight: cellSize)
-                            .background(.fill.tertiary, in: RoundedRectangle(cornerRadius: 12))
+                            .background(Color.cardBackground, in: RoundedRectangle(cornerRadius: 12))
+                            .overlay(RoundedRectangle(cornerRadius: 12).strokeBorder(Color.hairline))
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel(book.reference(chapter: chapter))
@@ -26,6 +27,7 @@ struct ChapterGridView: View {
             }
             .padding()
         }
+        .background(Color.appBackground)
         .navigationTitle(book.name)
     }
 }

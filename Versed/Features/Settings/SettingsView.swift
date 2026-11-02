@@ -17,7 +17,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Appearance") {
+                Section {
                     Picker("Appearance", selection: $appearance) {
                         ForEach(Appearance.allCases) { option in
                             Text(option.label).tag(option)
@@ -25,16 +25,24 @@ struct SettingsView: View {
                     }
                     .pickerStyle(.segmented)
                     .labelsHidden()
+                } header: {
+                    SectionHeader("Appearance")
                 }
+                .listRowBackground(Color.cardBackground)
 
                 reminderSection
 
-                Section("Help") {
+                Section {
                     Button("Show Intro Again") { showsIntro = true }
+                } header: {
+                    SectionHeader("Help")
                 }
+                .listRowBackground(Color.cardBackground)
 
                 AboutSection()
             }
+            .versedListStyle()
+            .tint(Color.brand)
             .navigationTitle("Settings")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -69,13 +77,14 @@ struct SettingsView: View {
                 }
             }
         } header: {
-            Text("Daily Reminder")
+            SectionHeader("Daily Reminder")
         } footer: {
             Text(notificationsBlocked
                  ? "Notifications for Versed are turned off on this iPhone."
                  : "A gentle note once a day. Nothing leaves your phone.")
                 .foregroundStyle(.secondaryText)
         }
+        .listRowBackground(Color.cardBackground)
     }
 
     /// The on/off switch. Turning it on asks iOS for permission and schedules the reminder.

@@ -64,7 +64,7 @@ struct FeedView: View {
             recordReading(on: itemID)
         }
         .scrollIndicators(.hidden)
-        .background(Color(.systemBackground))
+        .background(Color.appBackground)
         .ignoresSafeArea()
         .accessibilityHidden(showsCover)
         .overlay {
@@ -91,7 +91,7 @@ struct FeedView: View {
             page(for: item, savedIDs: [])
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .overlay(alignment: .bottom) { swipeHint }
-                .background(Color(.systemBackground))
+                .background(Color.appBackground)
                 .contentShape(Rectangle())
                 .offset(y: coverOffset)
                 .gesture(

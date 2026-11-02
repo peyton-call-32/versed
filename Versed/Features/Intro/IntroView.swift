@@ -70,7 +70,8 @@ struct IntroView: View {
                     .dynamicTypeSize(...DynamicTypeSize.accessibility2)
             }
         }
-        .background(Color(.systemBackground))
+        .background(Color.appBackground)
+        .tint(Color.brand)
     }
 
     /// One page, centered when it fits. At the largest text sizes it scrolls instead,
@@ -142,10 +143,7 @@ struct IntroView: View {
                 Text("Remind Me Daily at \(DailyReminder.date(minuteOfDay: reminderMinuteOfDay).formatted(date: .omitted, time: .shortened))")
                     .frame(maxWidth: .infinity)
             }
-            .buttonStyle(.borderedProminent)
-            .controlSize(.large)
-            // A darker blue than the dark-mode accent, so the white label stays easy to read.
-            .tint(Color("ProminentButton"))
+            .buttonStyle(.primary)
 
             Button("Not Now", action: onFinish)
                 .controlSize(.large)
@@ -169,9 +167,7 @@ struct IntroView: View {
             Text("Next")
                 .frame(maxWidth: .infinity)
         }
-        .buttonStyle(.borderedProminent)
-        .controlSize(.large)
-        .tint(Color("ProminentButton"))
+        .buttonStyle(.primary)
     }
 
     /// Asks for permission and schedules the reminder. If the reader says no to

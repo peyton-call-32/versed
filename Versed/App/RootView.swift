@@ -52,6 +52,7 @@ struct RootView: View {
                 ProgressView()
             }
         }
+        .tint(Color.brand)
         .windowAppearance(appearance)
         .task {
             content = await Task.detached {

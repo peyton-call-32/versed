@@ -18,7 +18,7 @@ struct StreakBadge: View {
             .font(.subheadline.weight(.semibold))
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
-            .background(.regularMaterial, in: Capsule())
+            .pillBackground()
             .accessibilityLabel("\(streak)-day reading streak")
         }
     }

@@ -29,12 +29,15 @@ struct BrowseView: View {
                 weeklyReadingSection
 
                 if let itemID = lastBrowsePosition, let reference = reference(for: itemID) {
-                    Section("Continue Reading") {
+                    Section {
                         NavigationLink(value: Route.resume(itemID)) {
                             Label(reference, systemImage: "bookmark")
                                 .font(.system(.body, design: .serif))
                         }
+                    } header: {
+                        SectionHeader("Continue Reading")
                     }
+                    .listRowBackground(Color.cardBackground)
                 }
 
                 Section {
@@ -50,8 +53,12 @@ struct BrowseView: View {
                             .padding(.vertical, 4)
                         }
                     }
+                } header: {
+                    SectionHeader("Scriptures")
                 }
+                .listRowBackground(Color.cardBackground)
             }
+            .versedListStyle()
             .navigationTitle("Browse")
             .toolbar {
                 Button("Settings", systemImage: "gearshape") {
@@ -107,6 +114,7 @@ struct BrowseView: View {
             }
             .accessibilityIdentifier("Reading Schedule")
         }
+        .listRowBackground(Color.cardBackground)
     }
 
     @ViewBuilder
