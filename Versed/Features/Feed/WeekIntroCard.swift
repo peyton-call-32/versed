@@ -1,29 +1,34 @@
 import SwiftUI
 
-/// The first page of a week's reading: the dates, the lesson title, what's being read,
-/// and a link to the week's official lesson.
+/// The first page of a week's reading: what's being read, the dates, and a link to the
+/// week's official lesson.
 struct WeekIntroCard: View {
     let week: ReadingWeek
+
+    /// "This Week" for the current week, and "Week Of" for any other week picked from the schedule.
+    private var heading: String {
+        week.contains(VersedApp.today) ? "This Week" : "Week Of"
+    }
 
     var body: some View {
         ShrinkToFit {
             VStack(spacing: 16) {
                 VStack(spacing: 16) {
-                    Text(week.dateRangeText.uppercased())
+                    Text(heading.uppercased())
                         .font(.footnote.weight(.semibold))
                         .tracking(1.5)
                         .foregroundStyle(.tint)
-                        // Read as "Oct 26 – Nov 1", not spelled out in capitals.
-                        .accessibilityLabel(week.dateRangeText)
-
-                    Text(week.title)
-                        .font(.system(.largeTitle, design: .serif, weight: .semibold))
+                        // Read as "This Week", not spelled out in capitals.
+                        .accessibilityLabel(heading)
 
                     Text(week.label)
+                        .font(.system(.largeTitle, design: .serif, weight: .semibold))
+
+                    Text(week.dateRangeText())
                         .font(.title3)
                         .foregroundStyle(.secondaryText)
                 }
-                // VoiceOver reads the dates, title, and reading as one heading.
+                // VoiceOver reads "This Week", the reading, and the dates as one heading.
                 .accessibilityElement(children: .combine)
                 .accessibilityAddTraits(.isHeader)
 

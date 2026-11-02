@@ -2,15 +2,17 @@ import XCTest
 
 /// Walks through the whole app the way a reader would, and captures the README screenshots on the way.
 ///
-/// The app launches with `-ui-testing`, so it starts with nothing saved and never touches real data.
+/// The app launches with `-ui-testing`, so it starts with nothing saved and never touches real data,
+/// and with `-today` set to a fixed date, so "this week" is always the week of Oct 26, 2026.
 /// To save the screenshots as files, run the tests with `TEST_RUNNER_SCREENSHOT_DIR` set to a folder.
 @MainActor
 final class VersedUITests: XCTestCase {
     let app = XCUIApplication()
+    static let launchArguments = ["-ui-testing", "-today", "2026-10-28"]
 
     override func setUp() async throws {
         continueAfterFailure = false
-        app.launchArguments = ["-ui-testing"]
+        app.launchArguments = Self.launchArguments
         app.launch()
     }
 
@@ -62,6 +64,53 @@ final class VersedUITests: XCTestCase {
         saveScreenshot(named: "3-saved")
     }
 
+    func testBrowseShowsThisWeekAtTheTop() {
+        // Start on another week, so going back to this week is a real change.
+        app.tabBars.buttons["Browse"].tap()
+        let thisWeek = app.collectionViews.buttons["This Week"]
+        XCTAssertTrue(thisWeek.waitForExistence(timeout: 5))
+        let schedule = app.collectionViews.buttons["Reading Schedule"]
+        let firstBook = app.staticTexts["Old Testament"]
+        XCTAssertLessThan(thisWeek.frame.maxY, schedule.frame.maxY, "This Week comes first")
+        XCTAssertLessThan(schedule.frame.maxY, firstBook.frame.minY, "Both come before the books")
+        XCTAssertTrue(thisWeek.label.contains("Jeremiah 31–33"), "Got: \(thisWeek.label)")
+        attachScreenshot(named: "browse-weekly-reading")
+
+        // This Week opens this week's reading on the This Week tab.
+        thisWeek.tap()
+        XCTAssertTrue(app.tabBars.buttons["This Week"].isSelected)
+        XCTAssertTrue(weekHeading(containing: "Jeremiah 31–33").waitForExistence(timeout: 5))
+        XCTAssertTrue(weekHeading(containing: "This Week").exists)
+    }
+
+    func testOpeningAWeekFromTheReadingSchedule() {
+        app.tabBars.buttons["Browse"].tap()
+        app.collectionViews.buttons["Reading Schedule"].tap()
+        XCTAssertTrue(app.navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
+
+        // The current week is marked, and every week shows its dates and chapters.
+        let current = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "This week, Oct 26 – Nov 1")).firstMatch
+        XCTAssertTrue(current.waitForExistence(timeout: 5))
+        XCTAssertTrue(current.isSelected)
+        attachScreenshot(named: "reading-schedule")
+
+        // Tapping another week opens its chapters in the feed.
+        app.buttons["Nov 9–15, Daniel 1–7"].tap()
+        XCTAssertTrue(app.tabBars.buttons["This Week"].isSelected)
+        XCTAssertTrue(weekHeading(containing: "Daniel 1–7").waitForExistence(timeout: 5))
+        XCTAssertTrue(weekHeading(containing: "Week Of").exists)
+        XCTAssertTrue(app.buttons["Week of Nov 9–15"].exists)
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["Daniel"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Chapter 1"].exists)
+
+        // Browse's This Week row goes back to this week.
+        app.tabBars.buttons["Browse"].tap()
+        app.navigationBars.buttons.firstMatch.tap()
+        app.collectionViews.buttons["This Week"].tap()
+        XCTAssertTrue(app.buttons["Week of Oct 26 – Nov 1"].waitForExistence(timeout: 5))
+    }
+
     func testChoosingAnAppearance() {
         app.tabBars.buttons["Browse"].tap()
         app.navigationBars["Browse"].buttons["Settings"].tap()
@@ -105,6 +154,9 @@ final class VersedUITests: XCTestCase {
         app.buttons["Next"].tap()
         XCTAssertTrue(app.staticTexts["This Week's Reading, Ready"].waitForExistence(timeout: 5))
 
+        // The last page carries the one line that names the reading schedule.
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@", Self.independenceNotice)).firstMatch.exists)
+
         // The last page offers the reminder, with no Skip since Not Now does the same thing.
         XCTAssertTrue(app.buttons["Not Now"].exists)
         XCTAssertFalse(app.buttons["Skip"].exists)
@@ -132,7 +184,7 @@ final class VersedUITests: XCTestCase {
         app.navigationBars["Browse"].buttons["Settings"].tap()
         app.swipeUp()
 
-        XCTAssertTrue(app.staticTexts["Versed is an independent app. It is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@", Self.independenceNotice)).firstMatch.waitForExistence(timeout: 5))
         XCTAssertTrue(app.links["Privacy Policy"].exists || app.buttons["Privacy Policy"].exists)
         // The contact row is one tappable link, so the email may be its label or its value.
         let email = NSPredicate(format: "label CONTAINS %@ OR value CONTAINS %@", "peytoncall32@icloud.com", "peytoncall32@icloud.com")
@@ -170,10 +222,18 @@ final class VersedUITests: XCTestCase {
         XCTAssertFalse(app.buttons["Time Picker"].waitForExistence(timeout: 2))
     }
 
+    static let independenceNotice = "This Week follows the Come, Follow Me reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."
+
+    /// The week intro card's heading, which VoiceOver reads as one line: "This Week, Daniel 1–7, Nov 9–15".
+    private func weekHeading(containing text: String) -> XCUIElement {
+        let match = NSPredicate(format: "label CONTAINS %@", text)
+        return onScreen(app.descendants(matching: .any).matching(match).matching(NSPredicate(format: "label CONTAINS %@", ",")))
+    }
+
     /// Restarts the app, with or without the first-time intro.
     private func relaunch(showingIntro: Bool) {
         app.terminate()
-        app.launchArguments = ["-ui-testing"] + (showingIntro ? ["-show-intro"] : [])
+        app.launchArguments = Self.launchArguments + (showingIntro ? ["-show-intro"] : [])
         app.launch()
     }
 

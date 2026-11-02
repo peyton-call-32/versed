@@ -1,6 +1,6 @@
 import Foundation
 
-/// The Come, Follow Me weekly reading schedule, loaded from `Resources/Schedules`.
+/// The weekly reading schedule, loaded from `Resources/Schedules`.
 ///
 /// Each year is its own file named `schedule-YYYY.json`. To add a year, drop in a new file
 /// and rerun `xcodegen`; every schedule file in the app is loaded automatically.
@@ -14,7 +14,7 @@ struct ReadingSchedule: Sendable {
 
     /// The week to open the app to: the week containing `date`, or else the next week coming up,
     /// or else the most recent week.
-    func currentWeek(on date: Date = .now) -> ReadingWeek? {
+    func currentWeek(on date: Date = VersedApp.today) -> ReadingWeek? {
         weeks.first { $0.contains(date) }
             ?? weeks.first { $0.start > date }
             ?? weeks.last
@@ -41,7 +41,7 @@ struct ReadingSchedule: Sendable {
                 id: week.start,
                 start: start,
                 end: end,
-                title: week.title,
+                course: "\(file.course) \(file.year)",
                 label: week.label,
                 passages: week.readings,
                 lessonURL: week.lessonURL ?? file.manualURL
@@ -60,7 +60,6 @@ struct ReadingSchedule: Sendable {
     private struct ScheduleFile: Decodable {
         struct Week: Decodable {
             let start: String
-            let title: String
             let label: String
             let readings: [Passage]
             let lessonURL: URL?

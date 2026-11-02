@@ -1,6 +1,6 @@
 import Foundation
 
-/// One week of the Come, Follow Me schedule. Weeks run Monday through Sunday.
+/// One week of the weekly reading schedule. Weeks run Monday through Sunday.
 struct ReadingWeek: Identifiable, Hashable, Sendable {
     /// The Monday the week starts, as "yyyy-MM-dd". Stays the same forever, so it's safe to save.
     let id: String
@@ -8,7 +8,8 @@ struct ReadingWeek: Identifiable, Hashable, Sendable {
     let start: Date
     /// Midnight at the start of the following Monday.
     let end: Date
-    let title: String
+    /// The year's course, such as "New Testament 2027", for grouping weeks in the schedule.
+    let course: String
     /// The reading as the schedule prints it, such as "Daniel 1–7".
     let label: String
     let passages: [Passage]
@@ -20,10 +21,16 @@ struct ReadingWeek: Identifiable, Hashable, Sendable {
         start <= date && date < end
     }
 
-    /// "Oct 26 – Nov 1"
-    var dateRangeText: String {
+    /// "Nov 2–8", or "Nov 30 – Dec 6" when the week spans two months.
+    func dateRangeText(calendar: Calendar = .current) -> String {
         let lastDay = end.addingTimeInterval(-1)
-        let style = Date.FormatStyle.dateTime.month(.abbreviated).day()
-        return "\(start.formatted(style)) – \(lastDay.formatted(style))"
+        let month = Date.FormatStyle(calendar: calendar, timeZone: calendar.timeZone).month(.abbreviated)
+        let startText = "\(start.formatted(month)) \(calendar.component(.day, from: start))"
+        let lastDayNumber = calendar.component(.day, from: lastDay)
+
+        if calendar.isDate(start, equalTo: lastDay, toGranularity: .month) {
+            return "\(startText)–\(lastDayNumber)"
+        }
+        return "\(startText) – \(lastDay.formatted(month)) \(lastDayNumber)"
     }
 }

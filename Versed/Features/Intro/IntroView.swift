@@ -34,7 +34,7 @@ struct IntroView: View {
         Page(
             symbol: "calendar",
             title: "This Week's Reading, Ready",
-            message: "Versed opens to this week's reading. Tap the dates at the top to pick another week."
+            message: "Versed opens to this week's reading. Tap the dates at the top, or open Browse, to pick another week."
         ),
     ]
 
@@ -153,6 +153,11 @@ struct IntroView: View {
             Text("You can change this anytime in Settings.")
                 .font(.footnote)
                 .foregroundStyle(.secondaryText)
+
+            Text(AboutSection.independenceNotice)
+                .font(.footnote)
+                .foregroundStyle(.secondaryText)
+                .padding(.top, 16)
         }
     }
 

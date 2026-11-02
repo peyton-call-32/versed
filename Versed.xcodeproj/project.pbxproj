@@ -45,6 +45,7 @@
 		AE1B182DF7FEA42C8EE75E33 /* SavedVersesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C74541F86766C80DFEE1FCA3 /* SavedVersesView.swift */; };
 		AF0463D93EAC06DE873D427A /* DailyReminderScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBEF825008D931FCCAD00E5E /* DailyReminderScheduler.swift */; };
 		B10E380DB9C796E04D935EA4 /* dc.json in Resources */ = {isa = PBXBuildFile; fileRef = 23CA76384BCF373AA6F9C181 /* dc.json */; };
+		C0004DDE2E1A6B8409D8B7F2 /* ReadingScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EDCBCB019070745F69CD19 /* ReadingScheduleView.swift */; };
 		CAD3171439BCBCAD4342FC28 /* schedule-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = 319546785AD215381AF9D636 /* schedule-2026.json */; };
 		D49FE033F87B52185C586301 /* VerseCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7F1C178EEAD603E51F43BB /* VerseCard.swift */; };
 		D66514D669766A0B84F16CA8 /* ReadingScheduleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23EFF090F7F35C58683087F4 /* ReadingScheduleTests.swift */; };
@@ -53,6 +54,7 @@
 		DC8E1D3239E7B046CC9147FC /* ReadingPositionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E92E1693CB57EDD73F6A13F /* ReadingPositionStoreTests.swift */; };
 		DE282F9E7C82E44C485EAD78 /* ChapterGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3AE69B58E9941C9EF9F2A9 /* ChapterGridView.swift */; };
 		DF1D86282D3AC952052036EA /* AboutSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A3C337A7D07B3A52CD3742 /* AboutSection.swift */; };
+		E1CDEBF81BD5E0E4CC43D708 /* DisclosureChevron.swift in Sources */ = {isa = PBXBuildFile; fileRef = F367AD189CDD67681D7C30AE /* DisclosureChevron.swift */; };
 		ED9AF7AD0AA39B000CA2F364 /* FeedItemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36231AEE0A980899FB8E3D40 /* FeedItemTests.swift */; };
 		EF6B569AE42C38B6FEE132C7 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22901739A1100159786EF60C /* FeedView.swift */; };
 		F268165DC0FD5A4EE9D08DCD /* ScriptureLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B7899BDE47F6968F2FEE7AA /* ScriptureLibrary.swift */; };
@@ -128,6 +130,7 @@
 		C1DADDCC97BBDD5E5D0CBB07 /* DailyReminderTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyReminderTests.swift; sourceTree = "<group>"; };
 		C5A3C337A7D07B3A52CD3742 /* AboutSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutSection.swift; sourceTree = "<group>"; };
 		C74541F86766C80DFEE1FCA3 /* SavedVersesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedVersesView.swift; sourceTree = "<group>"; };
+		C7EDCBCB019070745F69CD19 /* ReadingScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingScheduleView.swift; sourceTree = "<group>"; };
 		CBEF825008D931FCCAD00E5E /* DailyReminderScheduler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyReminderScheduler.swift; sourceTree = "<group>"; };
 		CEA40A4489951383053903E2 /* VersedUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VersedUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		D56CF2440765D2BAF22899CD /* ReadingPositionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingPositionStore.swift; sourceTree = "<group>"; };
@@ -137,6 +140,7 @@
 		E7996FA7EC88EA0494273667 /* schedule-2027.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "schedule-2027.json"; sourceTree = "<group>"; };
 		F1ADF58D40B3A1EE961844D7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F1EB2C7EC8FB7F3867B32AA8 /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
+		F367AD189CDD67681D7C30AE /* DisclosureChevron.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosureChevron.swift; sourceTree = "<group>"; };
 		FA4C7D46EC0C61DEC2F531CA /* IntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroView.swift; sourceTree = "<group>"; };
 		FF7355C4C79664759661A138 /* AppColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppColors.swift; sourceTree = "<group>"; };
 		FFB8B59562485E208AE29875 /* StreakBadge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakBadge.swift; sourceTree = "<group>"; };
@@ -286,6 +290,7 @@
 		948E0B3669D482703F36CF82 /* WeeklyReading */ = {
 			isa = PBXGroup;
 			children = (
+				C7EDCBCB019070745F69CD19 /* ReadingScheduleView.swift */,
 				FFB8B59562485E208AE29875 /* StreakBadge.swift */,
 				9BA4DDF512F6B45AAA6FB607 /* WeeklyReadingView.swift */,
 			);
@@ -346,6 +351,7 @@
 			isa = PBXGroup;
 			children = (
 				FF7355C4C79664759661A138 /* AppColors.swift */,
+				F367AD189CDD67681D7C30AE /* DisclosureChevron.swift */,
 				D623E81C88B3290F8EE72F76 /* ShrinkToFit.swift */,
 			);
 			path = Shared;
@@ -496,6 +502,7 @@
 				F67BF50EEB281238F6C952ED /* ChapterTitleCard.swift in Sources */,
 				9B9286C3D538DAA61800893D /* DailyReminder.swift in Sources */,
 				AF0463D93EAC06DE873D427A /* DailyReminderScheduler.swift in Sources */,
+				E1CDEBF81BD5E0E4CC43D708 /* DisclosureChevron.swift in Sources */,
 				DBC26FB646523E8A0502135A /* FeedItem.swift in Sources */,
 				EF6B569AE42C38B6FEE132C7 /* FeedView.swift in Sources */,
 				29D2F59E6DCD1C13228C4D9C /* IntroView.swift in Sources */,
@@ -504,6 +511,7 @@
 				FB716C6D5A6ED519A635E0E5 /* ReadingPosition.swift in Sources */,
 				587687AF5339A3792B90B606 /* ReadingPositionStore.swift in Sources */,
 				FA40BBDDBC4F7FFB278A9270 /* ReadingSchedule.swift in Sources */,
+				C0004DDE2E1A6B8409D8B7F2 /* ReadingScheduleView.swift in Sources */,
 				7FC22A724782E37FEC89B5EE /* ReadingStreak.swift in Sources */,
 				764C6FEFD78229ED805883E4 /* ReadingWeek.swift in Sources */,
 				432957415B2508E79A88BB18 /* RootView.swift in Sources */,

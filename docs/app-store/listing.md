@@ -26,6 +26,7 @@ It's made for Latter-day Saints who want to read a little every day. Versed open
 READ
 • One verse per screen, with a title card at the start of each chapter
 • Opens to this week's reading, or pick any other week from the menu
+• See the full reading schedule, with each week's dates and chapters
 • Browse every book and chapter of the Old Testament, New Testament, Book of Mormon, Doctrine and Covenants, and Pearl of Great Price
 • Open each week's lesson in Gospel Library with one tap
 
@@ -51,7 +52,7 @@ Versed is an independent app. It is not made, approved, or endorsed by The Churc
 
 LDS,Book of Mormon,Bible,Doctrine and Covenants,Pearl of Great Price,KJV,devotional,study,gospel
 
-Left out on purpose: "Come Follow Me" and the Church's name, which are the Church's trademarks. Apple can reject keywords that use other people's trademarks.
+Left out on purpose: "Come Follow Me" and the Church's name, which are the Church's trademarks. Apple can reject keywords that use other people's trademarks. The listing never uses "Come, Follow Me" as a name; the app mentions it only in one descriptive line (see the trademark rule in CLAUDE.md).
 
 ## What's New [4,000 max]
 *Apple doesn't show this for a first version. Use it for 1.0.1 and later.*

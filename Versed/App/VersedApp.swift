@@ -7,7 +7,18 @@ struct VersedApp: App {
     static let storedModels: [any PersistentModel.Type] = [SavedVerse.self, ReadingPosition.self, ReadingDay.self]
 
     /// UI tests launch with this argument so each run starts fresh and never touches real data.
-    static let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
+    nonisolated static let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")
+
+    /// Today's date for picking this week's reading. UI tests pass `-today yyyy-MM-dd` so they
+    /// see the same week on every run instead of whatever week it really is.
+    nonisolated static var today: Date {
+        let arguments = ProcessInfo.processInfo.arguments
+        guard isUITesting,
+              let index = arguments.firstIndex(of: "-today"), arguments.indices.contains(index + 1),
+              let date = try? Date(arguments[index + 1] + "T12:00:00Z", strategy: .iso8601)
+        else { return .now }
+        return date
+    }
 
     init() {
         // UI tests skip the first-time intro unless they launch with `-show-intro` to test it.

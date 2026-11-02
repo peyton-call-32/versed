@@ -29,6 +29,11 @@ final class AccessibilityUITests: XCTestCase {
             app.tabBars.buttons["Browse"].tap()
             try audit("Browse, \(appearance)")
 
+            app.collectionViews.buttons["Reading Schedule"].tap()
+            XCTAssertTrue(app.navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
+            try audit("Reading Schedule, \(appearance)")
+            app.navigationBars.buttons.firstMatch.tap()
+
             app.tabBars.buttons["Saved"].tap()
             try audit("Saved, \(appearance)")
 
@@ -60,7 +65,7 @@ final class AccessibilityUITests: XCTestCase {
         let top = weekMenu.frame.maxY
 
         // The week's intro card: its heading and lesson button sit between the menu and the swipe hint.
-        let heading = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "I Will Turn Their Mourning")).firstMatch
+        let heading = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "Jeremiah 31–33")).firstMatch
         let lessonLink = app.links["Open This Week's Lesson"].firstMatch
         let hint = app.staticTexts["Swipe up to read"]
         attachScreenshot(named: "largest-text-intro")
@@ -78,6 +83,12 @@ final class AccessibilityUITests: XCTestCase {
         assertFits(heart, between: top, and: app.tabBars.firstMatch.frame.minY, "heart button")
 
         app.tabBars.buttons["Browse"].tap()
+        attachScreenshot(named: "largest-text-browse")
+        app.collectionViews.buttons["Reading Schedule"].tap()
+        XCTAssertTrue(app.navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
+        attachScreenshot(named: "largest-text-reading-schedule")
+        app.navigationBars.buttons.firstMatch.tap()
+
         app.navigationBars["Browse"].buttons["Settings"].tap()
         app.swipeUp()
         app.swipeUp()
@@ -97,7 +108,7 @@ final class AccessibilityUITests: XCTestCase {
         let pages = [
             ("Swipe Up for the Next Verse", "Versed shows one verse at a time. Swipe up to keep reading."),
             ("Double-Tap to Save", "Double-tap a verse, or tap the heart, to keep it in your Saved tab."),
-            ("This Week's Reading, Ready", "You can change this anytime in Settings."),
+            ("This Week's Reading, Ready", VersedUITests.independenceNotice),
         ]
         for (number, (heading, lastLine)) in zip(1..., pages) {
             let headingText = app.staticTexts[heading]
@@ -107,7 +118,7 @@ final class AccessibilityUITests: XCTestCase {
             // Scroll to the end of the page (extra swipes do nothing once there).
             for _ in 1...4 { app.swipeUp() }
             attachScreenshot(named: "largest-text-intro-page-\(number)")
-            assertFits(app.staticTexts[lastLine], between: top, and: dots.frame.minY, "intro page \(number) last line")
+            assertFits(app.staticTexts.matching(NSPredicate(format: "label == %@", lastLine)).firstMatch, between: top, and: dots.frame.minY, "intro page \(number) last line")
 
             if number < pages.count {
                 app.buttons["Next"].tap()
@@ -137,7 +148,7 @@ final class AccessibilityUITests: XCTestCase {
 
     private func launch(extraArguments: [String] = []) {
         app.terminate()
-        app.launchArguments = ["-ui-testing"] + extraArguments
+        app.launchArguments = VersedUITests.launchArguments + extraArguments
         app.launch()
     }
 
@@ -168,8 +179,8 @@ final class AccessibilityUITests: XCTestCase {
     /// Issues checked by hand and left on purpose:
     /// - Contrast in parts iOS draws itself: the glass navigation bar (its title and Done button)
     ///   and controls with no text of their own, like switches.
-    /// - Text size on the Settings links: they do grow (see the "largest-text-settings" screenshot),
-    ///   but the audit misreads links inside a Form.
+    /// - Text size on the Settings links and the About footer: they do grow (see the
+    ///   "largest-text-settings" screenshot), but the audit misreads them inside a Form.
     /// - Text size on the intro's Skip and Next buttons, capped so the page text keeps the room.
     private static func isKnownException(_ issue: XCUIAccessibilityAuditIssue) -> Bool {
         guard let element = issue.element else { return true }
@@ -178,6 +189,7 @@ final class AccessibilityUITests: XCTestCase {
             return element.label.isEmpty || ["Done", "Settings"].contains(element.label)
         case .dynamicType:
             return ["Done", "Scripture Text", "Privacy Policy", "Contact", "Version", "Skip", "Next"].contains(element.label)
+                || element.label.hasPrefix("Scripture text is in the public domain.")
         default:
             return false
         }

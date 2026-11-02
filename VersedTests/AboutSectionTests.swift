@@ -12,4 +12,9 @@ struct AboutSectionTests {
         #expect(AboutSection.privacyPolicyURL.lastPathComponent == "PRIVACY.md")
         #expect(AboutSection.scriptureSourceURL.path() == "/bcbooks/scriptures-json")
     }
+
+    /// "Come, Follow Me" is a Church trademark, so it appears only in this one descriptive line.
+    @Test func theIndependenceNoticeIsWordedExactly() {
+        #expect(AboutSection.independenceNotice == "This Week follows the Come, Follow Me reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints.")
+    }
 }

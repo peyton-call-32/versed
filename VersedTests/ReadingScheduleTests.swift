@@ -47,7 +47,7 @@ struct ReadingScheduleTests {
         #expect(schedule.currentWeek(on: date(2026, 11, 1, hour: 23))?.id == "2026-10-26")
         // Monday starts the next week.
         #expect(schedule.currentWeek(on: date(2026, 11, 2, hour: 0))?.id == "2026-11-02")
-        #expect(schedule.currentWeek(on: date(2026, 12, 25))?.title == "We Have Waited for Him, and He Will Save Us")
+        #expect(schedule.currentWeek(on: date(2026, 12, 25))?.label == "Christmas")
     }
 
     @Test func theNewYearsCourseStartsTheWeekAfterChristmas() {
@@ -63,8 +63,35 @@ struct ReadingScheduleTests {
         #expect(schedule.currentWeek(on: date(2028, 3, 1))?.id == "2027-12-20")
     }
 
+    @Test func showsShortDates() {
+        func dates(_ id: String) -> String? {
+            schedule.weeks.first { $0.id == id }?.dateRangeText(calendar: calendar)
+        }
+        #expect(dates("2026-11-02") == "Nov 2–8")
+        #expect(dates("2026-11-30") == "Nov 30 – Dec 6")
+        #expect(dates("2026-12-28") == "Dec 28 – Jan 3")
+    }
+
+    @Test func groupsWeeksByCourse() {
+        #expect(schedule.weeks.first { $0.id == "2026-12-21" }?.course == "Old Testament 2026")
+        // The New Testament year starts the Monday after Christmas 2026.
+        #expect(schedule.weeks.first { $0.id == "2026-12-28" }?.course == "New Testament 2027")
+    }
+
+    /// Lesson titles belong to the Church's manual, so the schedule files keep only dates, chapters, and links.
+    @Test func scheduleFilesHaveNoLessonTitles() throws {
+        let urls = (Bundle.main.urls(forResourcesWithExtension: "json", subdirectory: nil) ?? [])
+            .filter { $0.lastPathComponent.hasPrefix("schedule-") }
+        #expect(!urls.isEmpty)
+        for url in urls {
+            let file = try JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any]
+            let weeks = file?["weeks"] as? [[String: Any]] ?? []
+            #expect(weeks.allSatisfy { $0["title"] == nil }, "\(url.lastPathComponent)")
+        }
+    }
+
     @Test func rejectsWeeksThatDontStartOnMonday() {
-        let json = #"{"year": 2026, "course": "Test", "manualURL": "https://example.com", "weeks": [{"start": "2026-12-06", "title": "", "label": "", "readings": []}]}"#
+        let json = #"{"year": 2026, "course": "Test", "manualURL": "https://example.com", "weeks": [{"start": "2026-12-06", "label": "", "readings": []}]}"#
         #expect(throws: ReadingSchedule.LoadError.self) {
             try ReadingSchedule.load(from: Data(json.utf8), calendar: calendar)
         }
@@ -82,7 +109,7 @@ struct ReadingScheduleTests {
     }
 
     @Test func aWeekWithoutALinkUsesTheManual() throws {
-        let json = #"{"year": 2026, "course": "Test", "manualURL": "https://example.com/manual", "weeks": [{"start": "2026-12-07", "title": "", "label": "", "readings": []}]}"#
+        let json = #"{"year": 2026, "course": "Test", "manualURL": "https://example.com/manual", "weeks": [{"start": "2026-12-07", "label": "", "readings": []}]}"#
         let weeks = try ReadingSchedule.load(from: Data(json.utf8), calendar: calendar)
         #expect(weeks.first?.lessonURL == URL(string: "https://example.com/manual"))
     }

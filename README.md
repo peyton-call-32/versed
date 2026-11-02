@@ -2,7 +2,7 @@
 
 An iPhone app for reading scripture one verse at a time. Swipe up for the next verse, like a short-video feed.
 
-Built for Latter-day Saints who want to read a little every day. It opens straight to this week's Come, Follow Me reading.
+Built for Latter-day Saints who want to read a little every day. It opens straight to this week's reading from the weekly home-study schedule.
 
 <p>
   <img src="docs/screenshots/1-this-week.png" width="240" alt="This week's reading, one verse per screen">
@@ -13,6 +13,7 @@ Built for Latter-day Saints who want to read a little every day. It opens straig
 ## Features
 - One verse per screen, with a title card at the start of each chapter
 - Opens to this week's reading; pick any other week from a menu
+- This Week and the full Reading Schedule at the top of Browse, with each week's dates and chapters
 - Browse any book and chapter of the standard works
 - Save verses with a double-tap or the heart button
 - Picks up where you left off

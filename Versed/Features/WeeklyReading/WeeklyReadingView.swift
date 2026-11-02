@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// Opens to this week's Come, Follow Me reading, with a menu at the top to pick another week.
+/// Opens to this week's reading, with a menu at the top to pick another week.
 /// Each week reopens on the page where the reader left off.
 struct WeeklyReadingView: View {
     let library: ScriptureLibrary
@@ -10,8 +10,8 @@ struct WeeklyReadingView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
-    /// The week picked from the menu, or `nil` to show this week.
-    @State private var selectedWeekID: ReadingWeek.ID?
+    /// The week picked from the menu or the schedule in Browse, or `nil` to show this week.
+    @Binding var selectedWeekID: ReadingWeek.ID?
 
     private var thisWeek: ReadingWeek? { schedule.currentWeek() }
 
@@ -64,18 +64,18 @@ struct WeeklyReadingView: View {
                 Button {
                     selectedWeekID = week.id
                 } label: {
-                    let dates = week.id == thisWeek?.id ? "\(week.dateRangeText) · This week" : week.dateRangeText
+                    let dates = week.id == thisWeek?.id ? "\(week.dateRangeText()) · This week" : week.dateRangeText()
                     if week.id == selected.id {
                         Label(dates, systemImage: "checkmark")
                     } else {
                         Text(dates)
                     }
-                    Text(week.title)
+                    Text(week.label)
                 }
             }
         } label: {
             HStack(spacing: 6) {
-                Text(selected.dateRangeText)
+                Text(selected.dateRangeText())
                 Image(systemName: "chevron.down")
                     .imageScale(.small)
             }
@@ -85,12 +85,13 @@ struct WeeklyReadingView: View {
             .padding(.vertical, 8)
             .background(.regularMaterial, in: Capsule())
         }
-        .accessibilityLabel("Week of \(selected.dateRangeText)")
+        .accessibilityLabel("Week of \(selected.dateRangeText())")
         .accessibilityHint("Picks another week's reading.")
     }
 }
 
 #Preview {
-    WeeklyReadingView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled())
+    @Previewable @State var selectedWeekID: ReadingWeek.ID?
+    WeeklyReadingView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled(), selectedWeekID: $selectedWeekID)
         .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }

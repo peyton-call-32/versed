@@ -2,15 +2,20 @@ import SwiftData
 import SwiftUI
 
 /// Pick any volume, book, and chapter, then read from there in the feed.
-/// A "Continue Reading" row at the top returns to the last page read here or from Saved.
+/// At the top: this week's reading, the full reading schedule, and a "Continue Reading" row
+/// that returns to the last page read here or from Saved.
 struct BrowseView: View {
     let library: ScriptureLibrary
+    let schedule: ReadingSchedule
+    /// Shows a week on the This Week tab: `nil` for this week, or any week from the schedule.
+    let openWeek: (ReadingWeek.ID?) -> Void
 
     @Query private var positions: [ReadingPosition]
     @State private var showsSettings = false
 
     /// The screens the browse tab can open.
     enum Route: Hashable {
+        case schedule
         case volume(Volume.ID)
         case book(Book.ID)
         case reading(ChapterID)
@@ -21,6 +26,8 @@ struct BrowseView: View {
     var body: some View {
         NavigationStack {
             List {
+                weeklyReadingSection
+
                 if let itemID = lastBrowsePosition, let reference = reference(for: itemID) {
                     Section("Continue Reading") {
                         NavigationLink(value: Route.resume(itemID)) {
@@ -58,9 +65,58 @@ struct BrowseView: View {
         }
     }
 
+    private var weeklyReadingSection: some View {
+        Section {
+            if let week = schedule.currentWeek() {
+                Button {
+                    openWeek(nil)
+                } label: {
+                    HStack(alignment: .firstTextBaseline, spacing: 12) {
+                        Image(systemName: "calendar")
+                            .foregroundStyle(.tint)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("This Week")
+                                .font(.system(.title3, design: .serif))
+                                .foregroundStyle(Color.primary)
+                            Text(week.label)
+                                .font(.subheadline)
+                                .foregroundStyle(.secondaryText)
+                            Text(week.dateRangeText())
+                                .font(.subheadline)
+                                .foregroundStyle(.secondaryText)
+                        }
+                        Spacer(minLength: 8)
+                        DisclosureChevron()
+                    }
+                    .padding(.vertical, 4)
+                }
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("This Week, \(week.label), \(week.dateRangeText())")
+                .accessibilityHint("Opens this week's reading.")
+                .accessibilityIdentifier("This Week")
+            }
+
+            NavigationLink(value: Route.schedule) {
+                HStack(alignment: .firstTextBaseline, spacing: 12) {
+                    Image(systemName: "list.bullet.rectangle")
+                        .foregroundStyle(.tint)
+                        .accessibilityHidden(true)
+                    Text("Reading Schedule")
+                        .font(.system(.title3, design: .serif))
+                }
+            }
+            .accessibilityIdentifier("Reading Schedule")
+        } header: {
+            Text("Weekly Reading")
+                .foregroundStyle(.secondaryText)
+        }
+    }
+
     @ViewBuilder
     private func destination(for route: Route) -> some View {
         switch route {
+        case .schedule:
+            ReadingScheduleView(schedule: schedule, openWeek: openWeek)
         case .volume(let id):
             if let volume = library.volume(id: id) {
                 BookListView(volume: volume)
@@ -114,6 +170,6 @@ struct BrowseView: View {
 }
 
 #Preview {
-    BrowseView(library: try! ScriptureLibrary.loadBundled())
+    BrowseView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled(), openWeek: { _ in })
         .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }
