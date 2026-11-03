@@ -35,7 +35,7 @@ final class VersedUITests: XCTestCase {
         saveScreenshot(named: "1-this-week")
 
         // Browse to Alma 32 and read to verse 2.
-        app.tabBars.buttons["Browse"].tap()
+        app.tab("Browse").tap()
         app.staticTexts["Book of Mormon"].tap()
         app.staticTexts["Alma"].tap()
         app.buttons["Alma 32"].tap()
@@ -58,7 +58,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertFalse(chapterHeading("Alma, Chapter 32").isHittable)
 
         // The saved verse shows on the Saved tab.
-        app.tabBars.buttons["Saved"].tap()
+        app.tab("Saved").tap()
         XCTAssertTrue(app.navigationBars["Saved"].waitForExistence(timeout: 5))
         XCTAssertEqual(app.cells.count, 1)
         saveScreenshot(named: "3-saved")
@@ -66,7 +66,7 @@ final class VersedUITests: XCTestCase {
 
     func testBrowseShowsThisWeekAtTheTop() {
         // Start on another week, so going back to this week is a real change.
-        app.tabBars.buttons["Browse"].tap()
+        app.tab("Browse").tap()
         let thisWeek = app.collectionViews.buttons["This Week"]
         XCTAssertTrue(thisWeek.waitForExistence(timeout: 5))
         let schedule = app.collectionViews.buttons["Reading Schedule"]
@@ -78,13 +78,13 @@ final class VersedUITests: XCTestCase {
 
         // This Week opens this week's reading on the This Week tab.
         thisWeek.tap()
-        XCTAssertTrue(app.tabBars.buttons["This Week"].isSelected)
+        XCTAssertTrue(app.tab("This Week").isSelected)
         XCTAssertTrue(weekHeading(containing: "Jeremiah 31–33").waitForExistence(timeout: 5))
         XCTAssertTrue(weekHeading(containing: "This Week").exists)
     }
 
     func testOpeningAWeekFromTheReadingSchedule() {
-        app.tabBars.buttons["Browse"].tap()
+        app.tab("Browse").tap()
         app.collectionViews.buttons["Reading Schedule"].tap()
         XCTAssertTrue(app.navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
 
@@ -96,7 +96,7 @@ final class VersedUITests: XCTestCase {
 
         // Tapping another week opens its chapters in the feed.
         app.buttons["Nov 9–15, Daniel 1–7"].tap()
-        XCTAssertTrue(app.tabBars.buttons["This Week"].isSelected)
+        XCTAssertTrue(app.tab("This Week").isSelected)
         XCTAssertTrue(weekHeading(containing: "Daniel 1–7").waitForExistence(timeout: 5))
         XCTAssertTrue(weekHeading(containing: "Week Of").exists)
         XCTAssertTrue(app.buttons["Week of Nov 9–15"].exists)
@@ -104,7 +104,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(chapterHeading("Daniel, Chapter 1").waitForExistence(timeout: 5))
 
         // Browse's This Week row goes back to this week.
-        app.tabBars.buttons["Browse"].tap()
+        app.tab("Browse").tap()
         app.navigationBars.buttons.firstMatch.tap()
         app.collectionViews.buttons["This Week"].tap()
         XCTAssertTrue(app.buttons["Week of Oct 26 – Nov 1"].waitForExistence(timeout: 5))
@@ -119,7 +119,7 @@ final class VersedUITests: XCTestCase {
         // Leave for another week, then come back to this one.
         app.openWeekFromSchedule("Nov 9–15, Daniel 1–7")
         XCTAssertTrue(weekHeading(containing: "Daniel 1–7").waitForExistence(timeout: 5))
-        app.tabBars.buttons["Browse"].tap()
+        app.tab("Browse").tap()
         app.navigationBars.buttons.firstMatch.tap()
         app.collectionViews.buttons["This Week"].tap()
 
@@ -143,7 +143,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(end.waitForExistence(timeout: 5))
 
         // Go to this week, then reopen the finished week.
-        app.tabBars.buttons["Browse"].tap()
+        app.tab("Browse").tap()
         app.navigationBars.buttons.firstMatch.tap()
         app.collectionViews.buttons["This Week"].tap()
         XCTAssertTrue(weekHeading(containing: "This Week").waitForExistence(timeout: 5))
@@ -191,7 +191,7 @@ final class VersedUITests: XCTestCase {
         settings.tap()
         XCTAssertTrue(app.navigationBars["Settings"].waitForExistence(timeout: 5))
         app.buttons["Done"].tap()
-        app.tabBars.buttons["Browse"].tap()
+        app.tab("Browse").tap()
         XCTAssertFalse(app.navigationBars["Browse"].buttons["Settings"].exists)
     }
 

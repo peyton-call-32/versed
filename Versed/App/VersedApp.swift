@@ -22,7 +22,7 @@ struct VersedApp: App {
     }
 
     init() {
-        Self.useSerifScreenTitles()
+        Self.useVersedScreenTitles()
 
         // UI tests skip the first-time intro unless they launch with `-show-intro` to test it.
         if Self.isUITesting {
@@ -31,16 +31,23 @@ struct VersedApp: App {
         }
     }
 
-    /// Screen titles like "Browse" and "Saved" use the same serif typeface as the verses.
-    private static func useSerifScreenTitles() {
+    /// Screen titles like "Browse" and "Saved" use the same typeface as the book names, in navy ink.
+    /// The color is set too: without it, the accessibility audit assumes black text and
+    /// reports the titles as unreadable on the dark mode background.
+    private static func useVersedScreenTitles() {
         let navigationBar = UINavigationBar.appearance()
-        if let large = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .largeTitle)
-            .withDesign(.serif)?.withSymbolicTraits(.traitBold) {
-            navigationBar.largeTitleTextAttributes = [.font: UIFont(descriptor: large, size: 0)]
+        let ink = UIColor(named: "AccentColor") ?? .label
+        if let large = UIFont(name: Font.Bundled.title, size: 34) {
+            navigationBar.largeTitleTextAttributes = [
+                .font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large),
+                .foregroundColor: ink,
+            ]
         }
-        if let inline = UIFontDescriptor.preferredFontDescriptor(withTextStyle: .headline)
-            .withDesign(.serif) {
-            navigationBar.titleTextAttributes = [.font: UIFont(descriptor: inline, size: 0)]
+        if let inline = UIFont(name: Font.Bundled.title, size: 18) {
+            navigationBar.titleTextAttributes = [
+                .font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: inline),
+                .foregroundColor: ink,
+            ]
         }
     }
 

@@ -18,7 +18,7 @@ final class AccessibilityUITests: XCTestCase {
             setAppearance(appearance)
 
             // This Week: the intro card, then a verse.
-            app.tabBars.buttons["This Week"].tap()
+            app.tab("This Week").tap()
             XCTAssertTrue(app.staticTexts["Swipe up to read"].waitForExistence(timeout: 10))
             try audit("This Week intro, \(appearance)", except: Self.shrinkToFitIssues)
             app.swipeUp()
@@ -26,7 +26,7 @@ final class AccessibilityUITests: XCTestCase {
             XCTAssertTrue(app.buttons["Save verse"].waitForExistence(timeout: 5))
             try audit("verse, \(appearance)", except: Self.shrinkToFitIssues)
 
-            app.tabBars.buttons["Browse"].tap()
+            app.tab("Browse").tap()
             try audit("Browse, \(appearance)")
 
             app.collectionViews.buttons["Reading Schedule"].tap()
@@ -34,7 +34,7 @@ final class AccessibilityUITests: XCTestCase {
             try audit("Reading Schedule, \(appearance)")
             app.navigationBars.buttons.firstMatch.tap()
 
-            app.tabBars.buttons["Saved"].tap()
+            app.tab("Saved").tap()
             try audit("Saved, \(appearance)")
 
             app.openSettings()
@@ -82,9 +82,9 @@ final class AccessibilityUITests: XCTestCase {
         let heart = onScreen(app.buttons.matching(identifier: "Save verse"))
         XCTAssertTrue(heart.waitForExistence(timeout: 5))
         attachScreenshot(named: "largest-text-verse")
-        assertFits(heart, between: top, and: app.tabBars.firstMatch.frame.minY, "heart button")
+        assertFits(heart, between: top, and: app.tabBarTop, "heart button")
 
-        app.tabBars.buttons["Browse"].tap()
+        app.tab("Browse").tap()
         attachScreenshot(named: "largest-text-browse")
         app.collectionViews.buttons["Reading Schedule"].tap()
         XCTAssertTrue(app.navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
@@ -111,7 +111,7 @@ final class AccessibilityUITests: XCTestCase {
             XCTAssertTrue(lessonLink.waitForExistence(timeout: 5))
             try audit("week end card, \(name)", except: Self.shrinkToFitIssues)
             let top = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Week of")).firstMatch.frame.maxY
-            assertFits(lessonLink, between: top, and: app.tabBars.firstMatch.frame.minY, "lesson button, \(name)")
+            assertFits(lessonLink, between: top, and: app.tabBarTop, "lesson button, \(name)")
         }
         // Relaunch so Browse is back on its main list, then put the default back.
         launch()

@@ -6,16 +6,26 @@ extension XCUIApplication {
     /// (opening card, chapter title, verses, closing card).
     static let shortWeek = (row: "Jan 11–17, John 1", pageCount: 54)
 
+    /// A button in the floating tab bar. It has its own name because Browse also has a "This Week" row.
+    func tab(_ title: String) -> XCUIElement {
+        buttons.matching(identifier: "Tab \(title)").firstMatch
+    }
+
+    /// The top edge of the floating tab bar, for checking nothing slides under it.
+    var tabBarTop: CGFloat {
+        descendants(matching: .any).matching(identifier: "Tab bar").firstMatch.frame.minY
+    }
+
     /// Opens Settings from the gear at the top of This Week.
     func openSettings() {
-        tabBars.buttons["This Week"].tap()
+        tab("This Week").tap()
         buttons["Settings"].tap()
         XCTAssertTrue(navigationBars["Settings"].waitForExistence(timeout: 5))
     }
 
     /// Opens a week from Browse > Reading Schedule, by its row's VoiceOver label ("Nov 9–15, Daniel 1–7").
     func openWeekFromSchedule(_ rowLabel: String) {
-        tabBars.buttons["Browse"].tap()
+        tab("Browse").tap()
         collectionViews.buttons["Reading Schedule"].tap()
         XCTAssertTrue(navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
 

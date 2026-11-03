@@ -28,6 +28,8 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.peytoncall.versed
         TARGETED_DEVICE_FAMILY: "1"
         GENERATE_INFOPLIST_FILE: YES
+        # Lists the bundled fonts. Everything else in the Info.plist is generated from the keys below.
+        INFOPLIST_FILE: Versed/App/Info.plist
         INFOPLIST_KEY_CFBundleDisplayName: Versed
         INFOPLIST_KEY_UILaunchScreen_Generation: YES
         INFOPLIST_KEY_UISupportedInterfaceOrientations: UIInterfaceOrientationPortrait
