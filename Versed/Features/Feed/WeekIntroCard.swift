@@ -19,7 +19,7 @@ struct WeekIntroCard: View {
         ShrinkToFit {
             VStack(spacing: 18) {
                 Text(label)
-                    .font(.footnote.weight(.semibold))
+                    .font(.callout.weight(.semibold))
                     .tracking(1.5)
                     .textCase(.uppercase)
                     .foregroundStyle(.tint)
@@ -31,7 +31,7 @@ struct WeekIntroCard: View {
                     ForEach(Array(week.readingByBook.enumerated()), id: \.offset) { _, book in
                         VStack(spacing: 10) {
                             Text(book.name)
-                                .font(.system(.title, design: .serif, weight: .semibold))
+                                .font(.system(.largeTitle, design: .serif, weight: .semibold))
                                 .foregroundStyle(.brand)
                             if !book.chapters.isEmpty {
                                 ChapterSections(sections: book.chapters)
@@ -76,7 +76,7 @@ private struct ChapterSections: View {
 
     private func sectionText(_ section: String) -> some View {
         Text(section)
-            .font(.system(.title2, design: .serif, weight: .light))
+            .font(.system(.title, design: .serif, weight: .light))
             .monospacedDigit()
             .foregroundStyle(.brand)
             .fixedSize()
