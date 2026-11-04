@@ -4,9 +4,9 @@
 <dict>
 	<key>UIAppFonts</key>
 	<array>
-		<string>EBGaramond.ttf</string>
-		<string>SourceSerif4Display-Regular.otf</string>
-		<string>SourceSerif4Display-Light.otf</string>
+		<string>Newsreader-Regular.ttf</string>
+		<string>Cormorant-Medium.ttf</string>
+		<string>Cormorant-Light.ttf</string>
 	</array>
 </dict>
 </plist>

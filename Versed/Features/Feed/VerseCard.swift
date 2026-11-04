@@ -15,9 +15,8 @@ struct VerseCard: View {
     var body: some View {
         ShrinkToFit {
             VStack(spacing: 20) {
-                Text(verse.text)
-                    .font(verseFont)
-                    .lineSpacing(5)
+                VerseText(verse.text, size: verseSize.points, relativeTo: verseSize.style)
+                    .lineSpacing(6)
                     .foregroundStyle(.brand)
 
                 VStack(spacing: 14) {
@@ -88,12 +87,12 @@ struct VerseCard: View {
     }
 
     /// Shorter verses get bigger text so every verse fills the screen comfortably.
-    private var verseFont: Font {
+    private var verseSize: (points: CGFloat, style: Font.TextStyle) {
         switch verse.text.count {
-        case ..<160: .versedVerse(size: 35)
-        case ..<360: .versedVerse(size: 31)
-        case ..<600: .versedVerse(size: 26, relativeTo: .title2)
-        default: .versedVerse(size: 22, relativeTo: .title3)
+        case ..<160: (33, .title)
+        case ..<360: (29, .title)
+        case ..<600: (25, .title2)
+        default: (21, .title3)
         }
     }
 }

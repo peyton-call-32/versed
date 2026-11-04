@@ -84,7 +84,7 @@ struct BrowseView: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(week.readingByBook.map(\.name).joined(separator: ", "))
-                    .font(.versedTitle(size: 20, relativeTo: .title3))
+                    .font(.versedTitle(size: 24, relativeTo: .title3))
                     .foregroundStyle(.brand)
                     // Shrinks a little at the largest sizes, so a long name like "Lamentations" stays whole.
                     .lineLimit(2)

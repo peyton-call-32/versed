@@ -37,13 +37,13 @@ struct VersedApp: App {
     private static func useVersedScreenTitles() {
         let ink = UIColor(named: "AccentColor") ?? .label
         func titled(_ appearance: UINavigationBarAppearance) -> UINavigationBarAppearance {
-            if let large = UIFont(name: Font.Bundled.title, size: 34) {
+            if let large = UIFont(name: Font.Bundled.title, size: 40) {
                 appearance.largeTitleTextAttributes = [
                     .font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large),
                     .foregroundColor: ink,
                 ]
             }
-            if let inline = UIFont(name: Font.Bundled.title, size: 18) {
+            if let inline = UIFont(name: Font.Bundled.title, size: 21) {
                 appearance.titleTextAttributes = [
                     .font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: inline),
                     .foregroundColor: ink,

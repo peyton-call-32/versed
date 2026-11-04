@@ -1,7 +1,8 @@
 import SwiftUI
 
-// Versed's look in one place: "Quiet". Simple and classy, with just enough depth to feel modern.
+// Versed's look in one place: "Hardcover". Simple and classy, like a fine bound book.
 // Navy ink on warm paper with soft white cards in light mode; cream on deep navy in dark mode.
+// Chapter openings and the Browse book covers are solid navy with cream type in both modes.
 // Every color is in the asset catalog with a light and a dark version.
 
 extension ShapeStyle where Self == Color {
@@ -22,18 +23,24 @@ extension ShapeStyle where Self == Color {
 
     /// The faint shadow under anything raised off the page.
     static var cardShadow: Color { Color("CardShadow") }
+
+    /// The navy of a book cover: chapter openings and Browse's covers, in light and dark mode.
+    static var cover: Color { Color("Cover") }
+
+    /// The cream type and lines printed on a cover.
+    static var onCover: Color { Color("OnCover") }
 }
 
-/// The three typefaces. All are free under the SIL Open Font License; the licenses are in Resources/Fonts.
+/// The three font styles. All are free under the SIL Open Font License; the licenses are in Resources/Fonts.
 /// Each one grows with the iPhone's text size through `relativeTo`.
 ///
 /// Buttons, labels, and lists use the iPhone's own font, so they aren't listed here.
 extension Font {
     /// PostScript names of the bundled fonts, as `UIFont` and `Font.custom` want them.
     enum Bundled {
-        static let title = "SourceSerif4Display-Regular"
-        static let number = "SourceSerif4Display-Light"
-        static let verse = "EBGaramond-Regular"
+        static let title = "Cormorant-Medium"
+        static let number = "Cormorant-Light"
+        static let verse = "Newsreader-Regular"
         static let all = [title, number, verse]
     }
 
@@ -42,7 +49,7 @@ extension Font {
         .custom(Bundled.title, size: size, relativeTo: style)
     }
 
-    /// Chapter numbers. Its figures all sit at one even height.
+    /// Chapter numbers. The bundled file is set so its figures all sit at one even height.
     static func versedNumber(size: CGFloat, relativeTo style: Font.TextStyle = .largeTitle) -> Font {
         .custom(Bundled.number, size: size, relativeTo: style)
     }
@@ -81,38 +88,46 @@ extension View {
 /// A small, spaced-out, all-caps label, like "JEREMIAH 31:2" under a verse or "SCRIPTURES" above a card.
 struct SmallCapsLabel: View {
     let text: String
+    var color: Color = .secondaryText
 
-    init(_ text: String) {
+    init(_ text: String, color: Color = .secondaryText) {
         self.text = text
+        self.color = color
     }
 
     var body: some View {
         Text(text)
-            .font(.caption.weight(.semibold))
-            .tracking(1.7)
+            .font(.footnote.weight(.semibold))
+            .tracking(1.4)
             .textCase(.uppercase)
-            .foregroundStyle(.secondaryText)
+            .foregroundStyle(color)
             .fixedSize(horizontal: false, vertical: true)
     }
 }
 
 /// A thin line with a small diamond in the middle. Decoration only: VoiceOver skips it.
 struct Ornament: View {
+    var color: Color = .brand
+    var lineLength: CGFloat = 30
+    /// Set to false to pull the lines back into the diamond. Animating it to true draws them outward.
+    var isDrawn = true
+
     var body: some View {
         HStack(spacing: 10) {
-            line
+            line(growingFrom: .trailing)
             Image(systemName: "diamond.fill")
                 .font(.system(size: 6))
-                .foregroundStyle(Color.brand.opacity(0.45))
-            line
+                .foregroundStyle(color.opacity(0.6))
+            line(growingFrom: .leading)
         }
         .accessibilityHidden(true)
     }
 
-    private var line: some View {
+    private func line(growingFrom anchor: UnitPoint) -> some View {
         Rectangle()
-            .frame(width: 30, height: 1)
-            .foregroundStyle(Color.brand.opacity(0.35))
+            .frame(width: lineLength, height: 1)
+            .foregroundStyle(color.opacity(0.45))
+            .scaleEffect(x: isDrawn ? 1 : 0, anchor: anchor)
     }
 }
 

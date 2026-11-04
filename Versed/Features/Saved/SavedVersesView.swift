@@ -48,8 +48,7 @@ struct SavedVersesView: View {
             path.append(verse.id)
         } label: {
             VStack(spacing: 12) {
-                Text(verse.text)
-                    .font(.versedVerse(size: 20, relativeTo: .body))
+                VerseText(verse.text, size: 19, relativeTo: .body)
                     .lineLimit(6)
                     .foregroundStyle(.brand)
                 SmallCapsLabel(verse.reference)

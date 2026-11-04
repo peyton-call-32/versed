@@ -44,11 +44,11 @@ struct StreakCalendarView: View {
                     .font(.system(size: flameSize))
                 if streak > 0 {
                     Text("\(streak)")
-                        .font(.versedNumber(size: 76))
+                        .font(.versedNumber(size: 84))
                 }
             }
             Text(streak > 0 ? "day streak" : "Read a verse to start a streak")
-                .font(.versedTitle(size: 20, relativeTo: .title3))
+                .font(.versedTitle(size: 23, relativeTo: .title3))
                 .multilineTextAlignment(.center)
         }
         .foregroundStyle(.brand)
@@ -106,7 +106,7 @@ private struct MonthCalendar: View {
             }
             Spacer(minLength: 4)
             Text(month.title)
-                .font(.versedTitle(size: 18, relativeTo: .headline))
+                .font(.versedTitle(size: 21, relativeTo: .headline))
                 .foregroundStyle(.brand)
                 .multilineTextAlignment(.center)
                 .accessibilityAddTraits(.isHeader)
@@ -200,7 +200,7 @@ private struct StreakStat: View {
         Card {
             VStack(spacing: 3) {
                 Text("\(value)")
-                    .font(.versedNumber(size: 30, relativeTo: .title))
+                    .font(.versedNumber(size: 34, relativeTo: .title))
                     .foregroundStyle(.brand)
                 SmallCapsLabel(title)
                     .multilineTextAlignment(.center)

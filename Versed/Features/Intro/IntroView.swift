@@ -103,7 +103,7 @@ struct IntroView: View {
                 .accessibilityHidden(true)
 
             Text(page.title)
-                .font(.versedTitle(size: 38, relativeTo: .title))
+                .font(.versedTitle(size: 42, relativeTo: .title))
                 .foregroundStyle(.brand)
                 .accessibilityAddTraits(.isHeader)
 

@@ -26,7 +26,7 @@ struct WeekIntroCard: View {
 
     /// One short book name gets the big title; longer names and several books need more room.
     private var titleSize: CGFloat {
-        books.count == 1 && books[0].name.count <= 9 ? 66 : 44
+        books.count == 1 && books[0].name.count <= 9 ? 72 : 50
     }
 
     var body: some View {
@@ -119,7 +119,7 @@ struct WeekIntroCard: View {
                     onSelectSection(section.start)
                 }
                 .buttonStyle(.raisedPill)
-                .font(.versedTitle(size: 22, relativeTo: .title3))
+                .font(.versedTitle(size: 25, relativeTo: .title3))
                 .lineLimit(1)
                 .fixedSize()
                 .accessibilityLabel("\(books[index].name) \(section.title.replacingOccurrences(of: "\u{2060}", with: ""))")

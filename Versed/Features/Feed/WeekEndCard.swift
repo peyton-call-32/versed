@@ -14,7 +14,7 @@ struct WeekEndCard: View {
                         .foregroundStyle(.brand)
 
                     Text("End of the Week’s Reading")
-                        .font(.versedTitle(size: 38, relativeTo: .title))
+                        .font(.versedTitle(size: 42, relativeTo: .title))
                         .foregroundStyle(.brand)
 
                     Ornament()
