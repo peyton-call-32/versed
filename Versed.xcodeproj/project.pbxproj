@@ -23,6 +23,7 @@
 		279868EE4CCAF6A0182743DC /* SourceSerif4Display-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 16AFBB34075AAC2AC8312F7E /* SourceSerif4Display-Regular.otf */; };
 		29D2F59E6DCD1C13228C4D9C /* IntroView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA4C7D46EC0C61DEC2F531CA /* IntroView.swift */; };
 		2CEC929D67BF2B536A26D8AF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1ADF58D40B3A1EE961844D7 /* SettingsView.swift */; };
+		2EC3BD3C3FF566332297ADA2 /* ReadingMonth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 193B3C5005B089F0C944A282 /* ReadingMonth.swift */; };
 		30CFB1E58B11DFA8C6AC4373 /* WeekEndCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 62303E8EA8994406A77F1B8E /* WeekEndCard.swift */; };
 		33E86C0A28825C88C9B56FB1 /* FeedNavigation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 658EA5BCCABA3BD1EBAB4AFA /* FeedNavigation.swift */; };
 		37C6AF645EE8F02FA3BC433E /* SavedVerseStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3D319648B0F9FA1A08E6EBDA /* SavedVerseStore.swift */; };
@@ -57,6 +58,7 @@
 		C0004DDE2E1A6B8409D8B7F2 /* ReadingScheduleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7EDCBCB019070745F69CD19 /* ReadingScheduleView.swift */; };
 		CAD3171439BCBCAD4342FC28 /* schedule-2026.json in Resources */ = {isa = PBXBuildFile; fileRef = 319546785AD215381AF9D636 /* schedule-2026.json */; };
 		CB1C753A471C35B1A9407DBD /* EBGaramond.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9AC45DD4EF4A5C0BC0A46C25 /* EBGaramond.ttf */; };
+		D1C72B051BD119B0E04FBDF3 /* StreakCalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFD478094849EAC67CD4BBCD /* StreakCalendarView.swift */; };
 		D49FE033F87B52185C586301 /* VerseCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4F7F1C178EEAD603E51F43BB /* VerseCard.swift */; };
 		D66514D669766A0B84F16CA8 /* ReadingScheduleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 23EFF090F7F35C58683087F4 /* ReadingScheduleTests.swift */; };
 		D9859F93E439B80280435CD6 /* WeekIntroCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 447AC2843BF5D2FD82484BBB /* WeekIntroCard.swift */; };
@@ -98,6 +100,7 @@
 		0C8637332E91BBE1A3EB8AE5 /* ReadingSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingSchedule.swift; sourceTree = "<group>"; };
 		1214A84BDDB01C93A2637D9C /* VersedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersedApp.swift; sourceTree = "<group>"; };
 		16AFBB34075AAC2AC8312F7E /* SourceSerif4Display-Regular.otf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SourceSerif4Display-Regular.otf"; sourceTree = "<group>"; };
+		193B3C5005B089F0C944A282 /* ReadingMonth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingMonth.swift; sourceTree = "<group>"; };
 		1ABA253A5A766E0E141E6BCC /* bofm.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = bofm.json; sourceTree = "<group>"; };
 		1B7899BDE47F6968F2FEE7AA /* ScriptureLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureLibrary.swift; sourceTree = "<group>"; };
 		1DD1B3280418CF2F3E3A5432 /* ChapterTitleCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChapterTitleCard.swift; sourceTree = "<group>"; };
@@ -157,6 +160,7 @@
 		D56CF2440765D2BAF22899CD /* ReadingPositionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingPositionStore.swift; sourceTree = "<group>"; };
 		D623E81C88B3290F8EE72F76 /* ShrinkToFit.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShrinkToFit.swift; sourceTree = "<group>"; };
 		DA06D5EF2CB15AC34E1A3EFF /* SavedVerseStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SavedVerseStoreTests.swift; sourceTree = "<group>"; };
+		DFD478094849EAC67CD4BBCD /* StreakCalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakCalendarView.swift; sourceTree = "<group>"; };
 		E14A1D81CE6CFC3D793B03A9 /* VersedTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VersedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7996FA7EC88EA0494273667 /* schedule-2027.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "schedule-2027.json"; sourceTree = "<group>"; };
 		F1ADF58D40B3A1EE961844D7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
@@ -298,6 +302,7 @@
 				7A4887358AAB23B8B69D90D3 /* DailyReminder.swift */,
 				0B826123DF4DBC78B96F6E9F /* Passage.swift */,
 				38C6604306AEB70EFA6335AC /* ReadingDay.swift */,
+				193B3C5005B089F0C944A282 /* ReadingMonth.swift */,
 				A69F6923E89BB5328850914B /* ReadingPosition.swift */,
 				8D3E86D40FE19EADCA38B096 /* ReadingWeek.swift */,
 				6E059774A5E3FF554D4E34C1 /* SavedVerse.swift */,
@@ -331,6 +336,7 @@
 			children = (
 				C7EDCBCB019070745F69CD19 /* ReadingScheduleView.swift */,
 				FFB8B59562485E208AE29875 /* StreakBadge.swift */,
+				DFD478094849EAC67CD4BBCD /* StreakCalendarView.swift */,
 				9BA4DDF512F6B45AAA6FB607 /* WeeklyReadingView.swift */,
 			);
 			path = WeeklyReading;
@@ -556,6 +562,7 @@
 				29D2F59E6DCD1C13228C4D9C /* IntroView.swift in Sources */,
 				1A0BED16B6E50C0750F8CDA3 /* Passage.swift in Sources */,
 				5F17E4C13727DF65E5355E27 /* ReadingDay.swift in Sources */,
+				2EC3BD3C3FF566332297ADA2 /* ReadingMonth.swift in Sources */,
 				FB716C6D5A6ED519A635E0E5 /* ReadingPosition.swift in Sources */,
 				587687AF5339A3792B90B606 /* ReadingPositionStore.swift in Sources */,
 				FA40BBDDBC4F7FFB278A9270 /* ReadingSchedule.swift in Sources */,
@@ -571,6 +578,7 @@
 				2CEC929D67BF2B536A26D8AF /* SettingsView.swift in Sources */,
 				0B10724C4C9A8EC53B747D33 /* ShrinkToFit.swift in Sources */,
 				FB916BEAEE27DE0DCBB13C80 /* StreakBadge.swift in Sources */,
+				D1C72B051BD119B0E04FBDF3 /* StreakCalendarView.swift in Sources */,
 				D49FE033F87B52185C586301 /* VerseCard.swift in Sources */,
 				F4DF404E863DFF4A21F0998F /* VerseID.swift in Sources */,
 				9A05D5DDC9C69485F2E1C099 /* VersedApp.swift in Sources */,

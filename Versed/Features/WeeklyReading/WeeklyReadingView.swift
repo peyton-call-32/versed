@@ -2,7 +2,7 @@ import SwiftData
 import SwiftUI
 
 /// Opens to this week's reading. A header row sits on top: the chapter menu on the left, and
-/// the streak on the right.
+/// the streak on the right, which opens the streak calendar.
 ///
 /// Each week opens on its opening card. Swiping up goes to the page where the reader left off,
 /// or to the start once the week has been read to its closing card.

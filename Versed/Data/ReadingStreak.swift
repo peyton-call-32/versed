@@ -36,4 +36,26 @@ enum ReadingStreak {
         }
         return count
     }
+
+    /// The longest run of days in a row the reader has ever had.
+    static func best(readDays: Set<String>, calendar: Calendar = .current) -> Int {
+        var best = 0
+        for key in readDays {
+            guard var day = ReadingDay.date(forKey: key, calendar: calendar) else { continue }
+
+            // Only count from the first day of each run, so no run is walked twice.
+            let isFirstDay = calendar.date(byAdding: .day, value: -1, to: day)
+                .map { !readDays.contains(ReadingDay.key(for: $0, calendar: calendar)) } ?? true
+            guard isFirstDay else { continue }
+
+            var length = 0
+            while readDays.contains(ReadingDay.key(for: day, calendar: calendar)),
+                  let next = calendar.date(byAdding: .day, value: 1, to: day) {
+                length += 1
+                day = next
+            }
+            best = max(best, length)
+        }
+        return best
+    }
 }

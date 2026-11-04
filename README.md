@@ -17,7 +17,7 @@ Built for Latter-day Saints who want to read a little every day. It opens straig
 - Browse any book and chapter of the standard works
 - Save verses with a double-tap or the heart button
 - Picks up where you left off
-- Daily reading streak
+- Daily reading streak, with a calendar of the days read
 - Light or dark mode, or match the phone (Settings, from the gear on the Browse tab)
 - An optional daily reminder at a time you pick (off until you turn it on)
 - A button at the end of each week's reading that opens the official lesson, in Gospel Library if it's installed

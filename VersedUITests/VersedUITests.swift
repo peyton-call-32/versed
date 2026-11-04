@@ -31,7 +31,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Remove from saved"].waitForExistence(timeout: 5))
 
         // Reading a verse starts the streak.
-        XCTAssertTrue(app.staticTexts["1-day reading streak"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["1-day reading streak"].waitForExistence(timeout: 5))
         saveScreenshot(named: "1-this-week")
 
         // Browse to Alma 32 and read to verse 2.
@@ -291,19 +291,29 @@ final class VersedUITests: XCTestCase {
     }
 
     func testThisWeekHeader() {
-        // The chapter menu on the left, showing the week's dates; no streak until the first verse is read.
+        // The chapter menu on the left, showing the week's dates; no count until the first verse is read.
         XCTAssertTrue(app.buttons["Week of Oct 26 – Nov 1"].waitForExistence(timeout: 10))
         let weekMenu = app.buttons["Chapter menu"]
         XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
-        XCTAssertFalse(app.staticTexts["1-day reading streak"].exists)
+        XCTAssertTrue(app.buttons["Reading streak"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["1-day reading streak"].exists)
         XCTAssertLessThan(weekMenu.frame.midX, app.frame.midX)
 
-        // Once the streak shows, it sits on the right and nothing overlaps.
+        // Once the streak counts, it sits on the right and nothing overlaps.
         for _ in 1...3 { app.swipeUp() }
-        let streak = app.staticTexts["1-day reading streak"]
+        let streak = app.buttons["1-day reading streak"]
         XCTAssertTrue(streak.waitForExistence(timeout: 5))
         XCTAssertGreaterThan(streak.frame.minX, weekMenu.frame.maxX)
         attachScreenshot(named: "this-week-header")
+
+        // Tapping it opens the calendar, with today marked as read.
+        streak.tap()
+        XCTAssertTrue(app.navigationBars["Your Streak"].waitForExistence(timeout: 5))
+        let today = Date.now.formatted(.dateTime.month(.wide).day())
+        let todayCell = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "Today, \(today), read")).firstMatch
+        XCTAssertTrue(todayCell.waitForExistence(timeout: 5))
+        attachScreenshot(named: "streak-calendar")
+        app.buttons["Done"].tap()
 
         // Settings lives on Browse.
         XCTAssertFalse(app.buttons["Settings"].exists)
@@ -317,7 +327,7 @@ final class VersedUITests: XCTestCase {
         app.swipeUp()
         app.swipeUp()
         XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.staticTexts["1-day reading streak"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["1-day reading streak"].waitForExistence(timeout: 5))
     }
 
     func testChoosingAnAppearance() {

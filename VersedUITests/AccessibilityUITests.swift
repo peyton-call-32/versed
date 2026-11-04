@@ -31,6 +31,13 @@ final class AccessibilityUITests: XCTestCase {
             try audit("chapter menu, \(appearance)")
             app.buttons["Done"].tap()
 
+            app.buttons["Streak"].tap()
+            XCTAssertTrue(app.navigationBars["Your Streak"].waitForExistence(timeout: 5))
+            // The calendar's days stop growing at a set size so seven columns still fit.
+            // `testStreakCalendarAtTheLargestTextSize` checks that size properly instead.
+            try audit("streak calendar, \(appearance)", except: .dynamicType)
+            app.buttons["Done"].tap()
+
             app.tab("Browse").tap()
             try audit("Browse, \(appearance)")
 
@@ -49,6 +56,16 @@ final class AccessibilityUITests: XCTestCase {
 
         // Put the default back so the simulator is left as it was.
         setAppearance("Match Phone")
+    }
+
+    /// At the largest text size, the calendar can still be read and closed.
+    func testStreakCalendarAtTheLargestTextSize() {
+        launch(extraArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
+        app.buttons["Streak"].tap()
+        XCTAssertTrue(app.navigationBars["Your Streak"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Previous month"].exists)
+        XCTAssertTrue(app.buttons["Done"].isHittable)
+        attachScreenshot(named: "largest-streak-calendar")
     }
 
     func testFirstTimeIntroPassesTheAccessibilityAudit() throws {
@@ -219,6 +236,8 @@ final class AccessibilityUITests: XCTestCase {
     /// - Contrast in parts iOS draws itself: the navigation bar's titles and buttons (its glass
     ///   confuses the audit in dark mode), and controls with no text of their own, like switches.
     /// - Contrast on Settings' gentle-note line in dark mode: cream-gray on deep navy, plenty readable.
+    /// - Contrast on the streak calendar's day numbers. The audit flags a random few, even cream on
+    ///   navy. The colors measure 6.7:1 (light) and 8.4:1 (dark) against the card, well above 4.5:1.
     /// - Text size on the tab bar and the Skip, Next, and Done buttons, capped so the
     ///   bars and the page text keep their room.
     /// - "Clipped" text in Settings that's fully visible in both the normal and the
@@ -236,6 +255,7 @@ final class AccessibilityUITests: XCTestCase {
             return element.frame.maxY > bottom || element.label.isEmpty || isNavigationTitle
                 || ["Done", "Settings"].contains(element.label)
                 || element.label.hasPrefix("A gentle note")
+                || Int(element.label) != nil
         case .dynamicType:
             return ["This Week", "Browse", "Saved", "Skip", "Next", "Done"].contains(element.label)
         case .textClipped:

@@ -20,7 +20,7 @@
 3. Browse any book and chapter (Old Testament, New Testament, Book of Mormon, Doctrine and Covenants, Pearl of Great Price).
 4. Save verses (double-tap or heart) and a Saved tab.
 5. Remembers where I left off.
-6. Daily reading streak.
+6. Daily reading streak, with a calendar of the days read.
 
 ### Tech
 - SwiftUI, iOS 17.
@@ -74,6 +74,7 @@ App Store release (in progress; 16–19 done). Peyton's Apple Developer account 
 - Screens use the iPhone's standard back button and navigation titles, so swipe-to-go-back keeps working.
 - This Week shows the date in its small label. When a week has several books they sit close together as one group, with no line between them, so they don't look like separate weeks. A book's name sits right above its chapter sections. Each section is a raised white pill that jumps to where it starts, all on one line, sitting close under the book's name. Settings is opened from the gear on Browse.
 - Moving around a feed: the pill at the top (`ChapterMenu.swift`) says where the reader is ("Ezekiel 2", or the week's dates on its opening and closing cards) and opens a "Go To" sheet: every chapter in the feed, plus "Back to Week's Start" and "Other Weeks" in a week's feed. Back to the start keeps the reader's place underneath, so swiping up continues. Tapping the tab that's already open goes back to that tab's start. Browse's feed holds the whole book, so earlier chapters are reachable.
+- Streak: the pill at the top right of This Week (`StreakBadge.swift`) shows a flame and "12 days", or just the flame with no streak going, so the calendar is always reachable. It opens "Your Streak" (`StreakCalendarView.swift`): the big count, a month calendar where days in a row join into one band, best streak, and days read. Past months go back to the first day read. Everything comes from the saved days on the phone, and the flame stays navy. Gentle wording only, never guilt about a lost streak.
 - All colors, fonts, and shared pieces live in `Versed/Features/Shared/AppColors.swift` (`.brand`, `.appBackground`, `.cardBackground`, `.secondaryText`, `.hairline`, `.cardShadow`, `.versedTitle`, `.versedNumber`, `.versedVerse`, `.raised(in:)`, `Card`, `CardSection`, `CardRowLabel`, `SmallCapsLabel`, `Ornament`, `.primary`/`.secondary`/`.raisedPill`/`.cardRow` button styles). The tab bar is `FloatingTabBar.swift`. New screens use these. Don't add new colors or one-off styles; if something's missing, add it there.
 
 ## Testing
