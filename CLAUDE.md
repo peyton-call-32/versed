@@ -67,9 +67,13 @@ App Store release (in progress; 16–19 done). Peyton's Apple Developer account 
 21. Walk Peyton through uploading a build to TestFlight and testing it on their own iPhone before submitting for review.
 
 ## Design
-- Navy and cream, matching the app icon. Simple and classy: no extra colors, soft white pills with a faint outline (no shadows: the accessibility check flags them), verse and title text in navy ink, small spaced capitals for references, a thin line-and-diamond `Ornament`, and a large light chapter number on chapter cards.
-- Colors: off-white page with white cards in light mode, deep navy with lighter navy cards in dark mode.
-- All colors and button styles live in `Versed/Features/Shared/AppColors.swift` (`.brand`, `.appBackground`, `.cardBackground`, `.secondaryText`, `.hairline`, `SectionHeader`, `SmallCapsLabel`, `Ornament`, `.pillBackground()`, `.versedListStyle()`, `.primary`/`.secondary` button styles). New screens use these. Don't add new colors or one-off styles; if something's missing, add it there.
+- The look is called "Quiet": simple and classy, but modern. Mocks: https://claude.ai/artifact/AgFoBWJQgBvXQicM4zfzM5 (page "Simple + Modern"). Navy and cream, matching the app icon: no extra colors, no gradients or frosted panels.
+- Soft white raised cards and pills (a thin outline plus one faint shadow, on the shape only so text stays sharp), a small floating tab bar, centered verses, a thin line-and-diamond `Ornament`, small spaced capitals for references and labels, and a large light chapter number on chapter cards.
+- Three bundled fonts, free under the Open Font License (licenses in `Versed/Resources/Fonts`, listed in `Versed/App/Info.plist`): EB Garamond for verses, Source Serif 4 Display for titles and for numbers (its numbers are all one even height), and the iPhone's own font for buttons, labels, and lists.
+- Colors: warm paper page with soft white cards in light mode, deep navy with lighter navy cards in dark mode.
+- Screens use the iPhone's standard back button and navigation titles, so swipe-to-go-back keeps working.
+- This Week shows the date in its small label. When a week has several books they sit close together as one group, with no line between them, so they don't look like separate weeks. Settings is opened from the gear on Browse.
+- All colors, fonts, and shared pieces live in `Versed/Features/Shared/AppColors.swift` (`.brand`, `.appBackground`, `.cardBackground`, `.secondaryText`, `.hairline`, `.cardShadow`, `.versedTitle`, `.versedNumber`, `.versedVerse`, `.raised(in:)`, `Card`, `CardSection`, `CardRowLabel`, `SmallCapsLabel`, `Ornament`, `.primary`/`.secondary`/`.cardRow` button styles). The tab bar is `FloatingTabBar.swift`. New screens use these. Don't add new colors or one-off styles; if something's missing, add it there.
 
 ## Testing
 - After a change, only run the tests related to it, then save to GitHub.
@@ -82,4 +86,4 @@ App Store release (in progress; 16–19 done). Peyton's Apple Developer account 
 - "Come, Follow Me" is a Church trademark. Never use it as the name of a tab, button, screen, or feature. It appears only in one descriptive line (`AboutSection.independenceNotice`), shown in the About section and on the last page of the first-time intro: "This Week follows the Come, Follow Me reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints." The lesson links (which contain "come-follow-me" in the web address) are fine.
 - Youth safety: youth groups need two adult leaders, parents can see group activity, and there are no private messages between adults and youth.
 - Collect as little user data as possible.
-- Accessibility: feed pages use `ShrinkToFit` so text grows with the iPhone's text size but each page still fits on one screen. Use `.secondaryText` (not `.secondary`) for gray text so it stays readable. Respect Reduce Motion for any new animation. `AccessibilityUITests` runs Apple's accessibility audit on every screen in light and dark mode.
+- Accessibility: feed pages use `ShrinkToFit` so text grows with the iPhone's text size but each page still fits on one screen. Use `.secondaryText` (not `.secondary`) for gray text so it stays readable. Respect Reduce Motion for any new animation. `AccessibilityUITests` runs Apple's accessibility audit on every screen in light and dark mode; anything it flags by mistake is listed, with the reason, in `isKnownException`.

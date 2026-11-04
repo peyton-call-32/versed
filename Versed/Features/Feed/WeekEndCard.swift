@@ -7,17 +7,20 @@ struct WeekEndCard: View {
 
     var body: some View {
         ShrinkToFit {
-            VStack(spacing: 16) {
-                VStack(spacing: 16) {
-                    Image(systemName: "checkmark.circle")
-                        .font(.system(size: 44))
-                        .foregroundStyle(.tint)
+            VStack(spacing: 18) {
+                VStack(spacing: 18) {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: 26, weight: .light))
+                        .foregroundStyle(.brand)
 
-                    Text("End of the Week's Reading")
-                        .font(.system(.title, design: .serif, weight: .semibold))
+                    Text("End of the Week’s Reading")
+                        .font(.versedTitle(size: 38, relativeTo: .title))
+                        .foregroundStyle(.brand)
+
+                    Ornament()
 
                     Text(week.displayLabel)
-                        .font(.title3)
+                        .font(.subheadline)
                         .foregroundStyle(.secondaryText)
                 }
                 // VoiceOver reads "End of the Week's Reading, Daniel 1–7" as one heading.
@@ -28,10 +31,18 @@ struct WeekEndCard: View {
                 // Only a link: the lesson itself opens in Gospel Library if it's installed
                 // (iOS hands churchofjesuschrist.org links to it), otherwise in Safari.
                 Link(destination: week.lessonURL) {
-                    Label("Open This Week's Lesson", systemImage: "arrow.up.right.square")
+                    HStack(spacing: 8) {
+                        Text("Open This Week’s Lesson")
+                        Image(systemName: "arrow.up.right")
+                            .imageScale(.small)
+                            .accessibilityHidden(true)
+                    }
                 }
-                .buttonStyle(.secondary)
-                .padding(.top, 8)
+                .buttonStyle(.primary)
+                .padding(.top, 14)
+                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                .accessibilityLabel("Open This Week's Lesson")
+                .accessibilityIdentifier("Open This Week's Lesson")
                 .accessibilityHint("Opens the lesson in Gospel Library or Safari.")
             }
         }

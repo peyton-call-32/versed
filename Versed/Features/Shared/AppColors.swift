@@ -78,20 +78,7 @@ extension View {
     }
 }
 
-/// A small, spaced-out, all-caps label above a group of rows, such as "CONTINUE READING".
-struct SectionHeader: View {
-    let title: String
-
-    init(_ title: String) {
-        self.title = title
-    }
-
-    var body: some View {
-        SmallCapsLabel(title)
-    }
-}
-
-/// A small, spaced-out, all-caps label, like "JEREMIAH 31:2" under a verse or "CHAPTER" above a number.
+/// A small, spaced-out, all-caps label, like "JEREMIAH 31:2" under a verse or "SCRIPTURES" above a card.
 struct SmallCapsLabel: View {
     let text: String
 
@@ -105,6 +92,7 @@ struct SmallCapsLabel: View {
             .tracking(1.7)
             .textCase(.uppercase)
             .foregroundStyle(.secondaryText)
+            .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -113,7 +101,9 @@ struct Ornament: View {
     var body: some View {
         HStack(spacing: 10) {
             line
-            OrnamentDiamond()
+            Image(systemName: "diamond.fill")
+                .font(.system(size: 6))
+                .foregroundStyle(Color.brand.opacity(0.45))
             line
         }
         .accessibilityHidden(true)
@@ -126,14 +116,144 @@ struct Ornament: View {
     }
 }
 
-/// The small faint diamond from `Ornament`, on its own. Decoration only: VoiceOver skips it.
-struct OrnamentDiamond: View {
+/// A soft white card holding a stack of rows. Separate the rows with `CardDivider`.
+struct Card<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    private var shape: RoundedRectangle { RoundedRectangle(cornerRadius: 16, style: .continuous) }
+
     var body: some View {
-        Image(systemName: "diamond.fill")
-            .font(.system(size: 6))
-            .foregroundStyle(Color.brand.opacity(0.45))
+        VStack(alignment: .leading, spacing: 0) {
+            content
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .clipShape(shape)
+        .raised(in: shape)
+    }
+}
+
+/// A small label with a card under it, and an optional quiet note below the card.
+struct CardSection<Content: View>: View {
+    let title: String
+    var footer: String? = nil
+    @ViewBuilder let content: Content
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SmallCapsLabel(title)
+                .padding(.leading, 4)
+                .accessibilityAddTraits(.isHeader)
+            Card { content }
+            if let footer {
+                Text(footer)
+                    .font(.footnote)
+                    .foregroundStyle(.secondaryText)
+                    .padding(.horizontal, 4)
+            }
+        }
+    }
+}
+
+/// The thin line between two rows in a card.
+struct CardDivider: View {
+    var body: some View {
+        Rectangle()
+            .fill(Color.hairline)
+            .frame(height: 1)
+            .padding(.leading, 16)
             .accessibilityHidden(true)
     }
+}
+
+/// One row in a card: a title, an optional detail on the right, and a small arrow.
+/// VoiceOver and UI tests read the title as its label and the detail as its value.
+struct CardRowLabel: View {
+    let title: String
+    var detail: String? = nil
+    /// The small icon at the end of the row, or `nil` for a row that doesn't go anywhere.
+    var symbol: String? = "chevron.forward"
+
+    /// The arrow for rows that leave the app.
+    static let externalLinkSymbol = "arrow.up.right"
+
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    /// Side by side, or stacked at the largest text sizes so long words never break in the middle.
+    private var layout: AnyLayout {
+        typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+            : AnyLayout(HStackLayout(spacing: 8))
+    }
+
+    var body: some View {
+        HStack(spacing: 10) {
+            layout {
+                Text(title)
+                    .foregroundStyle(.brand)
+                if !typeSize.isAccessibilitySize {
+                    Spacer(minLength: 0)
+                }
+                if let detail {
+                    Text(detail)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            if typeSize.isAccessibilitySize {
+                Spacer(minLength: 0)
+            }
+            if let symbol {
+                CardRowArrow(symbol: symbol)
+            }
+        }
+        .multilineTextAlignment(.leading)
+        .cardRowPadding()
+        .contentShape(Rectangle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
+        .accessibilityValue(detail ?? "")
+    }
+}
+
+/// The small arrow at the end of a card row.
+struct CardRowArrow: View {
+    var symbol = "chevron.forward"
+
+    var body: some View {
+        Image(systemName: symbol)
+            .font(.footnote.weight(.medium))
+            .foregroundStyle(.secondaryText)
+            .accessibilityHidden(true)
+    }
+}
+
+extension View {
+    /// The spacing inside a card row, tall enough to tap easily.
+    func cardRowPadding() -> some View {
+        padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+    }
+
+    /// The shared page behind a screen of cards. It scrolls, and leaves even margins.
+    func versedPage() -> some View {
+        padding(.horizontal, 20)
+            .padding(.top, 8)
+            .padding(.bottom, 24)
+    }
+}
+
+/// A tappable card row: it dims while pressed.
+struct CardRowButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background(configuration.isPressed ? Color.hairline : .clear)
+    }
+}
+
+extension ButtonStyle where Self == CardRowButtonStyle {
+    static var cardRow: CardRowButtonStyle { CardRowButtonStyle() }
 }
 
 /// The main button: a solid navy pill with cream text (cream with navy text in dark mode).

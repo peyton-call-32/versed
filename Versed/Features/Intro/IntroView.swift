@@ -22,7 +22,7 @@ struct IntroView: View {
 
     private let pages = [
         Page(
-            symbol: "hand.draw",
+            symbol: "arrow.up",
             title: "Swipe Up for the Next Verse",
             message: "Versed shows one verse at a time. Swipe up to keep reading."
         ),
@@ -43,14 +43,16 @@ struct IntroView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack {
+                SmallCapsLabel("Step \(page + 1) of \(pages.count)")
                 Spacer()
                 if !isLastPage {
                     Button("Skip", action: onFinish)
-                        .padding()
+                        .buttonStyle(.secondary)
                         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
                 }
             }
             .frame(minHeight: 52)
+            .padding(.horizontal, 20)
 
             TabView(selection: $page) {
                 ForEach(pages.indices, id: \.self) { index in
@@ -58,16 +60,16 @@ struct IntroView: View {
                         .tag(index)
                 }
             }
-            // The page dots get their own row below, so long text never slides under them.
             .tabViewStyle(.page(indexDisplayMode: .never))
 
-            pageDots
-
             if !isLastPage {
-                nextButton
-                    .padding(.horizontal, 32)
-                    .padding(.bottom, 24)
-                    .dynamicTypeSize(...DynamicTypeSize.accessibility2)
+                Button("Next") {
+                    // Slides to the next page, or just switches with Reduce Motion on.
+                    withAnimation(reduceMotion ? nil : .default) { page += 1 }
+                }
+                .buttonStyle(.primary)
+                .padding(.vertical, 20)
+                .dynamicTypeSize(...DynamicTypeSize.accessibility2)
             }
         }
         .background(Color.appBackground)
@@ -93,13 +95,19 @@ struct IntroView: View {
     private func pageContent(_ page: Page, offersReminder: Bool) -> some View {
         VStack(spacing: 20) {
             Image(systemName: page.symbol)
-                .font(.system(size: 64))
-                .foregroundStyle(.tint)
+                .font(.system(size: 24, weight: .light))
+                .foregroundStyle(.brand)
+                .frame(width: 72, height: 72)
+                .raised(in: Circle())
+                .padding(.bottom, 10)
                 .accessibilityHidden(true)
 
             Text(page.title)
-                .font(.system(.title, design: .serif, weight: .semibold))
+                .font(.versedTitle(size: 38, relativeTo: .title))
+                .foregroundStyle(.brand)
                 .accessibilityAddTraits(.isHeader)
+
+            Ornament()
 
             Text(page.message)
                 .font(.body)
@@ -115,27 +123,11 @@ struct IntroView: View {
         .frame(maxWidth: .infinity)
     }
 
-    /// Shows which page the reader is on. VoiceOver reads it as "Page 1 of 3".
-    private var pageDots: some View {
-        HStack(spacing: 8) {
-            ForEach(pages.indices, id: \.self) { index in
-                Circle()
-                    .fill(index == page ? Color.primary : Color.secondaryText.opacity(0.4))
-                    .frame(width: 8, height: 8)
-            }
-        }
-        // Room around the dots, and big enough to meet the minimum touch size.
-        .frame(minWidth: 44, minHeight: 44)
-        .contentShape(Rectangle())
-        .accessibilityElement()
-        .accessibilityLabel("Page \(page + 1) of \(pages.count)")
-        .accessibilityIdentifier("Intro page dots")
-    }
-
     private var reminderOffer: some View {
         VStack(spacing: 12) {
             Text("Want a gentle reminder to read each day?")
                 .font(.headline)
+                .foregroundStyle(.brand)
 
             Button {
                 Task { await turnOnReminder() }
@@ -146,7 +138,7 @@ struct IntroView: View {
             .buttonStyle(.primary)
 
             Button("Not Now", action: onFinish)
-                .controlSize(.large)
+                .buttonStyle(.secondary)
 
             Text("You can change this anytime in Settings.")
                 .font(.footnote)
@@ -157,17 +149,6 @@ struct IntroView: View {
                 .foregroundStyle(.secondaryText)
                 .padding(.top, 16)
         }
-    }
-
-    private var nextButton: some View {
-        Button {
-            // Slides to the next page, or just switches with Reduce Motion on.
-            withAnimation(reduceMotion ? nil : .default) { page += 1 }
-        } label: {
-            Text("Next")
-                .frame(maxWidth: .infinity)
-        }
-        .buttonStyle(.primary)
     }
 
     /// Asks for permission and schedules the reminder. If the reader says no to

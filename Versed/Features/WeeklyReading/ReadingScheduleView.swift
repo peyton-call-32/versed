@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Every week in the schedule, with its dates and chapters, grouped by year's course.
-/// The current week is highlighted, and the list opens scrolled to it.
+/// The current week is a solid navy row, and the list opens scrolled to it.
 /// Tapping a week opens its reading on the This Week tab.
 struct ReadingScheduleView: View {
     let schedule: ReadingSchedule
@@ -23,21 +23,27 @@ struct ReadingScheduleView: View {
 
     var body: some View {
         ScrollViewReader { proxy in
-            List {
-                ForEach(courses, id: \.name) { course in
-                    Section {
-                        ForEach(course.weeks) { week in
-                            row(for: week, isThisWeek: week.id == thisWeekID)
+            ScrollView {
+                VStack(spacing: 22) {
+                    ForEach(courses, id: \.name) { course in
+                        CardSection(title: course.name) {
+                            ForEach(course.weeks) { week in
+                                if week.id != course.weeks.first?.id {
+                                    CardDivider()
+                                }
+                                WeekRow(week: week, isThisWeek: week.id == thisWeekID) {
+                                    // This week opens as "this week", so it keeps following the calendar.
+                                    openWeek(week.id == thisWeekID ? nil : week.id)
+                                }
                                 .id(week.id)
+                            }
                         }
-                    } header: {
-                        SectionHeader(course.name)
                     }
                 }
+                .versedPage()
             }
-            .versedListStyle()
+            .background(Color.appBackground)
             .navigationTitle("Reading Schedule")
-            .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 if let thisWeekID {
                     proxy.scrollTo(thisWeekID, anchor: .center)
@@ -45,36 +51,44 @@ struct ReadingScheduleView: View {
             }
         }
     }
+}
 
-    private func row(for week: ReadingWeek, isThisWeek: Bool) -> some View {
-        Button {
-            // This week opens as "this week", so it keeps following the calendar.
-            openWeek(isThisWeek ? nil : week.id)
-        } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    if isThisWeek {
-                        Text("THIS WEEK")
-                            .font(.caption.weight(.semibold))
-                            .tracking(1)
-                            .foregroundStyle(.tint)
-                    }
-                    Text(week.dateRangeText())
-                        .font(.headline)
-                        .foregroundStyle(Color.primary)
-                    Text(week.displayLabel)
-                        .font(.subheadline)
-                        .foregroundStyle(.secondaryText)
-                }
-                Spacer(minLength: 8)
-                DisclosureChevron()
+/// One week: its dates in a column on the left and its chapters beside them.
+/// At the largest text sizes, the chapters move under the dates.
+private struct WeekRow: View {
+    let week: ReadingWeek
+    let isThisWeek: Bool
+    let action: () -> Void
+
+    @Environment(\.dynamicTypeSize) private var typeSize
+    /// Wide enough that "Nov 30 – Dec 6" stays on one line.
+    @ScaledMetric(relativeTo: .footnote) private var dateWidth = 100.0
+
+    private var layout: AnyLayout {
+        typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 2))
+            : AnyLayout(HStackLayout(alignment: .firstTextBaseline, spacing: 8))
+    }
+
+    var body: some View {
+        Button(action: action) {
+            layout {
+                Text(week.dateRangeText())
+                    .font(.footnote)
+                    .foregroundStyle(isThisWeek ? Color("ProminentButtonLabel") : .secondaryText)
+                    .frame(width: typeSize.isAccessibilitySize ? nil : dateWidth, alignment: .leading)
+                Text(week.displayLabel)
+                    .font(.subheadline.weight(isThisWeek ? .semibold : .regular))
+                    .foregroundStyle(isThisWeek ? Color("ProminentButtonLabel") : .brand)
+                    .multilineTextAlignment(.leading)
             }
-            .padding(.vertical, 2)
+            .cardRowPadding()
+            .contentShape(Rectangle())
+            .background(isThisWeek ? Color("ProminentButton") : .clear)
         }
-        .listRowBackground(isThisWeek ? Color.brand.opacity(0.1) : Color.cardBackground)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(isThisWeek ? "This week, " : "")\(week.dateRangeText()), \(week.label)")
+        .buttonStyle(.cardRow)
         .accessibilityAddTraits(isThisWeek ? .isSelected : [])
+        .accessibilityLabel("\(isThisWeek ? "This week, " : "")\(week.dateRangeText()), \(week.label)")
         .accessibilityHint("Opens the reading.")
     }
 }

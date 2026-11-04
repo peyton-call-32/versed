@@ -7,9 +7,11 @@ struct SavedVersesView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \SavedVerse.savedAt, order: .reverse) private var savedVerses: [SavedVerse]
+    /// The verse opened in the feed, if any.
+    @State private var path: [VerseID] = []
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             Group {
                 if savedVerses.isEmpty {
                     ContentUnavailableView(
@@ -23,9 +25,12 @@ struct SavedVersesView: View {
                     List(savedVerses) { saved in
                         if let id = saved.verse, let verse = library.verse(id) {
                             row(for: verse)
-                                .listRowBackground(Color.cardBackground)
+                                .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
+                                .listRowSeparator(.hidden)
+                                .listRowBackground(Color.clear)
                         }
                     }
+                    .listStyle(.plain)
                     .versedListStyle()
                 }
             }
@@ -39,17 +44,24 @@ struct SavedVersesView: View {
     }
 
     private func row(for verse: Verse) -> some View {
-        NavigationLink(value: verse.id) {
-            VStack(alignment: .leading, spacing: 6) {
+        Button {
+            path.append(verse.id)
+        } label: {
+            VStack(spacing: 12) {
                 Text(verse.text)
-                    .font(.system(.body, design: .serif))
-                    .lineLimit(3)
-                Text(verse.reference)
-                    .font(.subheadline)
-                    .foregroundStyle(.secondaryText)
+                    .font(.versedVerse(size: 20, relativeTo: .body))
+                    .lineLimit(6)
+                    .foregroundStyle(.brand)
+                SmallCapsLabel(verse.reference)
             }
-            .padding(.vertical, 4)
+            .multilineTextAlignment(.center)
+            .padding(18)
+            .frame(maxWidth: .infinity)
+            .raised(in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(verse.reference)
+        .accessibilityValue(verse.text)
         .swipeActions {
             Button("Remove", systemImage: "heart.slash", role: .destructive) {
                 SavedVerseStore(context: modelContext).unsave(verse.id)

@@ -14,9 +14,9 @@ struct RootView: View {
         let schedule: ReadingSchedule
     }
 
-    /// The intro shows once, the first time the app opens.
+    /// The intro shows once, the first time the app opens, as soon as the app has loaded.
     private var showsIntro: Binding<Bool> {
-        Binding { !hasSeenIntro } set: { hasSeenIntro = !$0 }
+        Binding { content != nil && !hasSeenIntro } set: { hasSeenIntro = !$0 }
     }
 
     /// Shows a week's reading on the This Week tab: `nil` for this week, or any week from the schedule.
@@ -28,8 +28,8 @@ struct RootView: View {
     var body: some View {
         Group {
             if let content {
-                // All three stay alive behind the bar, so each keeps its place when you switch away.
-                ZStack {
+                // iOS's tab container keeps each screen's place; our own bar replaces its bar.
+                TabView(selection: $selectedTab) {
                     tab(.thisWeek) {
                         WeeklyReadingView(library: content.library, schedule: content.schedule, selectedWeekID: $selectedWeekID)
                     }
@@ -40,15 +40,16 @@ struct RootView: View {
                         SavedVersesView(library: content.library)
                     }
                 }
-                .safeAreaInset(edge: .bottom, spacing: 0) {
+                .overlay(alignment: .bottom) {
                     FloatingTabBar(selection: $selectedTab)
-                }
-                .fullScreenCover(isPresented: showsIntro) {
-                    IntroView { hasSeenIntro = true }
                 }
             } else {
                 ProgressView()
             }
+        }
+        // On the outer group, so it opens only once the screen below it is fully on display.
+        .fullScreenCover(isPresented: showsIntro) {
+            IntroView { hasSeenIntro = true }
         }
         .tint(Color.brand)
         .windowAppearance(appearance)
@@ -62,13 +63,14 @@ struct RootView: View {
         }
     }
 
-    /// One main screen. Only the selected one can be seen, tapped, or read by VoiceOver.
+    /// One main screen. Lists stop short of the floating bar, while the bar still floats over them as they scroll.
     private func tab<Screen: View>(_ tab: AppTab, @ViewBuilder screen: () -> Screen) -> some View {
-        let isSelected = selectedTab == tab
-        return screen()
-            .opacity(isSelected ? 1 : 0)
-            .allowsHitTesting(isSelected)
-            .accessibilityHidden(!isSelected)
+        screen()
+            .safeAreaInset(edge: .bottom, spacing: 0) {
+                Color.clear.frame(height: FloatingTabBar.height)
+            }
+            .toolbar(.hidden, for: .tabBar)
+            .tag(tab)
     }
 }
 

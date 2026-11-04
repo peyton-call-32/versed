@@ -62,7 +62,6 @@
 		DC8E1D3239E7B046CC9147FC /* ReadingPositionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E92E1693CB57EDD73F6A13F /* ReadingPositionStoreTests.swift */; };
 		DE282F9E7C82E44C485EAD78 /* ChapterGridView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3AE69B58E9941C9EF9F2A9 /* ChapterGridView.swift */; };
 		DF1D86282D3AC952052036EA /* AboutSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5A3C337A7D07B3A52CD3742 /* AboutSection.swift */; };
-		E1CDEBF81BD5E0E4CC43D708 /* DisclosureChevron.swift in Sources */ = {isa = PBXBuildFile; fileRef = F367AD189CDD67681D7C30AE /* DisclosureChevron.swift */; };
 		E544D68D32CAE41980EEFF22 /* FloatingTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 946A4FC7F982B12B41DC853D /* FloatingTabBar.swift */; };
 		ED9AF7AD0AA39B000CA2F364 /* FeedItemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36231AEE0A980899FB8E3D40 /* FeedItemTests.swift */; };
 		EF6B569AE42C38B6FEE132C7 /* FeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 22901739A1100159786EF60C /* FeedView.swift */; };
@@ -158,7 +157,6 @@
 		E7996FA7EC88EA0494273667 /* schedule-2027.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "schedule-2027.json"; sourceTree = "<group>"; };
 		F1ADF58D40B3A1EE961844D7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		F1EB2C7EC8FB7F3867B32AA8 /* BrowseView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrowseView.swift; sourceTree = "<group>"; };
-		F367AD189CDD67681D7C30AE /* DisclosureChevron.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisclosureChevron.swift; sourceTree = "<group>"; };
 		FA4C7D46EC0C61DEC2F531CA /* IntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroView.swift; sourceTree = "<group>"; };
 		FB3B2E67C1A3026EE234EAE0 /* EBGaramond-License.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "EBGaramond-License.txt"; sourceTree = "<group>"; };
 		FF7355C4C79664759661A138 /* AppColors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppColors.swift; sourceTree = "<group>"; };
@@ -387,7 +385,6 @@
 			isa = PBXGroup;
 			children = (
 				FF7355C4C79664759661A138 /* AppColors.swift */,
-				F367AD189CDD67681D7C30AE /* DisclosureChevron.swift */,
 				946A4FC7F982B12B41DC853D /* FloatingTabBar.swift */,
 				D623E81C88B3290F8EE72F76 /* ShrinkToFit.swift */,
 			);
@@ -545,7 +542,6 @@
 				F67BF50EEB281238F6C952ED /* ChapterTitleCard.swift in Sources */,
 				9B9286C3D538DAA61800893D /* DailyReminder.swift in Sources */,
 				AF0463D93EAC06DE873D427A /* DailyReminderScheduler.swift in Sources */,
-				E1CDEBF81BD5E0E4CC43D708 /* DisclosureChevron.swift in Sources */,
 				DBC26FB646523E8A0502135A /* FeedItem.swift in Sources */,
 				EF6B569AE42C38B6FEE132C7 /* FeedView.swift in Sources */,
 				E544D68D32CAE41980EEFF22 /* FloatingTabBar.swift in Sources */,

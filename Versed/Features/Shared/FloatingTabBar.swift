@@ -20,7 +20,11 @@ enum AppTab: String, CaseIterable, Identifiable {
 
 /// The small raised bar that floats at the bottom of every main screen.
 struct FloatingTabBar: View {
+    /// The room to leave for the bar, including the small gap above it.
+    static let height: CGFloat = 66
+
     @Binding var selection: AppTab
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         HStack(spacing: 0) {
@@ -30,7 +34,8 @@ struct FloatingTabBar: View {
         }
         .padding(.horizontal, 6)
         .raised(in: Capsule())
-        .padding(.horizontal, 56)
+        // Wider at the largest text sizes, so the labels keep their room.
+        .padding(.horizontal, typeSize.isAccessibilitySize ? 12 : 56)
         .padding(.top, 8)
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         .sensoryFeedback(.selection, trigger: selection)

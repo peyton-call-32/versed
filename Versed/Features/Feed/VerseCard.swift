@@ -16,9 +16,8 @@ struct VerseCard: View {
         ShrinkToFit {
             VStack(spacing: 20) {
                 Text(verse.text)
-                    .font(.system(textStyle, design: .serif))
-                    .lineSpacing(6)
-                    // Deep navy ink rather than black (cream in dark mode).
+                    .font(verseFont)
+                    .lineSpacing(5)
                     .foregroundStyle(.brand)
 
                 VStack(spacing: 14) {
@@ -47,7 +46,7 @@ struct VerseCard: View {
             if showsHeartBurst {
                 Image(systemName: "heart.fill")
                     .font(.system(size: 96))
-                    .foregroundStyle(.red)
+                    .foregroundStyle(.brand)
                     // With Reduce Motion on, the heart fades in place instead of growing.
                     .transition(reduceMotion ? .opacity : .scale(scale: 0.5).combined(with: .opacity))
                     .allowsHitTesting(false)
@@ -63,16 +62,21 @@ struct VerseCard: View {
     private var heartButton: some View {
         Button(action: onHeartTap) {
             Image(systemName: isSaved ? "heart.fill" : "heart")
-                .font(.title)
-                .foregroundStyle(isSaved ? AnyShapeStyle(.red) : AnyShapeStyle(.secondaryText))
+                .font(.system(size: 20, weight: .light))
+                .foregroundStyle(.brand)
                 .contentTransition(.symbolEffect(.replace))
-                .frame(width: 56, height: 56)
+                .frame(width: 46, height: 46)
+                .raised(in: Circle())
+                // A slightly bigger tap area than the circle, so it's easy to hit.
+                .frame(width: 48, height: 48)
+                .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .accessibilityLabel(isSaved ? "Remove from saved" : "Save verse")
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         // Clears the tab bar, which floats over the bottom of the feed.
-        .padding(.trailing, 16)
-        .padding(.bottom, 110)
+        .padding(.trailing, 20)
+        .padding(.bottom, 108)
     }
 
     private func showHeartBurst() {
@@ -84,12 +88,12 @@ struct VerseCard: View {
     }
 
     /// Shorter verses get bigger text so every verse fills the screen comfortably.
-    private var textStyle: Font.TextStyle {
+    private var verseFont: Font {
         switch verse.text.count {
-        case ..<160: .title
-        case ..<360: .title2
-        case ..<600: .title3
-        default: .body
+        case ..<160: .versedVerse(size: 35)
+        case ..<360: .versedVerse(size: 31)
+        case ..<600: .versedVerse(size: 26, relativeTo: .title2)
+        default: .versedVerse(size: 22, relativeTo: .title3)
         }
     }
 }

@@ -4,23 +4,22 @@ import SwiftUI
 struct ChapterTitleCard: View {
     let title: ChapterTitle
 
-    /// The big chapter number grows and shrinks with the iPhone's text size.
-    @ScaledMetric(relativeTo: .largeTitle) private var numberSize: CGFloat = 104
-
     var body: some View {
         ShrinkToFit {
-            VStack(spacing: 8) {
+            VStack(spacing: 12) {
                 SmallCapsLabel(title.label)
 
                 Text("\(title.id.chapter)")
-                    .font(.system(size: numberSize, weight: .light, design: .serif))
+                    .font(.versedNumber(size: 150))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.3)
                     .foregroundStyle(.brand)
 
                 Ornament()
-                    .padding(.bottom, 8)
+                    .padding(.vertical, 6)
 
                 Text(title.bookName)
-                    .font(.system(.largeTitle, design: .serif, weight: .semibold))
+                    .font(.versedTitle(size: 34))
                     .foregroundStyle(.brand)
             }
         }

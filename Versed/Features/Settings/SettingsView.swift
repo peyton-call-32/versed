@@ -16,35 +16,30 @@ struct SettingsView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section {
-                    Picker("Appearance", selection: $appearance) {
-                        ForEach(Appearance.allCases) { option in
-                            Text(option.label).tag(option)
-                        }
+            ScrollView {
+                VStack(spacing: 22) {
+                    CardSection(title: "Appearance") {
+                        appearancePicker
                     }
-                    .pickerStyle(.segmented)
-                    .labelsHidden()
-                } header: {
-                    SectionHeader("Appearance")
+
+                    reminderSection
+
+                    CardSection(title: "Help") {
+                        Button {
+                            showsIntro = true
+                        } label: {
+                            CardRowLabel(title: "Show Intro Again")
+                        }
+                        .buttonStyle(.cardRow)
+                    }
+
+                    AboutSection()
                 }
-                .listRowBackground(Color.cardBackground)
-
-                reminderSection
-
-                Section {
-                    Button("Show Intro Again") { showsIntro = true }
-                } header: {
-                    SectionHeader("Help")
-                }
-                .listRowBackground(Color.cardBackground)
-
-                AboutSection()
+                .versedPage()
             }
-            .versedListStyle()
+            .background(Color.appBackground)
             .tint(Color.brand)
             .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Done") { dismiss() }
@@ -61,30 +56,59 @@ struct SettingsView: View {
         }
     }
 
+    /// Match Phone, Light, or Dark. The choice is a solid navy pill.
+    private var appearancePicker: some View {
+        HStack(spacing: 4) {
+            ForEach(Appearance.allCases) { option in
+                let isSelected = appearance == option
+                Button {
+                    appearance = option
+                } label: {
+                    Text(option.label)
+                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                        .foregroundStyle(isSelected ? Color("ProminentButtonLabel") : .brand)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .background(isSelected ? Color("ProminentButton") : .clear, in: .rect(cornerRadius: 12))
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+            }
+        }
+        .padding(4)
+    }
+
     private var reminderSection: some View {
-        Section {
+        CardSection(
+            title: "Daily Reminder",
+            footer: notificationsBlocked
+                ? "Notifications for Versed are turned off on this iPhone."
+                : "A gentle note once a day. Nothing leaves your phone."
+        ) {
             Toggle("Daily reminder", isOn: reminderSwitch)
+                .foregroundStyle(.brand)
+                .cardRowPadding()
 
             if reminderIsOn {
+                CardDivider()
                 DatePicker("Time", selection: reminderTime, displayedComponents: .hourAndMinute)
+                    .foregroundStyle(.brand)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
             }
 
             if notificationsBlocked {
-                Button("Turn On Notifications in iPhone Settings") {
+                CardDivider()
+                Button {
                     if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
                         openURL(url)
                     }
+                } label: {
+                    CardRowLabel(title: "Turn On Notifications in iPhone Settings", symbol: CardRowLabel.externalLinkSymbol)
                 }
+                .buttonStyle(.cardRow)
             }
-        } header: {
-            SectionHeader("Daily Reminder")
-        } footer: {
-            Text(notificationsBlocked
-                 ? "Notifications for Versed are turned off on this iPhone."
-                 : "A gentle note once a day. Nothing leaves your phone.")
-                .foregroundStyle(.secondaryText)
         }
-        .listRowBackground(Color.cardBackground)
     }
 
     /// The on/off switch. Turning it on asks iOS for permission and schedules the reminder.

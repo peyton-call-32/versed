@@ -42,13 +42,8 @@ struct FeedView: View {
         ScrollView(.vertical) {
             LazyVStack(spacing: 0) {
                 ForEach(items) { item in
-                    page(for: item, savedIDs: savedIDs)
+                    page(for: item, savedIDs: savedIDs, startTitle: "Start Reading", onStart: goToFirstVerse)
                         .containerRelativeFrame([.horizontal, .vertical])
-                        .overlay(alignment: .bottom) {
-                            if item.id == items.first?.id {
-                                swipeHint
-                            }
-                        }
                 }
             }
             .scrollTargetLayout()
@@ -88,9 +83,8 @@ struct FeedView: View {
         GeometryReader { geometry in
             let height = geometry.size.height
             let dismissDistance = min(height / 3, 250)
-            page(for: item, savedIDs: [])
+            page(for: item, savedIDs: [], startTitle: "Continue Reading") { dismissCover(height: height) }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .overlay(alignment: .bottom) { swipeHint }
                 .background(Color.appBackground)
                 .contentShape(Rectangle())
                 .offset(y: coverOffset)
@@ -107,13 +101,19 @@ struct FeedView: View {
                             }
                         }
                 )
-                // VoiceOver reads the card and hint together, and a three-finger swipe or the
-                // "Continue Reading" action moves on, since the drag can't be used with VoiceOver on.
-                .accessibilityElement(children: .combine)
-                .accessibilityAction(named: "Continue Reading") { dismissCover(height: height) }
+                // A three-finger swipe or the button moves on, since the drag can't be used with VoiceOver on.
+                .accessibilityElement(children: .contain)
                 .accessibilityScrollAction { _ in dismissCover(height: height) }
         }
         .ignoresSafeArea()
+    }
+
+    /// The Start Reading button: glides past the opening and chapter cards to the first verse.
+    private func goToFirstVerse() {
+        let firstVerse = items.first { if case .verse = $0 { true } else { false } }
+        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.35)) {
+            currentItemID = firstVerse?.id
+        }
     }
 
     /// Slides the cover off the top (or just removes it with Reduce Motion on), showing the page underneath.
@@ -134,10 +134,15 @@ struct FeedView: View {
     }
 
     @ViewBuilder
-    private func page(for item: FeedItem, savedIDs: Set<String>) -> some View {
+    private func page(
+        for item: FeedItem,
+        savedIDs: Set<String>,
+        startTitle: String,
+        onStart: @escaping () -> Void
+    ) -> some View {
         switch item {
         case .weekIntro(let week):
-            WeekIntroCard(week: week)
+            WeekIntroCard(week: week, startTitle: startTitle, onStart: onStart)
         case .weekEnd(let week):
             WeekEndCard(week: week)
         case .chapterTitle(let title):
@@ -152,19 +157,10 @@ struct FeedView: View {
             )
         }
     }
-
-    private var swipeHint: some View {
-        Label("Swipe up to read", systemImage: "chevron.up")
-            .font(.footnote)
-            .foregroundStyle(.secondaryText)
-            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-            // Clears the tab bar, which floats over the bottom of the feed.
-            .padding(.bottom, 120)
-    }
 }
 
 /// Room the feed's pages leave for what floats over them: the week menu at the top, and the
-/// tab bar, heart button, and swipe hint at the bottom. Those are capped at the first
+/// tab bar and heart button at the bottom. Those are capped at the first
 /// accessibility text size, so these fit them at every size.
 enum FeedInsets {
     static let top: CGFloat = 130

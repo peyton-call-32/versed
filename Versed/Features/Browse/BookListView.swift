@@ -5,20 +5,21 @@ struct BookListView: View {
     let volume: Volume
 
     var body: some View {
-        List(volume.books) { book in
-            NavigationLink(value: route(for: book)) {
-                HStack {
-                    Text(book.name)
-                    Spacer()
-                    Text("\(book.chapterCount)")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondaryText)
-                        .monospacedDigit()
+        ScrollView {
+            Card {
+                ForEach(volume.books) { book in
+                    if book.id != volume.books.first?.id {
+                        CardDivider()
+                    }
+                    NavigationLink(value: route(for: book)) {
+                        CardRowLabel(title: book.name, detail: "\(book.chapterCount)")
+                    }
+                    .buttonStyle(.cardRow)
                 }
             }
-            .listRowBackground(Color.cardBackground)
+            .versedPage()
         }
-        .versedListStyle()
+        .background(Color.appBackground)
         .navigationTitle(volume.title)
     }
 

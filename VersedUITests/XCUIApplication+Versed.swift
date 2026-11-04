@@ -16,9 +16,9 @@ extension XCUIApplication {
         descendants(matching: .any).matching(identifier: "Tab bar").firstMatch.frame.minY
     }
 
-    /// Opens Settings from the gear at the top of This Week.
+    /// Opens Settings from the gear at the top of Browse.
     func openSettings() {
-        tab("This Week").tap()
+        tab("Browse").tap()
         buttons["Settings"].tap()
         XCTAssertTrue(navigationBars["Settings"].waitForExistence(timeout: 5))
     }
@@ -26,7 +26,7 @@ extension XCUIApplication {
     /// Opens a week from Browse > Reading Schedule, by its row's VoiceOver label ("Nov 9–15, Daniel 1–7").
     func openWeekFromSchedule(_ rowLabel: String) {
         tab("Browse").tap()
-        collectionViews.buttons["Reading Schedule"].tap()
+        scrollViews.buttons["Reading Schedule"].tap()
         XCTAssertTrue(navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
 
         // The list opens on this week, so swipe until the row is loaded and on screen.

@@ -18,33 +18,40 @@ struct AboutSection: View {
     }
 
     var body: some View {
-        Section {
+        CardSection(
+            title: "About",
+            footer: "Scripture text is in the public domain. Versed collects no data: everything stays on your phone, with no accounts, ads, or tracking."
+        ) {
             Text(Self.independenceNotice)
                 .font(.footnote)
                 .foregroundStyle(.secondaryText)
+                .cardRowPadding()
 
+            CardDivider()
             Link(destination: Self.scriptureSourceURL) {
-                LabeledContent("Scripture Text", value: "bcbooks/scriptures-json")
+                CardRowLabel(title: "Scripture Text", detail: "bcbooks/scriptures-json", symbol: CardRowLabel.externalLinkSymbol)
             }
+            .buttonStyle(.cardRow)
             .accessibilityHint("Public domain. Opens the source in Safari.")
 
-            Link("Privacy Policy", destination: Self.privacyPolicyURL)
-
-            Link(destination: URL(string: "mailto:\(Self.contactEmail)")!) {
-                LabeledContent("Contact", value: Self.contactEmail)
+            CardDivider()
+            Link(destination: Self.privacyPolicyURL) {
+                CardRowLabel(title: "Privacy Policy", symbol: CardRowLabel.externalLinkSymbol)
             }
+            .buttonStyle(.cardRow)
 
-            LabeledContent("Version", value: Self.versionText())
-        } header: {
-            SectionHeader("About")
-        } footer: {
-            Text("Scripture text is in the public domain. Versed collects no data: everything stays on your phone, with no accounts, ads, or tracking.")
-                .foregroundStyle(.secondaryText)
+            CardDivider()
+            Link(destination: URL(string: "mailto:\(Self.contactEmail)")!) {
+                CardRowLabel(title: "Contact", detail: Self.contactEmail, symbol: CardRowLabel.externalLinkSymbol)
+            }
+            .buttonStyle(.cardRow)
+
+            CardDivider()
+            CardRowLabel(title: "Version", detail: Self.versionText(), symbol: nil)
         }
-        .listRowBackground(Color.cardBackground)
     }
 }
 
 #Preview {
-    Form { AboutSection() }
+    ScrollView { AboutSection().padding() }
 }

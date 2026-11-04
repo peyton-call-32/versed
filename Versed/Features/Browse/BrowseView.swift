@@ -11,6 +11,7 @@ struct BrowseView: View {
     let openWeek: (ReadingWeek.ID?) -> Void
 
     @Query private var positions: [ReadingPosition]
+    @State private var showsSettings = false
 
     /// The screens the browse tab can open.
     enum Route: Hashable {
@@ -24,88 +25,89 @@ struct BrowseView: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                weeklyReadingSection
-
-                if let itemID = lastBrowsePosition, let reference = reference(for: itemID) {
-                    Section {
-                        NavigationLink(value: Route.resume(itemID)) {
-                            Label(reference, systemImage: "bookmark")
-                                .font(.system(.body, design: .serif))
-                        }
-                    } header: {
-                        SectionHeader("Continue Reading")
-                    }
-                    .listRowBackground(Color.cardBackground)
+            ScrollView {
+                VStack(spacing: 22) {
+                    weeklyReadingSection
+                    scripturesSection
                 }
-
-                Section {
-                    ForEach(library.volumes) { volume in
-                        NavigationLink(value: route(for: volume)) {
-                            VStack(alignment: .leading, spacing: 2) {
-                                Text(volume.title)
-                                    .font(.system(.title3, design: .serif))
-                                Text(subtitle(for: volume))
-                                    .font(.subheadline)
-                                    .foregroundStyle(.secondaryText)
-                            }
-                            .padding(.vertical, 4)
-                        }
-                    }
-                } header: {
-                    SectionHeader("Scriptures")
-                }
-                .listRowBackground(Color.cardBackground)
+                .versedPage()
             }
-            .versedListStyle()
+            .background(Color.appBackground)
             .navigationTitle("Browse")
             .navigationDestination(for: Route.self, destination: destination)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Settings", systemImage: "gearshape") { showsSettings = true }
+                }
+            }
+            .sheet(isPresented: $showsSettings) {
+                SettingsView()
+            }
         }
     }
 
     private var weeklyReadingSection: some View {
-        Section {
+        CardSection(title: "This Week") {
             if let week = schedule.currentWeek() {
                 Button {
                     openWeek(nil)
                 } label: {
-                    HStack(alignment: .firstTextBaseline, spacing: 12) {
-                        Image(systemName: "calendar")
-                            .foregroundStyle(.tint)
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text("This Week")
-                                .font(.system(.title3, design: .serif))
-                                .foregroundStyle(Color.primary)
-                            Text(week.displayLabel)
-                                .font(.subheadline)
-                                .foregroundStyle(.secondaryText)
-                            Text(week.dateRangeText())
-                                .font(.subheadline)
-                                .foregroundStyle(.secondaryText)
-                        }
-                        Spacer(minLength: 8)
-                        DisclosureChevron()
-                    }
-                    .padding(.vertical, 4)
+                    thisWeekRow(week)
                 }
-                .accessibilityElement(children: .combine)
+                .buttonStyle(.cardRow)
                 .accessibilityLabel("This Week, \(week.label), \(week.dateRangeText())")
                 .accessibilityHint("Opens this week's reading.")
                 .accessibilityIdentifier("This Week")
+
+                CardDivider()
             }
 
             NavigationLink(value: Route.schedule) {
-                HStack(alignment: .firstTextBaseline, spacing: 12) {
-                    Image(systemName: "list.bullet.rectangle")
-                        .foregroundStyle(.tint)
-                        .accessibilityHidden(true)
-                    Text("Reading Schedule")
-                        .font(.system(.title3, design: .serif))
-                }
+                CardRowLabel(title: "Reading Schedule")
             }
-            .accessibilityIdentifier("Reading Schedule")
+            .buttonStyle(.cardRow)
+
+            if let itemID = lastBrowsePosition, let reference = reference(for: itemID) {
+                CardDivider()
+                NavigationLink(value: Route.resume(itemID)) {
+                    CardRowLabel(title: "Continue Reading", detail: reference)
+                }
+                .buttonStyle(.cardRow)
+            }
         }
-        .listRowBackground(Color.cardBackground)
+    }
+
+    /// The week's book names, with its dates under them.
+    private func thisWeekRow(_ week: ReadingWeek) -> some View {
+        HStack(spacing: 10) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(week.readingByBook.map(\.name).joined(separator: ", "))
+                    .font(.versedTitle(size: 20, relativeTo: .title3))
+                    .foregroundStyle(.brand)
+                Text(week.dateRangeText())
+                    .font(.subheadline)
+                    .foregroundStyle(.secondaryText)
+            }
+            .multilineTextAlignment(.leading)
+            Spacer(minLength: 8)
+            CardRowArrow()
+        }
+        .cardRowPadding()
+        .contentShape(Rectangle())
+    }
+
+    private var scripturesSection: some View {
+        CardSection(title: "Scriptures") {
+            ForEach(library.volumes) { volume in
+                if volume.id != library.volumes.first?.id {
+                    CardDivider()
+                }
+                NavigationLink(value: route(for: volume)) {
+                    CardRowLabel(title: volume.title, detail: subtitle(for: volume))
+                }
+                .buttonStyle(.cardRow)
+            }
+        }
     }
 
     @ViewBuilder

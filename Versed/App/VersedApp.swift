@@ -32,23 +32,35 @@ struct VersedApp: App {
     }
 
     /// Screen titles like "Browse" and "Saved" use the same typeface as the book names, in navy ink.
-    /// The color is set too: without it, the accessibility audit assumes black text and
-    /// reports the titles as unreadable on the dark mode background.
+    /// A full appearance is set for each bar state, so iOS doesn't swap in its own title font
+    /// when a bar changes state, such as after coming back from another screen.
     private static func useVersedScreenTitles() {
-        let navigationBar = UINavigationBar.appearance()
         let ink = UIColor(named: "AccentColor") ?? .label
-        if let large = UIFont(name: Font.Bundled.title, size: 34) {
-            navigationBar.largeTitleTextAttributes = [
-                .font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large),
-                .foregroundColor: ink,
-            ]
+        func titled(_ appearance: UINavigationBarAppearance) -> UINavigationBarAppearance {
+            if let large = UIFont(name: Font.Bundled.title, size: 34) {
+                appearance.largeTitleTextAttributes = [
+                    .font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large),
+                    .foregroundColor: ink,
+                ]
+            }
+            if let inline = UIFont(name: Font.Bundled.title, size: 18) {
+                appearance.titleTextAttributes = [
+                    .font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: inline),
+                    .foregroundColor: ink,
+                ]
+            }
+            return appearance
         }
-        if let inline = UIFont(name: Font.Bundled.title, size: 18) {
-            navigationBar.titleTextAttributes = [
-                .font: UIFontMetrics(forTextStyle: .headline).scaledFont(for: inline),
-                .foregroundColor: ink,
-            ]
-        }
+
+        let atTop = UINavigationBarAppearance()
+        atTop.configureWithTransparentBackground()
+        let scrolled = UINavigationBarAppearance()
+        scrolled.configureWithDefaultBackground()
+
+        let navigationBar = UINavigationBar.appearance()
+        navigationBar.scrollEdgeAppearance = titled(atTop)
+        navigationBar.standardAppearance = titled(scrolled)
+        navigationBar.compactAppearance = titled(scrolled)
     }
 
     var body: some Scene {
