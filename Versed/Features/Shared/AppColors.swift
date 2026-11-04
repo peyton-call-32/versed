@@ -283,17 +283,18 @@ struct SecondaryButtonStyle: ButtonStyle {
     }
 }
 
-/// The quietest button: a flat, faint navy pill, for tappable things that sit in the page's text.
-/// It deepens while pressed. Set the font where it's used.
-struct TintedPillButtonStyle: ButtonStyle {
+/// A raised pill for a row of choices, like a week's chapter sections. Fades while pressed.
+/// It keeps a comfortable tap size even around short labels. Set the font where it's used.
+struct RaisedPillButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .foregroundStyle(.brand)
             .padding(.horizontal, 12)
             .padding(.vertical, 3)
             .frame(minWidth: 44, minHeight: 44)
-            .background(Color.brand.opacity(configuration.isPressed ? 0.16 : 0.07), in: Capsule())
+            .pillBackground()
             .contentShape(Capsule())
+            .opacity(configuration.isPressed ? 0.7 : 1)
     }
 }
 
@@ -329,8 +330,8 @@ extension ButtonStyle where Self == PrimaryButtonStyle {
     static var primary: PrimaryButtonStyle { PrimaryButtonStyle() }
 }
 
-extension ButtonStyle where Self == TintedPillButtonStyle {
-    static var tintedPill: TintedPillButtonStyle { TintedPillButtonStyle() }
+extension ButtonStyle where Self == RaisedPillButtonStyle {
+    static var raisedPill: RaisedPillButtonStyle { RaisedPillButtonStyle() }
 }
 
 extension ButtonStyle where Self == SecondaryButtonStyle {

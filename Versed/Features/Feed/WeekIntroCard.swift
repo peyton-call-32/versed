@@ -50,7 +50,7 @@ struct WeekIntroCard: View {
                         .accessibilityLabel("Swipe up with three fingers to \(swipeGoal)")
                         .accessibilityIdentifier("Swipe up to \(swipeGoal)")
                 }
-                .padding(.top, 14)
+                .padding(.top, 28)
                 .dynamicTypeSize(...DynamicTypeSize.accessibility1)
             }
         }
@@ -66,22 +66,24 @@ struct WeekIntroCard: View {
     @ViewBuilder
     private var reading: some View {
         if books.count == 1 {
-            title(books[0].name)
-            if !books[0].chapters.isEmpty {
-                sections(of: 0)
-            }
+            book(at: 0)
         } else {
             VStack(spacing: 16) {
-                ForEach(Array(books.enumerated()), id: \.offset) { index, book in
-                    VStack(spacing: 8) {
-                        title(book.name)
-                        if !book.chapters.isEmpty {
-                            sections(of: index)
-                        }
-                    }
+                ForEach(books.indices, id: \.self) { index in
+                    book(at: index)
                 }
             }
             Ornament()
+        }
+    }
+
+    /// A book's name with its chapter sections close beneath it, so they read as one thing.
+    private func book(at index: Int) -> some View {
+        VStack(spacing: 8) {
+            title(books[index].name)
+            if !books[index].chapters.isEmpty {
+                sections(of: index)
+            }
         }
     }
 
@@ -109,20 +111,14 @@ struct WeekIntroCard: View {
         [.accessibility3, .accessibility1, .xxxLarge, .xLarge, .large, .small, .xSmall]
     }
 
-    /// Soft pills that each jump to where their section starts, with a thin line between them.
+    /// Raised pills that each jump to where their section starts.
     private func sectionRow(of index: Int) -> some View {
-        HStack(spacing: 6) {
-            ForEach(Array(week.sectionsByBook[index].enumerated()), id: \.offset) { position, section in
-                if position > 0 {
-                    Rectangle()
-                        .fill(Color.brand)
-                        .frame(width: 1, height: 22)
-                        .accessibilityHidden(true)
-                }
+        HStack(spacing: 8) {
+            ForEach(Array(week.sectionsByBook[index].enumerated()), id: \.offset) { _, section in
                 Button(section.title) {
                     onSelectSection(section.start)
                 }
-                .buttonStyle(.tintedPill)
+                .buttonStyle(.raisedPill)
                 .font(.versedTitle(size: 22, relativeTo: .title3))
                 .lineLimit(1)
                 .fixedSize()
