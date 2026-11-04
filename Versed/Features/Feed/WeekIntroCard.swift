@@ -61,14 +61,13 @@ struct WeekIntroCard: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
 
-    /// One book has the line between its name and chapters. Several books sit close together
-    /// as one group, with the line under the group, so they read as one week's reading.
+    /// One book sits right above its chapters. Several books sit close together as one
+    /// group, with the line under the group, so they read as one week's reading.
     @ViewBuilder
     private var reading: some View {
         if books.count == 1 {
             title(books[0].name)
             if !books[0].chapters.isEmpty {
-                Ornament()
                 sections(of: 0)
             }
         } else {
@@ -94,107 +93,42 @@ struct WeekIntroCard: View {
             .accessibilityHidden(true)
     }
 
-    /// The book's chapter sections as soft pills, each jumping to where that section starts.
+    /// The book's chapter sections on one line. At large text sizes or on narrow phones, the
+    /// text steps down only as far as it takes to keep them all on that line.
     private func sections(of index: Int) -> some View {
-        SectionRows {
+        ViewThatFits(in: .horizontal) {
+            sectionRow(of: index)
+            ForEach(Self.smallerTextSizes, id: \.self) { size in
+                sectionRow(of: index).dynamicTypeSize(...size)
+            }
+        }
+    }
+
+    /// Text sizes to try after the reader's own, largest first.
+    private static var smallerTextSizes: [DynamicTypeSize] {
+        [.accessibility3, .accessibility1, .xxxLarge, .xLarge, .large, .small, .xSmall]
+    }
+
+    /// Soft pills that each jump to where their section starts, with a thin line between them.
+    private func sectionRow(of index: Int) -> some View {
+        HStack(spacing: 6) {
             ForEach(Array(week.sectionsByBook[index].enumerated()), id: \.offset) { position, section in
                 if position > 0 {
                     Rectangle()
                         .fill(Color.brand)
+                        .frame(width: 1, height: 22)
                         .accessibilityHidden(true)
                 }
                 Button(section.title) {
                     onSelectSection(section.start)
                 }
                 .buttonStyle(.tintedPill)
-                .font(.versedTitle(size: 32, relativeTo: .title2))
+                .font(.versedTitle(size: 22, relativeTo: .title3))
+                .lineLimit(1)
+                .fixedSize()
                 .accessibilityLabel("\(books[index].name) \(section.title.replacingOccurrences(of: "\u{2060}", with: ""))")
                 .accessibilityHint("Jumps to this reading.")
             }
-        }
-    }
-}
-
-/// Lays out a book's section pills and the thin vertical lines between them, which take turns as
-/// subviews: pill, line, pill. Rows are centered and wrap when they run out of room, and a line
-/// that would land at a row's edge is hidden, so lines only ever sit between two pills.
-private struct SectionRows: Layout {
-    private static let lineWidth: CGFloat = 1.5
-    private static let gap: CGFloat = 9
-    private static let rowSpacing: CGFloat = 10
-
-    private struct Row {
-        var pills: [Int] = []
-        var width: CGFloat = 0
-        var height: CGFloat = 0
-    }
-
-    /// Fills rows up to `width`, then narrows it for as long as that takes no extra rows, so
-    /// wrapped rows come out even ("1–3 | 33–34" over "36–37 | 47") with no pill left alone.
-    private func rows(fitting width: CGFloat, in subviews: Subviews) -> [Row] {
-        var best = filledRows(fitting: width, in: subviews)
-        while best.count > 1 {
-            let widest = best.map(\.width).max() ?? 0
-            let narrower = filledRows(fitting: widest - 1, in: subviews)
-            // Stop when it needs another row, or can't get any narrower (one pill per row).
-            guard narrower.count == best.count, (narrower.map(\.width).max() ?? 0) < widest else { break }
-            best = narrower
-        }
-        return best
-    }
-
-    private func filledRows(fitting width: CGFloat, in subviews: Subviews) -> [Row] {
-        let separation = Self.lineWidth + Self.gap * 2
-        var rows: [Row] = []
-        for index in stride(from: 0, to: subviews.count, by: 2) {
-            let size = subviews[index].sizeThatFits(.unspecified)
-            if let last = rows.last, last.width + separation + size.width <= width {
-                rows[rows.count - 1].pills.append(index)
-                rows[rows.count - 1].width += separation + size.width
-                rows[rows.count - 1].height = max(last.height, size.height)
-            } else {
-                rows.append(Row(pills: [index], width: size.width, height: size.height))
-            }
-        }
-        return rows
-    }
-
-    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
-        let rows = rows(fitting: proposal.width ?? .infinity, in: subviews)
-        return CGSize(
-            width: rows.map(\.width).max() ?? 0,
-            height: rows.map(\.height).reduce(0, +) + Self.rowSpacing * CGFloat(max(rows.count - 1, 0))
-        )
-    }
-
-    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
-        // Every line starts hidden; the ones between two pills are placed again below.
-        for index in stride(from: 1, to: subviews.count, by: 2) {
-            subviews[index].place(at: bounds.origin, proposal: .zero)
-        }
-
-        var y = bounds.minY
-        for row in rows(fitting: bounds.width, in: subviews) {
-            var x = bounds.midX - row.width / 2
-            for pill in row.pills {
-                if pill != row.pills[0] {
-                    x += Self.gap
-                    subviews[pill - 1].place(
-                        at: CGPoint(x: x, y: y + row.height / 2),
-                        anchor: .leading,
-                        proposal: ProposedViewSize(width: Self.lineWidth, height: row.height * 0.55)
-                    )
-                    x += Self.lineWidth + Self.gap
-                }
-                let size = subviews[pill].sizeThatFits(.unspecified)
-                subviews[pill].place(
-                    at: CGPoint(x: x, y: y + row.height / 2),
-                    anchor: .leading,
-                    proposal: ProposedViewSize(size)
-                )
-                x += size.width
-            }
-            y += row.height + Self.rowSpacing
         }
     }
 }
