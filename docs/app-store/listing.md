@@ -70,9 +70,9 @@ Versed is an independent app. It is not affiliated with, made, approved, or endo
 
 ## Screenshots
 In `screenshots/`, 1320 × 2868 (the 6.9-inch iPhone size Apple requires; it shrinks them for smaller iPhones). Upload in this order:
-1. `1-verse.png`: a verse, saved with the heart
+1. `1-verse.png`: a verse, with the heart to save it
 2. `2-this-week.png`: this week's intro card
-3. `3-browse.png`: Browse, with Continue Reading
+3. `3-browse.png`: Browse
 4. `4-saved.png`: the Saved tab
 
-To retake them: run `testReadingSavingBrowsingAndResuming` on the iPhone 18 Pro Max simulator, with the status bar set to 9:41 and a full battery (`xcrun simctl status_bar booted override --time 9:41 --batteryState charged --batteryLevel 100 --cellularMode active --cellularBars 4 --wifiBars 3`). The This Week shot is the test's `week-intro` attachment.
+To retake them: run `testCapturingAppStoreScreenshots` on the iPhone 18 Pro Max simulator with `TEST_RUNNER_SCREENSHOT_DIR` set to this folder, and the status bar set to 9:41 with a full battery (`xcrun simctl status_bar booted override --time 9:41 --batteryState charged --batteryLevel 100 --cellularMode active --cellularBars 4 --wifiBars 3`).

@@ -84,6 +84,9 @@ struct BrowseView: View {
                 Text(week.readingByBook.map(\.name).joined(separator: ", "))
                     .font(.versedTitle(size: 20, relativeTo: .title3))
                     .foregroundStyle(.brand)
+                    // Shrinks a little at the largest sizes, so a long name like "Lamentations" stays whole.
+                    .lineLimit(2)
+                    .minimumScaleFactor(0.6)
                 Text(week.dateRangeText())
                     .font(.subheadline)
                     .foregroundStyle(.secondaryText)
