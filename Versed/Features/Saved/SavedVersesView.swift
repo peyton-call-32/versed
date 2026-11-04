@@ -64,6 +64,7 @@ struct SavedVersesView: View {
         } label: {
             VStack(spacing: 12) {
                 VerseText(verse.text, size: 19, relativeTo: .body)
+                    .lineSpacing(3)
                     .lineLimit(6)
                     .foregroundStyle(.brand)
                 SmallCapsLabel(verse.reference)

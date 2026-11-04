@@ -88,6 +88,10 @@ final class VersedUITests: XCTestCase {
 
         app.tab("Browse").tap()
         XCTAssertTrue(app.buttons["Reading Schedule"].waitForExistence(timeout: 5))
+        // One swipe over, so a book's edge shows on each side of the cover in front.
+        let covers = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35))
+        covers.press(forDuration: 0.05, thenDragTo: covers.withOffset(CGVector(dx: -260, dy: 0)))
+        sleep(2)
         saveScreenshot(named: "3-browse")
 
         app.tab("Saved").tap()
