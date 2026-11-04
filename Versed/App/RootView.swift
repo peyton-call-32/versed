@@ -8,6 +8,9 @@ struct RootView: View {
     @State private var selectedTab = AppTab.thisWeek
     /// The week shown on the This Week tab, or `nil` for this week.
     @State private var selectedWeekID: ReadingWeek.ID?
+    @State private var weekNavigation = FeedNavigation()
+    @State private var browsePath: [BrowseView.Route] = []
+    @State private var savedPath: [VerseID] = []
 
     private struct Content {
         let library: ScriptureLibrary
@@ -25,23 +28,32 @@ struct RootView: View {
         selectedTab = .thisWeek
     }
 
+    /// Tapping the tab that's already open goes back to its start.
+    private func goToStart(of tab: AppTab) {
+        switch tab {
+        case .thisWeek: weekNavigation.goToStart()
+        case .browse: browsePath = []
+        case .saved: savedPath = []
+        }
+    }
+
     var body: some View {
         Group {
             if let content {
                 // iOS's tab container keeps each screen's place; our own bar replaces its bar.
                 TabView(selection: $selectedTab) {
                     tab(.thisWeek) {
-                        WeeklyReadingView(library: content.library, schedule: content.schedule, selectedWeekID: $selectedWeekID)
+                        WeeklyReadingView(library: content.library, schedule: content.schedule, navigation: weekNavigation, selectedWeekID: $selectedWeekID)
                     }
                     tab(.browse) {
-                        BrowseView(library: content.library, schedule: content.schedule, openWeek: openWeek)
+                        BrowseView(library: content.library, schedule: content.schedule, openWeek: openWeek, path: $browsePath)
                     }
                     tab(.saved) {
-                        SavedVersesView(library: content.library)
+                        SavedVersesView(library: content.library, path: $savedPath)
                     }
                 }
                 .overlay(alignment: .bottom) {
-                    FloatingTabBar(selection: $selectedTab)
+                    FloatingTabBar(selection: $selectedTab, onReselect: goToStart(of:))
                 }
             } else {
                 ProgressView()

@@ -7,8 +7,8 @@ struct SavedVersesView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \SavedVerse.savedAt, order: .reverse) private var savedVerses: [SavedVerse]
-    /// The verse opened in the feed, if any.
-    @State private var path: [VerseID] = []
+    /// The verse opened in the feed, if any. Emptying it goes back to the list.
+    @Binding var path: [VerseID]
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -71,6 +71,6 @@ struct SavedVersesView: View {
 }
 
 #Preview {
-    SavedVersesView(library: try! ScriptureLibrary.loadBundled())
+    SavedVersesView(library: try! ScriptureLibrary.loadBundled(), path: .constant([]))
         .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }

@@ -61,6 +61,19 @@ struct FeedItemIDTests {
         #expect(FeedItem.chapterID(of: "chapter:jer.31") == ChapterID(bookID: "jer", chapter: 31))
     }
 
+    @Test func chapterGroupsFollowTheReadingOrderAndListEachChapterOnce() throws {
+        let library = try ScriptureLibrary.loadBundled()
+        let items = library.feedItems(for: [
+            Passage(bookID: "luke", chapters: 1...1),
+            Passage(bookID: "matt", chapters: 1...2),
+            Passage(bookID: "luke", chapters: 2...2),
+        ])
+        // A page from a chapter already listed doesn't list it again.
+        let groups = library.chapterGroups(in: items + items)
+        #expect(groups.map(\.book.id) == ["luke", "matt", "luke"])
+        #expect(groups.map(\.chapters) == [[1], [1, 2], [2]])
+    }
+
     @Test func aWeekIntroHasNoChapter() {
         #expect(FeedItem.chapterID(of: "week:2026-10-26") == nil)
     }

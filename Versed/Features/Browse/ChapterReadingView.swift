@@ -1,7 +1,8 @@
 import SwiftData
 import SwiftUI
 
-/// Reads a book in the feed, starting at the chosen chapter and continuing to the end of the book.
+/// Reads a whole book in the feed, opening at the chosen chapter. The chapter menu moves to any
+/// other chapter in the book.
 ///
 /// The page on screen is remembered so the Browse tab can offer to continue from it.
 struct ChapterReadingView: View {
@@ -12,15 +13,27 @@ struct ChapterReadingView: View {
     var startItem: FeedItem.ID? = nil
 
     @Environment(\.modelContext) private var modelContext
+    @State private var navigation = FeedNavigation()
+
+    private var items: [FeedItem] {
+        library.feedItems(for: [Passage(bookID: book.id, chapters: 1...book.chapterCount)])
+    }
 
     var body: some View {
         let positions = ReadingPositionStore(context: modelContext)
+        let items = items
         FeedView(
-            items: library.feedItems(for: [Passage(bookID: book.id, chapters: startChapter...book.chapterCount)]),
-            startingAt: startItem,
+            items: items,
+            startingAt: startItem ?? items.first { FeedItem.chapterID(of: $0.id)?.chapter == startChapter }?.id,
+            navigation: navigation,
             onPageChange: { positions.setPosition($0, in: .browse) }
         )
-        // The title cards already name the book, so the bar only shows the back button.
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                ChapterMenu(library: library, items: items, navigation: navigation)
+            }
+        }
+        // The pill and title cards already say where the reader is, so the bar has no title.
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
     }

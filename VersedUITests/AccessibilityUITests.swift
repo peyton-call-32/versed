@@ -26,6 +26,11 @@ final class AccessibilityUITests: XCTestCase {
             XCTAssertTrue(app.buttons["Save verse"].waitForExistence(timeout: 5))
             try audit("verse, \(appearance)", except: Self.shrinkToFitIssues)
 
+            app.buttons["Chapter menu"].tap()
+            XCTAssertTrue(app.navigationBars["Go To"].waitForExistence(timeout: 5))
+            try audit("chapter menu, \(appearance)")
+            app.buttons["Done"].tap()
+
             app.tab("Browse").tap()
             try audit("Browse, \(appearance)")
 
@@ -62,6 +67,18 @@ final class AccessibilityUITests: XCTestCase {
         let weekMenu = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Week of")).firstMatch
         XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
         let top = weekMenu.frame.maxY
+
+        // The chapter menu keeps everything readable and reachable.
+        for _ in 1...3 { app.swipeUp() }
+        app.buttons["Chapter menu"].tap()
+        XCTAssertTrue(app.navigationBars["Go To"].waitForExistence(timeout: 5))
+        sleep(1)
+        attachScreenshot(named: "largest-chapter-menu")
+        XCTAssertTrue(app.buttons["Back to Week's Start"].isHittable)
+        app.buttons["Back to Week's Start"].tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].waitForExistence(timeout: 5))
+        launch(extraArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
+        XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
 
         // The week's intro card: its heading sits between the menu and the line saying to swipe up.
         let heading = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "Jeremiah 31–33")).firstMatch
@@ -206,6 +223,8 @@ final class AccessibilityUITests: XCTestCase {
     ///   bars and the page text keep their room.
     /// - "Clipped" text in Settings that's fully visible in both the normal and the
     ///   "largest-text-settings" screenshots. The audit misreads these two labels.
+    /// - The same for the chapter menu's first row and book names, fully visible in the
+    ///   "audit-chapter menu" and "largest-chapter-menu" screenshots.
     private func isKnownException(_ issue: XCUIAccessibilityAuditIssue) -> Bool {
         guard let element = issue.element else { return true }
         switch issue.auditType {
@@ -220,7 +239,7 @@ final class AccessibilityUITests: XCTestCase {
         case .dynamicType:
             return ["This Week", "Browse", "Saved", "Skip", "Next", "Done"].contains(element.label)
         case .textClipped:
-            return ["DAILY REMINDER", "peytoncall32@icloud.com"].contains(element.label)
+            return ["DAILY REMINDER", "peytoncall32@icloud.com", "JEREMIAH", "LAMENTATIONS", "Back to Week's Start"].contains(element.label)
         default:
             return false
         }

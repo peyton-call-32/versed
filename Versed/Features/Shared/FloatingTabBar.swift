@@ -24,6 +24,8 @@ struct FloatingTabBar: View {
     static let height: CGFloat = 66
 
     @Binding var selection: AppTab
+    /// Called when the reader taps the tab that's already open.
+    var onReselect: (AppTab) -> Void = { _ in }
     @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
@@ -47,7 +49,11 @@ struct FloatingTabBar: View {
     private func button(for tab: AppTab) -> some View {
         let isSelected = selection == tab
         return Button {
-            selection = tab
+            if isSelected {
+                onReselect(tab)
+            } else {
+                selection = tab
+            }
         } label: {
             VStack(spacing: 3) {
                 Image(systemName: tab.symbol)

@@ -16,7 +16,7 @@
 
 ### Version 1 features
 1. Feed: one verse per screen, swipe up for the next, a title card at the start of each chapter.
-2. Opens to this week's reading, with a menu to pick another week. Browse also has This Week and a Reading Schedule of every week.
+2. Opens to this week's reading, with a chapter menu to move around the week or pick another week. Browse also has This Week and a Reading Schedule of every week.
 3. Browse any book and chapter (Old Testament, New Testament, Book of Mormon, Doctrine and Covenants, Pearl of Great Price).
 4. Save verses (double-tap or heart) and a Saved tab.
 5. Remembers where I left off.
@@ -73,6 +73,7 @@ App Store release (in progress; 16–19 done). Peyton's Apple Developer account 
 - Colors: warm paper page with soft white cards in light mode, deep navy with lighter navy cards in dark mode.
 - Screens use the iPhone's standard back button and navigation titles, so swipe-to-go-back keeps working.
 - This Week shows the date in its small label. When a week has several books they sit close together as one group, with no line between them, so they don't look like separate weeks. A book's name sits right above its chapter sections. Each section is a soft tinted pill that jumps to where it starts, all on one line, with a thin vertical line between them. Settings is opened from the gear on Browse.
+- Moving around a feed: the pill at the top (`ChapterMenu.swift`) says where the reader is ("Ezekiel 2", or the week's dates on its opening and closing cards) and opens a "Go To" sheet: every chapter in the feed, plus "Back to Week's Start" and "Other Weeks" in a week's feed. Back to the start keeps the reader's place underneath, so swiping up continues. Tapping the tab that's already open goes back to that tab's start. Browse's feed holds the whole book, so earlier chapters are reachable.
 - All colors, fonts, and shared pieces live in `Versed/Features/Shared/AppColors.swift` (`.brand`, `.appBackground`, `.cardBackground`, `.secondaryText`, `.hairline`, `.cardShadow`, `.versedTitle`, `.versedNumber`, `.versedVerse`, `.raised(in:)`, `Card`, `CardSection`, `CardRowLabel`, `SmallCapsLabel`, `Ornament`, `.primary`/`.secondary`/`.tintedPill`/`.cardRow` button styles). The tab bar is `FloatingTabBar.swift`. New screens use these. Don't add new colors or one-off styles; if something's missing, add it there.
 
 ## Testing

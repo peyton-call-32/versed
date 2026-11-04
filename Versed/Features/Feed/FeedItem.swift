@@ -54,7 +54,29 @@ struct ChapterTitle: Hashable, Sendable {
     var heading: String { "\(label) \(id.chapter)" }
 }
 
+/// Chapters in a feed from one book, for the chapter menu.
+struct ChapterGroup: Sendable {
+    let book: Book
+    var chapters: [Int]
+}
+
 extension ScriptureLibrary {
+    /// The chapters in a feed, in reading order and each listed once. A new group starts each
+    /// time the book changes, so "Luke 1; Matthew 1; Luke 2" stays three groups, in that order.
+    func chapterGroups(in items: [FeedItem]) -> [ChapterGroup] {
+        var groups: [ChapterGroup] = []
+        var seen: Set<ChapterID> = []
+        for item in items {
+            guard let chapter = FeedItem.chapterID(of: item.id), seen.insert(chapter).inserted else { continue }
+            if groups.last?.book.id == chapter.bookID {
+                groups[groups.count - 1].chapters.append(chapter.chapter)
+            } else if let book = book(id: chapter.bookID) {
+                groups.append(ChapterGroup(book: book, chapters: [chapter.chapter]))
+            }
+        }
+        return groups
+    }
+
     /// Builds the feed for a list of passages, in order.
     ///
     /// A chapter gets a title card when the reading starts at its first verse.

@@ -9,6 +9,8 @@ struct BrowseView: View {
     let schedule: ReadingSchedule
     /// Shows a week on the This Week tab: `nil` for this week, or any week from the schedule.
     let openWeek: (ReadingWeek.ID?) -> Void
+    /// The screens open on top of the main list. Emptying it goes back to the list.
+    @Binding var path: [Route]
 
     @Query private var positions: [ReadingPosition]
     @State private var showsSettings = false
@@ -24,7 +26,7 @@ struct BrowseView: View {
     }
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollView {
                 VStack(spacing: 22) {
                     weeklyReadingSection
@@ -171,6 +173,6 @@ struct BrowseView: View {
 }
 
 #Preview {
-    BrowseView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled(), openWeek: { _ in })
+    BrowseView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled(), openWeek: { _ in }, path: .constant([]))
         .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }

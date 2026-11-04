@@ -6,6 +6,10 @@ struct FeedView: View {
     let items: [FeedItem]
     /// Called with the opening page, then with each page the reader swipes to.
     let onPageChange: (FeedItem.ID) -> Void
+    /// Reports the page on screen to the feed's controls, and takes their requests to move.
+    let navigation: FeedNavigation
+    /// Whether going back to the first page lays it over the feed, so swiping up continues reading.
+    private let usesCover: Bool
 
     @Environment(\.modelContext) private var modelContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -17,6 +21,8 @@ struct FeedView: View {
     @State private var showsCover: Bool
     /// How far the cover has been dragged up, while the reader swipes it away.
     @State private var coverOffset: CGFloat = 0
+    /// The cover's height, for sliding it all the way off the top.
+    @State private var coverHeight: CGFloat = 0
 
     /// - Parameters:
     ///   - itemID: The page to open on, or `nil` for the first page. Ignored if it isn't in `items`.
@@ -27,10 +33,13 @@ struct FeedView: View {
         items: [FeedItem],
         startingAt itemID: FeedItem.ID? = nil,
         showsFirstPageOnResume: Bool = false,
+        navigation: FeedNavigation,
         onPageChange: @escaping (FeedItem.ID) -> Void = { _ in }
     ) {
         self.items = items
         self.onPageChange = onPageChange
+        self.navigation = navigation
+        usesCover = showsFirstPageOnResume
         let start = items.contains { $0.id == itemID } ? itemID : nil
         _currentItemID = State(initialValue: start)
         _showsCover = State(initialValue: showsFirstPageOnResume && start != nil && start != items.first?.id)
@@ -52,20 +61,59 @@ struct FeedView: View {
         .scrollPosition(id: $currentItemID)
         .onAppear {
             if let itemID = currentItemID ?? items.first?.id { onPageChange(itemID) }
+            reportVisiblePage()
         }
         .onChange(of: currentItemID) { _, itemID in
             guard let itemID else { return }
             onPageChange(itemID)
             recordReading(on: itemID)
+            reportVisiblePage()
+        }
+        .onChange(of: showsCover) { reportVisiblePage() }
+        .onChange(of: navigation.request) { _, request in
+            guard let request else { return }
+            perform(request)
+            navigation.request = nil
         }
         .scrollIndicators(.hidden)
+        .hidesTopScrollEdgeEffect()
         .background(Color.appBackground)
         .ignoresSafeArea()
         .accessibilityHidden(showsCover)
         .overlay {
             if showsCover, let first = items.first {
                 cover(showing: first)
+                    .transition(.move(edge: .top))
             }
+        }
+    }
+
+    /// The cover hides the feed's own page, so while it's up the first page is what's on screen.
+    private func reportVisiblePage() {
+        navigation.visibleItemID = showsCover ? items.first?.id : currentItemID ?? items.first?.id
+    }
+
+    private func perform(_ request: FeedNavigation.Request) {
+        switch request {
+        case .chapter(let chapter):
+            jump(to: chapter)
+            if showsCover { dismissCover() }
+        case .start:
+            goToStart()
+        }
+    }
+
+    /// Goes back to the first page. Partway through, it's laid over the feed so the reader's place
+    /// stays underneath. On the last page there's no place to keep, so the feed itself goes back.
+    private func goToStart() {
+        guard let first = items.first, !showsCover else { return }
+        let current = currentItemID ?? first.id
+        guard current != first.id else { return }
+        if usesCover && current != items.last?.id {
+            coverOffset = 0
+            withAnimation(reduceMotion ? nil : .easeOut(duration: 0.25)) { showsCover = true }
+        } else {
+            currentItemID = first.id
         }
     }
 
@@ -92,7 +140,7 @@ struct FeedView: View {
             let dismissDistance = min(height / 3, 250)
             page(for: item, savedIDs: [], isResuming: true) { chapter in
                 jump(to: chapter)
-                dismissCover(height: height)
+                dismissCover()
             }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.appBackground)
@@ -105,7 +153,7 @@ struct FeedView: View {
                         }
                         .onEnded { drag in
                             if min(drag.translation.height, drag.predictedEndTranslation.height) < -dismissDistance {
-                                dismissCover(height: height)
+                                dismissCover()
                             } else {
                                 withAnimation(reduceMotion ? nil : .snappy) { coverOffset = 0 }
                             }
@@ -113,22 +161,24 @@ struct FeedView: View {
                 )
                 // A three-finger swipe moves on, since the drag can't be used with VoiceOver on.
                 .accessibilityElement(children: .contain)
-                .accessibilityScrollAction { _ in dismissCover(height: height) }
+                .accessibilityScrollAction { _ in dismissCover() }
+                .onGeometryChange(for: CGFloat.self, of: \.size.height) { coverHeight = $0 }
         }
         .ignoresSafeArea()
     }
 
     /// Slides the cover off the top (or just removes it with Reduce Motion on), showing the page underneath.
-    private func dismissCover(height: CGFloat) {
+    private func dismissCover() {
         let finish = {
             showsCover = false
+            coverOffset = 0
             if let currentItemID { recordReading(on: currentItemID) }
         }
         if reduceMotion {
             finish()
         } else {
             withAnimation(.easeOut(duration: 0.25)) {
-                coverOffset = -height
+                coverOffset = -coverHeight
             } completion: {
                 finish()
             }
@@ -161,6 +211,19 @@ struct FeedView: View {
     }
 }
 
+private extension View {
+    /// Newer iOS versions draw a strip behind a top bar with its own items, like Browse's chapter
+    /// menu. The feed's pages run under the bar, so the strip would look out of place.
+    @ViewBuilder
+    func hidesTopScrollEdgeEffect() -> some View {
+        if #available(iOS 26, *) {
+            scrollEdgeEffectHidden(true, for: .top)
+        } else {
+            self
+        }
+    }
+}
+
 /// Room the feed's pages leave for what floats over them: the week menu at the top, and the
 /// tab bar and heart button at the bottom. Those are capped at the first
 /// accessibility text size, so these fit them at every size.
@@ -171,6 +234,6 @@ enum FeedInsets {
 
 #Preview {
     let library = try! ScriptureLibrary.loadBundled()
-    FeedView(items: library.feedItems(for: [Passage(bookID: "1-ne", chapters: 3...3)]))
+    FeedView(items: library.feedItems(for: [Passage(bookID: "1-ne", chapters: 3...3)]), navigation: FeedNavigation())
         .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }

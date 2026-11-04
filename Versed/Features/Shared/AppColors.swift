@@ -297,6 +297,34 @@ struct TintedPillButtonStyle: ButtonStyle {
     }
 }
 
+/// One chapter number in the chapter menu: a soft square, or solid navy for the current chapter.
+struct ChapterCellButtonStyle: ButtonStyle {
+    let isCurrent: Bool
+
+    func makeBody(configuration: Configuration) -> some View {
+        let shape = RoundedRectangle(cornerRadius: 12, style: .continuous)
+        configuration.label
+            .font(.body)
+            .monospacedDigit()
+            .foregroundStyle(isCurrent ? Color("ProminentButtonLabel") : .brand)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background {
+                if isCurrent {
+                    shape.fill(Color("ProminentButton"))
+                } else {
+                    shape.fill(Color.brand.opacity(configuration.isPressed ? 0.16 : 0.07))
+                }
+            }
+            .contentShape(shape)
+    }
+}
+
+extension ButtonStyle where Self == ChapterCellButtonStyle {
+    static func chapterCell(isCurrent: Bool) -> ChapterCellButtonStyle {
+        ChapterCellButtonStyle(isCurrent: isCurrent)
+    }
+}
+
 extension ButtonStyle where Self == PrimaryButtonStyle {
     static var primary: PrimaryButtonStyle { PrimaryButtonStyle() }
 }

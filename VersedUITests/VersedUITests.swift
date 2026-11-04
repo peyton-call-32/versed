@@ -140,6 +140,70 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Week of Oct 26 – Nov 1"].waitForExistence(timeout: 5))
     }
 
+    func testChapterMenuMovesAroundTheWeek() {
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        for _ in 1...4 { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].waitForExistence(timeout: 5))
+
+        // The menu says where we are, and jumps to another chapter.
+        app.buttons["Jeremiah 31"].tap()
+        sleep(1)
+        attachScreenshot(named: "chapter-menu")
+        app.buttons["Lamentations 3"].tap()
+        XCTAssertTrue(chapterHeading("Lamentations, Chapter 3").waitForExistence(timeout: 5))
+
+        // Back to the week's start keeps our place: swiping up continues from it.
+        app.buttons["Lamentations 3"].tap()
+        app.buttons["Back to Week's Start"].tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].waitForExistence(timeout: 5))
+        app.swipeUp()
+        XCTAssertTrue(chapterHeading("Lamentations, Chapter 3").waitForExistence(timeout: 5))
+
+        // Other weeks open from the same menu.
+        app.buttons["Lamentations 3"].tap()
+        app.buttons["Other Weeks"].tap()
+        let row = app.buttons["Nov 9–15, Daniel 1–7"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        row.tap()
+        XCTAssertTrue(weekHeading(containing: "Daniel 1–7").waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Week of Nov 9–15"].exists)
+    }
+
+    func testTappingTheOpenTabGoesBackToItsStart() {
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        for _ in 1...4 { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].waitForExistence(timeout: 5))
+        app.tab("This Week").tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].waitForExistence(timeout: 5))
+
+        app.tab("Browse").tap()
+        app.buttons["Book of Mormon"].tap()
+        XCTAssertFalse(app.navigationBars["Browse"].exists)
+        app.tab("Browse").tap()
+        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 5))
+    }
+
+    /// Psalms is the longest book, so this also checks that opening near its end works.
+    func testBrowseChapterMenuReachesEarlierChapters() {
+        app.tab("Browse").tap()
+        app.buttons["Old Testament"].tap()
+        let psalms = app.buttons["Psalms"]
+        for _ in 1...5 where !(psalms.exists && psalms.isHittable) { app.swipeUp() }
+        psalms.tap()
+        let lastPsalm = app.buttons["Psalms 150"]
+        for _ in 1...10 where !(lastPsalm.exists && lastPsalm.isHittable) { app.swipeUp() }
+        lastPsalm.tap()
+        XCTAssertTrue(chapterHeading("Psalms, Chapter 150").waitForExistence(timeout: 10))
+        sleep(1)
+        attachScreenshot(named: "browse-chapter-menu-pill")
+
+        app.buttons["Chapter menu"].tap()
+        let firstPsalm = app.buttons["Psalms 1"]
+        for _ in 1...10 where !(firstPsalm.exists && firstPsalm.isHittable) { app.swipeDown() }
+        firstPsalm.tap()
+        XCTAssertTrue(chapterHeading("Psalms, Chapter 1").waitForExistence(timeout: 10))
+    }
+
     func testThisWeekPicksUpWhereTheReaderStopped() {
         // Read to Jeremiah 31:3: past the opening card, the chapter title, and two verses.
         XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
@@ -227,8 +291,9 @@ final class VersedUITests: XCTestCase {
     }
 
     func testThisWeekHeader() {
-        // The week menu on the left; no streak until the first verse is read.
-        let weekMenu = app.buttons["Week of Oct 26 – Nov 1"]
+        // The chapter menu on the left, showing the week's dates; no streak until the first verse is read.
+        XCTAssertTrue(app.buttons["Week of Oct 26 – Nov 1"].waitForExistence(timeout: 10))
+        let weekMenu = app.buttons["Chapter menu"]
         XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
         XCTAssertFalse(app.staticTexts["1-day reading streak"].exists)
         XCTAssertLessThan(weekMenu.frame.midX, app.frame.midX)
