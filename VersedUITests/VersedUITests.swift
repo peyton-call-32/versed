@@ -166,6 +166,32 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Jeremiah 31:2"].waitForExistence(timeout: 5))
     }
 
+    func testTappingASectionJumpsToIt() {
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        app.buttons["Lamentations 3"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["Lamentations, Chapter 3"].waitForExistence(timeout: 5))
+
+        // Swiping up from there keeps reading that chapter.
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["Lamentations 3:1"].waitForExistence(timeout: 5))
+    }
+
+    func testTappingASectionWorksWhenResuming() {
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        for _ in 1...4 { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].waitForExistence(timeout: 5))
+        app.openWeekFromSchedule("Nov 9–15, Daniel 1–7")
+        XCTAssertTrue(weekHeading(containing: "Daniel 1–7").waitForExistence(timeout: 5))
+        app.tab("Browse").tap()
+        app.navigationBars.buttons.firstMatch.tap()
+        app.scrollViews.buttons["This Week"].tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].waitForExistence(timeout: 5))
+
+        app.buttons["Jeremiah 36–39"].tap()
+        XCTAssertTrue(app.descendants(matching: .any)["Jeremiah, Chapter 36"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.staticTexts["Swipe up to continue reading"].exists)
+    }
+
     func testFinishedWeekStartsOverFromTheFirstVerse() {
         app.openWeekFromSchedule(XCUIApplication.shortWeek.row)
         XCTAssertTrue(weekHeading(containing: "John 1").waitForExistence(timeout: 5))

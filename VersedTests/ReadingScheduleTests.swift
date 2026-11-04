@@ -131,6 +131,23 @@ struct ReadingScheduleTests {
         }
     }
 
+    /// Every section on a week's opening card has to jump to the right book and chapter.
+    @Test func everySectionStartsOnARealPageOfItsBook() throws {
+        let library = try ScriptureLibrary.loadBundled()
+        for week in schedule.weeks {
+            let pages = library.feedItems(for: week.passages).map { FeedItem.chapterID(of: $0.id) }
+            for (book, sections) in zip(week.readingByBook, week.sectionsByBook) {
+                #expect(sections.map(\.title) == book.chapters, "\(week.label)")
+                for section in sections {
+                    #expect(library.book(id: section.start.bookID)?.name == book.name.replacingOccurrences(of: "\u{2060}", with: ""), "\(week.label)")
+                    #expect(pages.contains(section.start), "\(week.label): \(section.title)")
+                }
+            }
+        }
+        let week = try #require(schedule.weeks.first { $0.label == "Matthew 1; Luke 1" })
+        #expect(week.sectionsByBook.flatMap { $0 }.map(\.start.bookID) == ["matt", "luke"])
+    }
+
         @Test func groupsWeeksByCourse() {
         #expect(schedule.weeks.first { $0.id == "2026-12-21" }?.course == "Old Testament 2026")
         // The New Testament year starts the Monday after Christmas 2026.

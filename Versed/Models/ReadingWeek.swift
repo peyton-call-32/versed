@@ -61,6 +61,23 @@ struct ReadingWeek: Identifiable, Hashable, Sendable {
         }
     }
 
+    /// The chapter sections of `readingByBook`, one list per book, each with the chapter it starts
+    /// on so the opening card can jump there. Matched to `passages` in order, because a number
+    /// alone can repeat: "Matthew 1; Luke 1". Books read whole have an empty list.
+    var sectionsByBook: [[ReadingSection]] {
+        var remaining = passages[...]
+        return readingByBook.map { book in
+            book.chapters.compactMap { title in
+                guard let firstChapter = Int(title.prefix(while: \.isNumber)),
+                      let index = remaining.firstIndex(where: { $0.chapters.lowerBound == firstChapter })
+                else { return nil }
+                let passage = remaining[index]
+                remaining = remaining[remaining.index(after: index)...]
+                return ReadingSection(title: title, start: ChapterID(bookID: passage.bookID, chapter: firstChapter))
+            }
+        }
+    }
+
     func contains(_ date: Date) -> Bool {
         start <= date && date < end
     }
@@ -84,4 +101,10 @@ struct BookReading: Hashable, Sendable {
     let name: String
     /// Chapters or chapter ranges, such as "1–3" and "47". Empty when the book is read whole.
     let chapters: [String]
+}
+
+/// One tappable part of a week's reading, such as "33–34" in Ezekiel.
+struct ReadingSection: Hashable, Sendable {
+    let title: String
+    let start: ChapterID
 }

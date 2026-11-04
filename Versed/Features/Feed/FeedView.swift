@@ -42,7 +42,7 @@ struct FeedView: View {
         ScrollView(.vertical) {
             LazyVStack(spacing: 0) {
                 ForEach(items) { item in
-                    page(for: item, savedIDs: savedIDs)
+                    page(for: item, savedIDs: savedIDs, onSelectSection: jump(to:))
                         .containerRelativeFrame([.horizontal, .vertical])
                 }
             }
@@ -69,6 +69,13 @@ struct FeedView: View {
         }
     }
 
+    /// Goes straight to a chapter's first page, without scrolling through the pages in between.
+    private func jump(to chapter: ChapterID) {
+        if let item = items.first(where: { FeedItem.chapterID(of: $0.id) == chapter }) {
+            currentItemID = item.id
+        }
+    }
+
     /// Swiping to a verse counts toward today's reading; just opening the feed doesn't.
     private func recordReading(on itemID: FeedItem.ID) {
         if FeedItem.verseID(of: itemID) != nil {
@@ -83,7 +90,10 @@ struct FeedView: View {
         GeometryReader { geometry in
             let height = geometry.size.height
             let dismissDistance = min(height / 3, 250)
-            page(for: item, savedIDs: [], isResuming: true)
+            page(for: item, savedIDs: [], isResuming: true) { chapter in
+                jump(to: chapter)
+                dismissCover(height: height)
+            }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.appBackground)
                 .contentShape(Rectangle())
@@ -129,11 +139,12 @@ struct FeedView: View {
     private func page(
         for item: FeedItem,
         savedIDs: Set<String>,
-        isResuming: Bool = false
+        isResuming: Bool = false,
+        onSelectSection: @escaping (ChapterID) -> Void
     ) -> some View {
         switch item {
         case .weekIntro(let week):
-            WeekIntroCard(week: week, isResuming: isResuming)
+            WeekIntroCard(week: week, isResuming: isResuming, onSelectSection: onSelectSection)
         case .weekEnd(let week):
             WeekEndCard(week: week)
         case .chapterTitle(let title):
