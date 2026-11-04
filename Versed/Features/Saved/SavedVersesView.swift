@@ -14,11 +14,7 @@ struct SavedVersesView: View {
         NavigationStack(path: $path) {
             Group {
                 if savedVerses.isEmpty {
-                    ContentUnavailableView(
-                        "No Saved Verses",
-                        systemImage: "heart",
-                        description: Text("Double-tap a verse or tap its heart to save it here.")
-                    )
+                    emptyState
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .background(Color.appBackground)
                 } else {
@@ -43,6 +39,25 @@ struct SavedVersesView: View {
         }
     }
 
+    private var emptyState: some View {
+        VStack(spacing: 14) {
+            Image(systemName: "heart")
+                .font(.system(size: 34, weight: .ultraLight))
+                .foregroundStyle(.brand)
+                .accessibilityHidden(true)
+            Text("No Saved Verses")
+                .font(.versedTitle(size: 30, relativeTo: .title2))
+                .foregroundStyle(.brand)
+            Ornament()
+            Text("Double-tap a verse or tap its heart to save it here.")
+                .font(.subheadline)
+                .foregroundStyle(.secondaryText)
+        }
+        .multilineTextAlignment(.center)
+        .padding(.horizontal, 44)
+        .accessibilityElement(children: .combine)
+    }
+
     private func row(for verse: Verse) -> some View {
         Button {
             path.append(verse.id)
@@ -58,7 +73,7 @@ struct SavedVersesView: View {
             .frame(maxWidth: .infinity)
             .raised(in: RoundedRectangle(cornerRadius: 16, style: .continuous))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(SavedVerseButtonStyle())
         .accessibilityLabel(verse.reference)
         .accessibilityValue(verse.text)
         .swipeActions {
@@ -69,7 +84,15 @@ struct SavedVersesView: View {
     }
 }
 
+private struct SavedVerseButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .pressEffect(configuration.isPressed, scale: 0.98)
+    }
+}
+
 #Preview {
     SavedVersesView(library: try! ScriptureLibrary.loadBundled(), path: .constant([]))
+        .environment(ReadingChrome())
         .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }

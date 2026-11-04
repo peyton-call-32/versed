@@ -43,6 +43,18 @@ struct ScriptureLibrary: Sendable {
             .first { $0.id == id }
     }
 
+    /// The volume to show first on Browse: the one holding the page most recently read.
+    /// With nothing read yet it's the middle volume, so a book's edge shows on each side.
+    func lastReadVolumeID(from positions: [ReadingPosition]) -> Volume.ID? {
+        let lastRead = positions
+            .sorted { $0.updatedAt > $1.updatedAt }
+            .lazy
+            .compactMap { FeedItem.chapterID(of: $0.itemID)?.bookID }
+            .compactMap { bookID in volumes.first { $0.books.contains { $0.id == bookID } } }
+            .first
+        return (lastRead ?? (volumes.isEmpty ? nil : volumes[volumes.count / 2]))?.id
+    }
+
     var verseCount: Int {
         volumes.flatMap(\.books).flatMap(\.chapters).reduce(0) { $0 + $1.count }
     }

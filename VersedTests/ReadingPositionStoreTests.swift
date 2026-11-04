@@ -1,3 +1,4 @@
+import Foundation
 import SwiftData
 import Testing
 @testable import Versed
@@ -17,6 +18,19 @@ struct ReadingPositionStoreTests {
 
         #expect(store.position(in: .browse) == "verse:alma.32.22")
         #expect(try container.mainContext.fetchCount(FetchDescriptor<ReadingPosition>()) == 1)
+    }
+
+    @Test func reopeningOnTheSamePageKeepsTheOldDate() throws {
+        store.setPosition("verse:alma.32.21", in: .browse)
+        let record = try #require(try container.mainContext.fetch(FetchDescriptor<ReadingPosition>()).first)
+        let lastRead = Date(timeIntervalSince1970: 0)
+        record.updatedAt = lastRead
+
+        store.setPosition("verse:alma.32.21", in: .browse)
+        #expect(record.updatedAt == lastRead)
+
+        store.setPosition("verse:alma.32.22", in: .browse)
+        #expect(record.updatedAt > lastRead)
     }
 
     @Test func eachFeedKeepsItsOwnPosition() {

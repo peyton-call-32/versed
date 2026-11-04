@@ -21,6 +21,7 @@ struct StreakBadge: View {
                 if streak > 0 {
                     Text(streak == 1 ? "1 day" : "\(streak) days")
                         .lineLimit(1)
+                        .contentTransition(.numericText())
                 }
             }
             .font(.subheadline.weight(.medium))

@@ -15,6 +15,9 @@ struct ReadingPositionStore {
 
     func setPosition(_ itemID: FeedItem.ID, in feed: ReadingFeed) {
         if let existing = record(for: feed) {
+            // Just reopening a feed on its saved page isn't reading, so it keeps its old date.
+            // Browse's book covers rely on that to open on the book last read.
+            guard existing.itemID != itemID else { return }
             existing.itemID = itemID
             existing.updatedAt = .now
         } else {

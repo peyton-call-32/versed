@@ -2,7 +2,8 @@ import SwiftData
 import SwiftUI
 
 /// Pick any volume, book, and chapter, then read from there in the feed.
-/// At the top: this week's reading, the full reading schedule, and a "Continue Reading" row
+/// At the top: the five volumes as swipeable book covers, opening on the last one read.
+/// Below them: this week's reading, the full reading schedule, and a "Continue Reading" row
 /// that returns to the last page read here or from Saved.
 struct BrowseView: View {
     let library: ScriptureLibrary
@@ -14,6 +15,11 @@ struct BrowseView: View {
 
     @Query private var positions: [ReadingPosition]
     @State private var showsSettings = false
+    /// The volume in the middle of the carousel.
+    @State private var selectedVolume: Volume.ID?
+    @State private var availableHeight: CGFloat = 0
+    @State private var weekCardHeight: CGFloat = 0
+    @Namespace private var coverZoom
 
     /// The screens the browse tab can open.
     enum Route: Hashable {
@@ -28,13 +34,33 @@ struct BrowseView: View {
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
-                VStack(spacing: 22) {
+                VStack(spacing: 20) {
+                    VolumeCarousel(
+                        volumes: library.volumes,
+                        selection: $selectedVolume,
+                        coverHeight: coverHeight,
+                        zoomNamespace: coverZoom,
+                        subtitle: subtitle(for:)
+                    ) { volume in
+                        path.append(route(for: volume))
+                    }
                     weeklyReadingSection
-                    scripturesSection
+                        .padding(.horizontal, 20)
+                        .onGeometryChange(for: CGFloat.self, of: \.size.height) { weekCardHeight = $0 }
                 }
-                .versedPage()
+                .padding(.top, 10)
+                .padding(.bottom, 24)
             }
+            .scrollBounceBehavior(.basedOnSize)
+            .onGeometryChange(for: CGFloat.self, of: { $0.size.height - $0.safeAreaInsets.bottom }) { availableHeight = $0 }
             .background(Color.appBackground)
+            .onAppear {
+                if selectedVolume == nil { selectedVolume = library.lastReadVolumeID(from: positions) }
+            }
+            // Reading somewhere else moves the covers to that book, ready for coming back here.
+            .onChange(of: library.lastReadVolumeID(from: positions)) { _, volumeID in
+                selectedVolume = volumeID
+            }
             .navigationTitle("Browse")
             .navigationDestination(for: Route.self, destination: destination)
             .toolbar {
@@ -48,8 +74,15 @@ struct BrowseView: View {
         }
     }
 
+    /// The covers take the room left over, so This Week stays in view below them on every iPhone.
+    /// At the largest text sizes the screen scrolls instead of squeezing the covers.
+    private var coverHeight: CGFloat {
+        let reserved: CGFloat = 10 + 24 + 20 + 38 // Margins, and the dots under the covers.
+        return min(max(availableHeight - weekCardHeight - reserved, 250), 460)
+    }
+
     private var weeklyReadingSection: some View {
-        CardSection(title: "This Week") {
+        Card {
             if let week = schedule.currentWeek() {
                 Button {
                     openWeek(nil)
@@ -82,16 +115,14 @@ struct BrowseView: View {
     /// The week's book names, with its dates under them.
     private func thisWeekRow(_ week: ReadingWeek) -> some View {
         HStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 3) {
+                SmallCapsLabel("This Week · \(week.dateRangeText())")
                 Text(week.readingByBook.map(\.name).joined(separator: ", "))
                     .font(.versedTitle(size: 24, relativeTo: .title3))
                     .foregroundStyle(.brand)
                     // Shrinks a little at the largest sizes, so a long name like "Lamentations" stays whole.
                     .lineLimit(2)
                     .minimumScaleFactor(0.6)
-                Text(week.dateRangeText())
-                    .font(.subheadline)
-                    .foregroundStyle(.secondaryText)
             }
             .multilineTextAlignment(.leading)
             Spacer(minLength: 8)
@@ -99,20 +130,6 @@ struct BrowseView: View {
         }
         .cardRowPadding()
         .contentShape(Rectangle())
-    }
-
-    private var scripturesSection: some View {
-        CardSection(title: "Scriptures") {
-            ForEach(library.volumes) { volume in
-                if volume.id != library.volumes.first?.id {
-                    CardDivider()
-                }
-                NavigationLink(value: route(for: volume)) {
-                    CardRowLabel(title: volume.title, detail: subtitle(for: volume))
-                }
-                .buttonStyle(.cardRow)
-            }
-        }
     }
 
     @ViewBuilder
@@ -123,10 +140,17 @@ struct BrowseView: View {
         case .volume(let id):
             if let volume = library.volume(id: id) {
                 BookListView(volume: volume)
+                    .zoomsFromCover(id: volume.id, in: coverZoom)
             }
         case .book(let id):
             if let book = library.book(id: id) {
-                ChapterGridView(book: book)
+                // A volume with a single book opens its chapters directly from the cover.
+                if let volume = library.volumes.first(where: { $0.books.count == 1 && $0.books[0].id == id }) {
+                    ChapterGridView(book: book)
+                        .zoomsFromCover(id: volume.id, in: coverZoom)
+                } else {
+                    ChapterGridView(book: book)
+                }
             }
         case .reading(let chapterID):
             if let book = library.book(id: chapterID.bookID) {
@@ -174,5 +198,6 @@ struct BrowseView: View {
 
 #Preview {
     BrowseView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled(), openWeek: { _ in }, path: .constant([]))
+        .environment(ReadingChrome())
         .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }

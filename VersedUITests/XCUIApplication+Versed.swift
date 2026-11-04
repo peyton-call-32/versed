@@ -7,8 +7,32 @@ extension XCUIApplication {
     static let shortWeek = (row: "Jan 11–17, John 1", pageCount: 54)
 
     /// A button in the floating tab bar. It has its own name because Browse also has a "This Week" row.
+    /// The bar steps aside while reading, so this taps the page to bring it back first.
     func tab(_ title: String) -> XCUIElement {
-        buttons.matching(identifier: "Tab \(title)").firstMatch
+        let button = buttons.matching(identifier: "Tab \(title)").firstMatch
+        if !button.waitForExistence(timeout: 1) { revealControls() }
+        _ = button.waitForExistence(timeout: 3)
+        return button
+    }
+
+    /// One tap on the page brings back the controls that step aside while reading.
+    func revealControls() {
+        coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
+    }
+
+    /// Brings a book cover on Browse to the middle and opens it. The first tap on a cover at
+    /// the side only brings it forward, so swipe until it's in the middle, then tap.
+    func openVolume(_ title: String) {
+        let cover = buttons[title]
+        XCTAssertTrue(cover.waitForExistence(timeout: 5))
+        for _ in 1...6 where abs(cover.frame.midX - frame.midX) > 5 {
+            let moveLeft = cover.frame.midX > frame.midX
+            let carousel = coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35))
+            let target = carousel.withOffset(CGVector(dx: moveLeft ? -260 : 260, dy: 0))
+            carousel.press(forDuration: 0.05, thenDragTo: target)
+            sleep(1)
+        }
+        cover.tap()
     }
 
     /// The top edge of the floating tab bar, for checking nothing slides under it.
@@ -26,7 +50,9 @@ extension XCUIApplication {
     /// Opens a week from Browse > Reading Schedule, by its row's VoiceOver label ("Nov 9–15, Daniel 1–7").
     func openWeekFromSchedule(_ rowLabel: String) {
         tab("Browse").tap()
-        scrollViews.buttons["Reading Schedule"].tap()
+        let schedule = scrollViews.buttons["Reading Schedule"]
+        XCTAssertTrue(schedule.waitForExistence(timeout: 5))
+        schedule.tap()
         XCTAssertTrue(navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
 
         // The list opens on this week, so swipe until the row is loaded and on screen.

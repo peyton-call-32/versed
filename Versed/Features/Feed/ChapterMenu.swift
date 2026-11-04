@@ -16,6 +16,10 @@ struct ChapterMenu: View {
     let items: [FeedItem]
     let navigation: FeedNavigation
     var weekOptions: WeekOptions? = nil
+    /// Just the words and a small arrow, with no pill, for sitting quietly above a verse.
+    var isPlain = false
+    /// Whether a plain menu sits on a navy chapter opening, so it needs cream type.
+    var isOnCover = false
 
     @State private var showsSheet = false
 
@@ -38,16 +42,23 @@ struct ChapterMenu: View {
                 Text(reference ?? weekOptions?.dates ?? "")
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
+                    .contentTransition(.numericText())
                 Image(systemName: "chevron.down")
                     .imageScale(.small)
             }
             .font(.subheadline.weight(.medium))
-            .foregroundStyle(.brand)
+            .foregroundStyle(isPlain && isOnCover ? Color.onCover : Color.brand)
             .padding(.horizontal, 15)
             .frame(minHeight: 44)
-            .pillBackground()
+            .background {
+                if !isPlain {
+                    Color.clear.pillBackground()
+                }
+            }
+            .contentShape(Capsule())
+            .animation(.versed, value: reference)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(ChapterMenuButtonStyle())
         .accessibilityLabel(reference ?? "Week of \(weekOptions?.dates ?? "")")
         .accessibilityHint("Moves to another chapter.")
         .accessibilityIdentifier("Chapter menu")
@@ -60,6 +71,13 @@ struct ChapterMenu: View {
                 weekOptions: weekOptions
             )
         }
+    }
+}
+
+private struct ChapterMenuButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .pressEffect(configuration.isPressed)
     }
 }
 

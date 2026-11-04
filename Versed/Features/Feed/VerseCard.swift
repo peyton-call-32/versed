@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// One verse, filling the screen. Double-tap or tap the heart to save it.
+/// One verse, filling the screen. Double-tap or tap the heart to save it; a single tap brings
+/// back the controls that step aside while reading.
 struct VerseCard: View {
     let verse: Verse
     let isSaved: Bool
@@ -8,9 +9,18 @@ struct VerseCard: View {
     let onDoubleTap: () -> Void
     /// The heart button saves or un-saves.
     let onHeartTap: () -> Void
+    var onTap: () -> Void = {}
+    /// Whether the tab bar is showing, so the heart moves up out of its way.
+    var liftsHeart = false
 
-    @State private var showsHeartBurst = false
+    /// Where the double-tap landed, while its heart is on screen.
+    @State private var burst: HeartBurst?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private struct HeartBurst: Identifiable {
+        let id = UUID()
+        let location: CGPoint
+    }
 
     var body: some View {
         ShrinkToFit {
@@ -32,22 +42,31 @@ struct VerseCard: View {
             .accessibilityAction(named: isSaved ? "Remove from Saved" : "Save Verse", onHeartTap)
         }
         .multilineTextAlignment(.center)
-        .padding(.horizontal, 32)
+        .padding(.horizontal, 30)
         .padding(.top, FeedInsets.top)
         .padding(.bottom, FeedInsets.bottom)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .pageDepth(drift: reduceMotion ? 0 : 0.14, fade: 1)
         .contentShape(Rectangle())
-        .onTapGesture(count: 2) {
+        .onTapGesture(count: 2) { location in
             onDoubleTap()
-            showHeartBurst()
+            showHeartBurst(at: location)
         }
+        .onTapGesture(perform: onTap)
         .overlay {
-            if showsHeartBurst {
+            if let burst {
                 Image(systemName: "heart.fill")
-                    .font(.system(size: 96))
+                    .font(.system(size: 84))
                     .foregroundStyle(.brand)
-                    // With Reduce Motion on, the heart fades in place instead of growing.
-                    .transition(reduceMotion ? .opacity : .scale(scale: 0.5).combined(with: .opacity))
+                    .rotationEffect(.degrees(reduceMotion ? 0 : -8))
+                    .position(burst.location)
+                    .id(burst.id)
+                    // It pops in where the finger landed, then floats up and away.
+                    // With Reduce Motion on, it simply fades.
+                    .transition(reduceMotion ? .opacity : .asymmetric(
+                        insertion: .scale(scale: 0.35).combined(with: .opacity),
+                        removal: .offset(y: -70).combined(with: .opacity)
+                    ))
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
             }
@@ -55,34 +74,39 @@ struct VerseCard: View {
         .overlay(alignment: .bottomTrailing) {
             heartButton
         }
-        .sensoryFeedback(.impact(weight: .light), trigger: isSaved)
+        // A soft tap when saving, and just a tick when taking it back.
+        .sensoryFeedback(trigger: isSaved) { _, nowSaved in
+            nowSaved ? .impact(flexibility: .soft, intensity: 0.9) : .selection
+        }
     }
 
     private var heartButton: some View {
         Button(action: onHeartTap) {
             Image(systemName: isSaved ? "heart.fill" : "heart")
-                .font(.system(size: 20, weight: .light))
+                .font(.system(size: 25, weight: .light))
                 .foregroundStyle(.brand)
                 .contentTransition(.symbolEffect(.replace))
-                .frame(width: 46, height: 46)
-                .raised(in: Circle())
-                // A slightly bigger tap area than the circle, so it's easy to hit.
+                .symbolEffect(.bounce, value: isSaved)
                 .frame(width: 48, height: 48)
                 .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .accessibilityLabel(isSaved ? "Remove from saved" : "Save verse")
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-        // Clears the tab bar, which floats over the bottom of the feed.
-        .padding(.trailing, 20)
-        .padding(.bottom, 108)
+        .padding(.trailing, 22)
+        // Sits above the progress line, or above the tab bar when it's showing.
+        .padding(.bottom, liftsHeart ? 108 : FeedInsets.progressBar + 22)
+        .animation(reduceMotion ? nil : .versed, value: liftsHeart)
     }
 
-    private func showHeartBurst() {
-        withAnimation(reduceMotion ? .easeIn(duration: 0.2) : .spring(duration: 0.3)) { showsHeartBurst = true }
+    private func showHeartBurst(at location: CGPoint) {
+        let next = HeartBurst(location: location)
+        withAnimation(reduceMotion ? .easeIn(duration: 0.2) : .spring(duration: 0.35, bounce: 0.45)) { burst = next }
         Task {
-            try? await Task.sleep(for: .milliseconds(600))
-            withAnimation(.easeOut(duration: 0.3)) { showsHeartBurst = false }
+            try? await Task.sleep(for: .milliseconds(650))
+            // A newer double-tap keeps its own heart on screen.
+            guard burst?.id == next.id else { return }
+            withAnimation(.easeOut(duration: 0.45)) { burst = nil }
         }
     }
 
@@ -101,9 +125,9 @@ struct VerseCard: View {
     @Previewable @State var isSaved = false
     VerseCard(
         verse: Verse(
-            id: VerseID(bookID: "1-ne", chapter: 3, verse: 7),
-            bookName: "1 Nephi",
-            text: "And it came to pass that I, Nephi, said unto my father: I will go and do the things which the Lord hath commanded, for I know that the Lord giveth no commandments unto the children of men, save he shall prepare a way for them that they may accomplish the thing which he commandeth them."
+            id: VerseID(bookID: "jer", chapter: 31, verse: 3),
+            bookName: "Jeremiah",
+            text: "The LORD hath appeared of old unto me, saying, Yea, I have loved thee with an everlasting love: therefore with lovingkindness have I drawn thee."
         ),
         isSaved: isSaved,
         onDoubleTap: { isSaved = true },

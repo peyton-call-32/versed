@@ -11,6 +11,8 @@ struct RootView: View {
     @State private var weekNavigation = FeedNavigation()
     @State private var browsePath: [BrowseView.Route] = []
     @State private var savedPath: [VerseID] = []
+    @State private var chrome = ReadingChrome()
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private struct Content {
         let library: ScriptureLibrary
@@ -53,8 +55,19 @@ struct RootView: View {
                     }
                 }
                 .overlay(alignment: .bottom) {
-                    FloatingTabBar(selection: $selectedTab, onReselect: goToStart(of:))
+                    // Animates only the bar, so nothing disturbs a page that's still settling.
+                    ZStack {
+                        if !chrome.hidesControls {
+                            FloatingTabBar(selection: $selectedTab, onReselect: goToStart(of:))
+                                .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
+                        }
+                    }
+                    .animation(reduceMotion ? .easeInOut(duration: 0.2) : .versed, value: chrome.hidesControls)
                 }
+                // Arriving on a tab keeps the tab bar in view until the reader swipes on.
+                .onChange(of: selectedTab) { chrome.reveal() }
+                .environment(chrome)
+                .statusBarHidden(chrome.hidesControls)
             } else {
                 ProgressView()
             }

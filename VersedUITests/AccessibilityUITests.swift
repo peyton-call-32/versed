@@ -31,6 +31,7 @@ final class AccessibilityUITests: XCTestCase {
             try audit("chapter menu, \(appearance)")
             app.buttons["Done"].tap()
 
+            app.revealControls()
             app.buttons["Streak"].tap()
             XCTAssertTrue(app.navigationBars["Your Streak"].waitForExistence(timeout: 5))
             // The calendar's days stop growing at a set size so seven columns still fit.
@@ -112,6 +113,8 @@ final class AccessibilityUITests: XCTestCase {
         let heart = onScreen(app.buttons.matching(identifier: "Save verse"))
         XCTAssertTrue(heart.waitForExistence(timeout: 5))
         attachScreenshot(named: "largest-text-verse")
+        app.revealControls()
+        sleep(1)
         assertFits(heart, between: top, and: app.tabBarTop, "heart button")
 
         app.tab("Browse").tap()
@@ -238,10 +241,13 @@ final class AccessibilityUITests: XCTestCase {
     /// - Contrast on Settings' gentle-note line in dark mode: cream-gray on deep navy, plenty readable.
     /// - Contrast on the streak calendar's day numbers. The audit flags a random few, even cream on
     ///   navy. The colors measure 6.7:1 (light) and 8.4:1 (dark) against the card, well above 4.5:1.
+    /// - The "3 of 40" beside the reading progress line, which measures 7.7:1 (light) on the page.
     /// - Text size on the tab bar and the Skip, Next, and Done buttons, capped so the
     ///   bars and the page text keep their room.
     /// - "Clipped" text in Settings that's fully visible in both the normal and the
     ///   "largest-text-settings" screenshots. The audit misreads these two labels.
+    /// - The same for the last intro page's title and Browse's "THIS WEEK" label, fully visible in
+    ///   the "audit-intro last page" and "audit-Browse" screenshots.
     /// - The same for the chapter menu's first row and book names, fully visible in the
     ///   "audit-chapter menu" and "largest-chapter-menu" screenshots.
     private func isKnownException(_ issue: XCUIAccessibilityAuditIssue) -> Bool {
@@ -256,10 +262,12 @@ final class AccessibilityUITests: XCTestCase {
                 || ["Done", "Settings"].contains(element.label)
                 || element.label.hasPrefix("A gentle note")
                 || Int(element.label) != nil
+                || element.label.contains(/^\d+ of \d+$/)
         case .dynamicType:
             return ["This Week", "Browse", "Saved", "Skip", "Next", "Done"].contains(element.label)
         case .textClipped:
-            return ["DAILY REMINDER", "peytoncall32@icloud.com", "JEREMIAH", "LAMENTATIONS", "Back to Week's Start"].contains(element.label)
+            return ["DAILY REMINDER", "peytoncall32@icloud.com", "JEREMIAH", "LAMENTATIONS", "Back to Week's Start", "This Week's Reading, Ready"].contains(element.label)
+                || element.label.hasPrefix("THIS WEEK")
         default:
             return false
         }

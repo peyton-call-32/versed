@@ -13,6 +13,7 @@ struct ChapterReadingView: View {
     var startItem: FeedItem.ID? = nil
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(ReadingChrome.self) private var chrome
     @State private var navigation = FeedNavigation()
 
     private var items: [FeedItem] {
@@ -30,9 +31,15 @@ struct ChapterReadingView: View {
         )
         .toolbar {
             ToolbarItem(placement: .principal) {
-                ChapterMenu(library: library, items: items, navigation: navigation)
+                let hidesMenu = chrome.isOnCover && chrome.hidesControls
+                ChapterMenu(library: library, items: items, navigation: navigation, isPlain: true, isOnCover: chrome.isOnCover)
+                    .opacity(hidesMenu ? 0 : 1)
+                    .allowsHitTesting(!hidesMenu)
+                    .accessibilityHidden(hidesMenu)
             }
         }
+        // Keeps the back button readable: cream on a navy chapter opening.
+        .toolbarColorScheme(chrome.isOnCover ? .dark : nil, for: .navigationBar)
         // The pill and title cards already say where the reader is, so the bar has no title.
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)

@@ -259,6 +259,25 @@ extension View {
     }
 }
 
+extension View {
+    /// Pressing gives slightly under the finger, then springs back. Stays still with Reduce Motion on.
+    func pressEffect(_ isPressed: Bool, scale: CGFloat = 0.96) -> some View {
+        modifier(PressEffect(isPressed: isPressed, scale: scale))
+    }
+}
+
+private struct PressEffect: ViewModifier {
+    let isPressed: Bool
+    let scale: CGFloat
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func body(content: Content) -> some View {
+        content
+            .scaleEffect(isPressed && !reduceMotion ? scale : 1)
+            .animation(.spring(duration: 0.28, bounce: 0.35), value: isPressed)
+    }
+}
+
 /// A tappable card row: it dims while pressed.
 struct CardRowButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
@@ -281,7 +300,8 @@ struct PrimaryButtonStyle: ButtonStyle {
             .padding(.vertical, 15)
             .padding(.horizontal, 28)
             .background(Color("ProminentButton"), in: Capsule())
-            .opacity(configuration.isPressed ? 0.8 : 1)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .pressEffect(configuration.isPressed)
     }
 }
 
@@ -294,7 +314,7 @@ struct SecondaryButtonStyle: ButtonStyle {
             .padding(.vertical, 11)
             .padding(.horizontal, 16)
             .pillBackground()
-            .opacity(configuration.isPressed ? 0.7 : 1)
+            .pressEffect(configuration.isPressed)
     }
 }
 
@@ -309,7 +329,7 @@ struct RaisedPillButtonStyle: ButtonStyle {
             .frame(minWidth: 44, minHeight: 44)
             .pillBackground()
             .contentShape(Capsule())
-            .opacity(configuration.isPressed ? 0.7 : 1)
+            .pressEffect(configuration.isPressed)
     }
 }
 
@@ -332,6 +352,7 @@ struct ChapterCellButtonStyle: ButtonStyle {
                 }
             }
             .contentShape(shape)
+            .pressEffect(configuration.isPressed, scale: 0.92)
     }
 }
 

@@ -44,6 +44,7 @@ struct WeekIntroCard: View {
                     Image(systemName: "arrow.up")
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(.secondaryText)
+                        .gentleBob(isActive: true)
                         .accessibilityHidden(true)
                     SmallCapsLabel("Swipe up to \(swipeGoal)")
                         // With VoiceOver on, moving the page takes three fingers.

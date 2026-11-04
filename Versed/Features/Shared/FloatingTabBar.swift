@@ -27,6 +27,10 @@ struct FloatingTabBar: View {
     /// Called when the reader taps the tab that's already open.
     var onReselect: (AppTab) -> Void = { _ in }
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    /// Counts taps per tab, to give each one a small bounce.
+    @State private var bounces: [AppTab: Int] = [:]
+    @Namespace private var highlight
 
     var body: some View {
         HStack(spacing: 0) {
@@ -35,6 +39,7 @@ struct FloatingTabBar: View {
             }
         }
         .padding(.horizontal, 6)
+        .animation(reduceMotion ? nil : .versed, value: selection)
         .raised(in: Capsule())
         // Wider at the largest text sizes, so the labels keep their room.
         .padding(.horizontal, typeSize.isAccessibilitySize ? 12 : 56)
@@ -49,6 +54,7 @@ struct FloatingTabBar: View {
     private func button(for tab: AppTab) -> some View {
         let isSelected = selection == tab
         return Button {
+            if !reduceMotion { bounces[tab, default: 0] += 1 }
             if isSelected {
                 onReselect(tab)
             } else {
@@ -59,14 +65,24 @@ struct FloatingTabBar: View {
                 Image(systemName: tab.symbol)
                     .symbolVariant(isSelected ? .fill : .none)
                     .font(.system(size: 18, weight: .light))
+                    .symbolEffect(.bounce, value: bounces[tab, default: 0])
                     .frame(height: 22)
                 Text(tab.rawValue)
-                    .font(.caption2.weight(isSelected ? .semibold : .medium))
+                    .font(.caption.weight(isSelected ? .semibold : .medium))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
             .foregroundStyle(isSelected ? AnyShapeStyle(.brand) : AnyShapeStyle(.secondaryText))
             .frame(maxWidth: .infinity, minHeight: 58)
+            .background {
+                // A soft shape behind the open tab, which slides over when the tab changes.
+                if isSelected {
+                    Capsule()
+                        .fill(Color.brand.opacity(0.07))
+                        .padding(.vertical, 5)
+                        .matchedGeometryEffect(id: "open tab", in: highlight)
+                }
+            }
             .contentShape(Rectangle())
         }
         .buttonStyle(.plain)

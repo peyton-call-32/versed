@@ -12,7 +12,10 @@ struct FeedView: View {
     private let usesCover: Bool
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(ReadingChrome.self) private var chrome
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverIsOn
+    @Environment(\.accessibilitySwitchControlEnabled) private var switchControlIsOn
     @Query private var savedVerses: [SavedVerse]
 
     /// The ID of the page currently on screen.
@@ -23,6 +26,10 @@ struct FeedView: View {
     @State private var coverOffset: CGFloat = 0
     /// The cover's height, for sliding it all the way off the top.
     @State private var coverHeight: CGFloat = 0
+    /// How far down the phone's top bar reaches, for the border on chapter openings.
+    @State private var topSafeArea: CGFloat = 0
+    /// Tells this feed apart from others when reporting to `chrome`.
+    @State private var feedID = UUID()
 
     /// - Parameters:
     ///   - itemID: The page to open on, or `nil` for the first page. Ignored if it isn't in `items`.
@@ -67,8 +74,12 @@ struct FeedView: View {
             guard let itemID else { return }
             onPageChange(itemID)
             recordReading(on: itemID)
+            chrome.hideRevealedControls()
             reportVisiblePage()
         }
+        .onDisappear { chrome.leave(feedID) }
+        // A soft tap under the thumb on reaching a new chapter. Verse to verse stays silent.
+        .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.55), trigger: currentItemID.flatMap(FeedItem.chapterID(of:)))
         .onChange(of: showsCover) { reportVisiblePage() }
         .onChange(of: navigation.request) { _, request in
             guard let request else { return }
@@ -80,17 +91,43 @@ struct FeedView: View {
         .background(Color.appBackground)
         .ignoresSafeArea()
         .accessibilityHidden(showsCover)
+        .overlay(alignment: .bottom) {
+            progressBar
+        }
         .overlay {
             if showsCover, let first = items.first {
                 cover(showing: first)
                     .transition(.move(edge: .top))
             }
         }
+        .overlay {
+            Color.clear
+                .allowsHitTesting(false)
+                .onGeometryChange(for: CGFloat.self, of: \.safeAreaInsets.top) { topSafeArea = $0 }
+        }
+    }
+
+    /// The line at the bottom of verse pages. It makes way for the tab bar when that's showing.
+    private var progressBar: some View {
+        let position = chrome.hidesControls ? ChapterPosition(of: currentItemID ?? items.first?.id, in: items) : nil
+        return ZStack {
+            if let position {
+                ReadingProgressBar(position: position)
+                    .transition(.opacity)
+            }
+        }
+        .frame(maxHeight: .infinity, alignment: .bottom)
+        .padding(.bottom, FeedInsets.progressBar)
+        .animation(.easeInOut(duration: 0.25), value: position == nil)
+        .allowsHitTesting(false)
+        .ignoresSafeArea()
     }
 
     /// The cover hides the feed's own page, so while it's up the first page is what's on screen.
     private func reportVisiblePage() {
-        navigation.visibleItemID = showsCover ? items.first?.id : currentItemID ?? items.first?.id
+        let visible = showsCover ? items.first?.id : currentItemID ?? items.first?.id
+        navigation.visibleItemID = visible
+        chrome.report(page: visible, from: feedID, canHide: !voiceOverIsOn && !switchControlIsOn)
     }
 
     private func perform(_ request: FeedNavigation.Request) {
@@ -192,20 +229,23 @@ struct FeedView: View {
         isResuming: Bool = false,
         onSelectSection: @escaping (ChapterID) -> Void
     ) -> some View {
+        let isCurrent = (currentItemID ?? items.first?.id) == item.id && !showsCover
         switch item {
         case .weekIntro(let week):
             WeekIntroCard(week: week, isResuming: isResuming, onSelectSection: onSelectSection)
         case .weekEnd(let week):
-            WeekEndCard(week: week)
+            WeekEndCard(week: week, isCurrent: isCurrent)
         case .chapterTitle(let title):
-            ChapterTitleCard(title: title)
+            ChapterTitleCard(title: title, isCurrent: isCurrent, topInset: topSafeArea, onTap: chrome.toggleControls)
         case .verse(let verse):
             let store = SavedVerseStore(context: modelContext)
             VerseCard(
                 verse: verse,
                 isSaved: savedIDs.contains(verse.id.rawValue),
                 onDoubleTap: { store.save(verse.id) },
-                onHeartTap: { store.toggle(verse.id) }
+                onHeartTap: { store.toggle(verse.id) },
+                onTap: chrome.toggleControls,
+                liftsHeart: !chrome.hidesControls
             )
         }
     }
@@ -224,16 +264,19 @@ private extension View {
     }
 }
 
-/// Room the feed's pages leave for what floats over them: the week menu at the top, and the
-/// tab bar and heart button at the bottom. Those are capped at the first
+/// Room the feed's pages leave for what floats over them: the chapter menu at the top, and the
+/// heart button and progress line at the bottom. Those are capped at the first
 /// accessibility text size, so these fit them at every size.
 enum FeedInsets {
-    static let top: CGFloat = 130
-    static let bottom: CGFloat = 170
+    static let top: CGFloat = 116
+    static let bottom: CGFloat = 126
+    /// How far the progress line sits above the bottom of the screen.
+    static let progressBar: CGFloat = 44
 }
 
 #Preview {
     let library = try! ScriptureLibrary.loadBundled()
     FeedView(items: library.feedItems(for: [Passage(bookID: "1-ne", chapters: 3...3)]), navigation: FeedNavigation())
+        .environment(ReadingChrome())
         .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }

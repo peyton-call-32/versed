@@ -30,13 +30,14 @@ final class VersedUITests: XCTestCase {
         onScreen(app.buttons.matching(identifier: "Save verse")).tap()
         XCTAssertTrue(app.buttons["Remove from saved"].waitForExistence(timeout: 5))
 
-        // Reading a verse starts the streak.
+        // Reading a verse starts the streak. It waits for a tap, along with the tab bar.
+        app.revealControls()
         XCTAssertTrue(app.buttons["1-day reading streak"].waitForExistence(timeout: 5))
         saveScreenshot(named: "1-this-week")
 
         // Browse to Alma 32 and read to verse 2.
         app.tab("Browse").tap()
-        app.buttons["Book of Mormon"].tap()
+        app.openVolume("Book of Mormon")
         app.buttons["Alma"].tap()
         app.buttons["Alma 32"].tap()
         XCTAssertTrue(chapterHeading("Alma, Chapter 32").waitForExistence(timeout: 5))
@@ -102,7 +103,8 @@ final class VersedUITests: XCTestCase {
         let schedule = app.scrollViews.buttons["Reading Schedule"]
         let firstBook = app.buttons["Old Testament"]
         XCTAssertLessThan(thisWeek.frame.maxY, schedule.frame.maxY, "This Week comes first")
-        XCTAssertLessThan(schedule.frame.maxY, firstBook.frame.minY, "Both come before the books")
+        XCTAssertGreaterThan(thisWeek.frame.minY, firstBook.frame.maxY, "Both sit below the book covers")
+        XCTAssertTrue(schedule.isHittable, "Stays in view below the covers")
         XCTAssertTrue(thisWeek.label.contains("Jeremiah 31–33"), "Got: \(thisWeek.label)")
         attachScreenshot(named: "browse-weekly-reading")
 
@@ -153,6 +155,9 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(chapterHeading("Lamentations, Chapter 3").waitForExistence(timeout: 5))
 
         // Back to the week's start keeps our place: swiping up continues from it.
+        // A chapter opening hides the menu until a tap on the page.
+        app.revealControls()
+        XCTAssertTrue(app.buttons["Lamentations 3"].waitForExistence(timeout: 3))
         app.buttons["Lamentations 3"].tap()
         app.buttons["Back to Week's Start"].tap()
         XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].waitForExistence(timeout: 5))
@@ -177,7 +182,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].waitForExistence(timeout: 5))
 
         app.tab("Browse").tap()
-        app.buttons["Book of Mormon"].tap()
+        app.openVolume("Book of Mormon")
         XCTAssertFalse(app.navigationBars["Browse"].exists)
         app.tab("Browse").tap()
         XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 5))
@@ -186,7 +191,7 @@ final class VersedUITests: XCTestCase {
     /// Psalms is the longest book, so this also checks that opening near its end works.
     func testBrowseChapterMenuReachesEarlierChapters() {
         app.tab("Browse").tap()
-        app.buttons["Old Testament"].tap()
+        app.openVolume("Old Testament")
         let psalms = app.buttons["Psalms"]
         for _ in 1...5 where !(psalms.exists && psalms.isHittable) { app.swipeUp() }
         psalms.tap()
@@ -197,6 +202,8 @@ final class VersedUITests: XCTestCase {
         sleep(1)
         attachScreenshot(named: "browse-chapter-menu-pill")
 
+        app.revealControls()
+        XCTAssertTrue(app.buttons["Chapter menu"].waitForExistence(timeout: 3))
         app.buttons["Chapter menu"].tap()
         let firstPsalm = app.buttons["Psalms 1"]
         for _ in 1...10 where !(firstPsalm.exists && firstPsalm.isHittable) { app.swipeDown() }
@@ -299,8 +306,9 @@ final class VersedUITests: XCTestCase {
         XCTAssertFalse(app.buttons["1-day reading streak"].exists)
         XCTAssertLessThan(weekMenu.frame.midX, app.frame.midX)
 
-        // Once the streak counts, it sits on the right and nothing overlaps.
+        // Once the streak counts, a tap on the page shows it on the right, and nothing overlaps.
         for _ in 1...3 { app.swipeUp() }
+        app.revealControls()
         let streak = app.buttons["1-day reading streak"]
         XCTAssertTrue(streak.waitForExistence(timeout: 5))
         XCTAssertGreaterThan(streak.frame.minX, weekMenu.frame.maxX)
@@ -327,7 +335,54 @@ final class VersedUITests: XCTestCase {
         app.swipeUp()
         app.swipeUp()
         XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
+        app.revealControls()
         XCTAssertTrue(app.buttons["1-day reading streak"].waitForExistence(timeout: 5))
+    }
+
+    func testControlsStepAsideWhileReading() {
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        let tabBar = app.descendants(matching: .any).matching(identifier: "Tab bar").firstMatch
+        XCTAssertTrue(tabBar.exists)
+
+        // Reading: the tab bar steps aside.
+        app.swipeUp()
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
+        XCTAssertTrue(tabBar.waitForNonExistence(timeout: 3))
+
+        // A tap brings the tab bar back, and the next swipe sends it away again.
+        app.revealControls()
+        XCTAssertTrue(tabBar.waitForExistence(timeout: 3))
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:2"].waitForExistence(timeout: 5))
+        XCTAssertTrue(tabBar.waitForNonExistence(timeout: 3))
+    }
+
+    func testBrowseCoversOpenOnTheLastBookRead() {
+        // With nothing read yet, the middle book is in front, with neighbors on both sides.
+        app.tab("Browse").tap()
+        let bookOfMormon = app.buttons["Book of Mormon"]
+        XCTAssertTrue(bookOfMormon.waitForExistence(timeout: 5))
+        XCTAssertEqual(bookOfMormon.frame.midX, app.frame.midX, accuracy: 2)
+        XCTAssertLessThan(app.buttons["New Testament"].frame.maxX, bookOfMormon.frame.minX)
+
+        // Tapping an edge brings that book forward without opening it.
+        app.buttons["New Testament"].coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
+        let newTestament = app.buttons["New Testament"]
+        let isCentered = NSPredicate { _, _ in abs(newTestament.frame.midX - self.app.frame.midX) < 2 }
+        wait(for: [expectation(for: isCentered, evaluatedWith: nil)], timeout: 5)
+        XCTAssertTrue(app.navigationBars["Browse"].exists)
+
+        // Reading the week's Jeremiah moves the covers to the Old Testament.
+        app.tab("This Week").tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 5))
+        for _ in 1...2 { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
+        app.tab("Browse").tap()
+        let oldTestament = app.buttons["Old Testament"]
+        XCTAssertTrue(oldTestament.waitForExistence(timeout: 5))
+        let oldIsCentered = NSPredicate { _, _ in abs(oldTestament.frame.midX - self.app.frame.midX) < 2 }
+        wait(for: [expectation(for: oldIsCentered, evaluatedWith: nil)], timeout: 5)
     }
 
     func testChoosingAnAppearance() {

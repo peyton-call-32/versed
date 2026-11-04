@@ -12,6 +12,8 @@ struct WeeklyReadingView: View {
     let navigation: FeedNavigation
 
     @Environment(\.modelContext) private var modelContext
+    @Environment(ReadingChrome.self) private var chrome
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The week picked from the menu or the schedule in Browse, or `nil` to show this week.
     @Binding var selectedWeekID: ReadingWeek.ID?
@@ -49,16 +51,29 @@ struct WeeklyReadingView: View {
     }
 
     private func header(selected: ReadingWeek, items: [FeedItem]) -> some View {
-        HStack {
-            ChapterMenu(
+        // A chapter opening already says where the reader is, so its menu waits for a tap.
+        let hidesMenu = chrome.isOnCover && chrome.hidesControls
+        return ChapterMenu(
                 library: library,
                 items: items,
                 navigation: navigation,
-                weekOptions: .init(schedule: schedule, dates: selected.dateRangeText()) { selectedWeekID = $0 }
+                weekOptions: .init(schedule: schedule, dates: selected.dateRangeText()) { selectedWeekID = $0 },
+                isPlain: chrome.isReading,
+                isOnCover: chrome.isOnCover
             )
-            Spacer(minLength: 8)
-            StreakBadge()
+        // The pill on the week's cards glides to the middle as a quiet label while reading.
+        .frame(maxWidth: .infinity, alignment: chrome.isReading ? .center : .leading)
+        .opacity(hidesMenu ? 0 : 1)
+        .allowsHitTesting(!hidesMenu)
+        .accessibilityHidden(hidesMenu)
+        .overlay(alignment: .trailing) {
+            if !chrome.hidesControls {
+                StreakBadge()
+                    .transition(.opacity)
+            }
         }
+        .animation(reduceMotion ? .easeInOut(duration: 0.2) : .versed, value: chrome.hidesControls)
+        .animation(reduceMotion ? .easeInOut(duration: 0.2) : .versed, value: chrome.isReading)
         .padding(.horizontal, 20)
         .padding(.top, 8)
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
@@ -68,5 +83,6 @@ struct WeeklyReadingView: View {
 #Preview {
     @Previewable @State var selectedWeekID: ReadingWeek.ID?
     WeeklyReadingView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled(), navigation: FeedNavigation(), selectedWeekID: $selectedWeekID)
+        .environment(ReadingChrome())
         .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }

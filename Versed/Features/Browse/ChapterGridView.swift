@@ -21,7 +21,7 @@ struct ChapterGridView: View {
                             .frame(maxWidth: .infinity, minHeight: cellSize)
                             .raised(in: RoundedRectangle(cornerRadius: 12, style: .continuous))
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(ChapterGridButtonStyle())
                     .accessibilityLabel(book.reference(chapter: chapter))
                 }
             }
@@ -29,5 +29,12 @@ struct ChapterGridView: View {
         }
         .background(Color.appBackground)
         .navigationTitle(book.name)
+    }
+}
+
+private struct ChapterGridButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .pressEffect(configuration.isPressed, scale: 0.92)
     }
 }
