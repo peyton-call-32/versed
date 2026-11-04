@@ -18,7 +18,7 @@ final class VersedUITests: XCTestCase {
 
     func testReadingSavingBrowsingAndResuming() {
         // This Week opens on the week's intro card, which keeps the lesson link for the end.
-        XCTAssertTrue(app.buttons["Start Reading"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
         XCTAssertFalse(onScreen(app.links.matching(identifier: "Open This Week's Lesson")).isHittable)
         attachScreenshot(named: "week-intro")
 
@@ -67,11 +67,12 @@ final class VersedUITests: XCTestCase {
 
     /// Captures the App Store screenshots. Run on the largest iPhone with `TEST_RUNNER_SCREENSHOT_DIR` set.
     func testCapturingAppStoreScreenshots() {
-        XCTAssertTrue(app.buttons["Start Reading"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
         saveScreenshot(named: "2-this-week")
 
         // Jeremiah 31:3, then save it and the next verse so the Saved tab has something to show.
-        app.buttons["Start Reading"].tap()
+        app.swipeUp()
+        app.swipeUp()
         XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
         app.swipeUp()
         XCTAssertTrue(app.staticTexts["Jeremiah 31:2"].waitForExistence(timeout: 5))
@@ -141,7 +142,7 @@ final class VersedUITests: XCTestCase {
 
     func testThisWeekPicksUpWhereTheReaderStopped() {
         // Read to Jeremiah 31:3: past the opening card, the chapter title, and two verses.
-        XCTAssertTrue(app.buttons["Start Reading"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
         for _ in 1...4 { app.swipeUp() }
         XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].waitForExistence(timeout: 5))
 
@@ -155,7 +156,7 @@ final class VersedUITests: XCTestCase {
         // It opens on the This Week card, with the saved verse hidden underneath.
         XCTAssertTrue(weekHeading(containing: "This Week").waitForExistence(timeout: 5))
         XCTAssertFalse(app.staticTexts["Jeremiah 31:3"].exists)
-        XCTAssertTrue(app.buttons["Continue Reading"].exists)
+        XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].exists)
 
         // One swipe up lands on the saved verse, and the verses before it are still there.
         app.swipeUp()
@@ -220,10 +221,10 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 5))
     }
 
-    func testStartReadingGoesToTheFirstVerse() {
-        let start = app.buttons["Start Reading"]
-        XCTAssertTrue(start.waitForExistence(timeout: 10))
-        start.tap()
+    func testSwipingFromTheOpeningCardReachesTheFirstVerse() {
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        app.swipeUp()
+        app.swipeUp()
         XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.staticTexts["1-day reading streak"].waitForExistence(timeout: 5))
     }
@@ -250,7 +251,7 @@ final class VersedUITests: XCTestCase {
 
         app.terminate()
         app.launch()
-        XCTAssertTrue(app.buttons["Start Reading"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
         attachScreenshot(named: "appearance-after-relaunch")
 
         // Put the default back so the simulator is left as it was.
@@ -278,7 +279,7 @@ final class VersedUITests: XCTestCase {
         attachScreenshot(named: "intro-reminder-offer")
 
         app.buttons["Not Now"].tap()
-        XCTAssertTrue(app.buttons["Start Reading"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 5))
     }
 
     func testSkippingTheIntroAndSeeingItAgain() {

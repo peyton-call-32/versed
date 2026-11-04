@@ -1,12 +1,11 @@
 import SwiftUI
 
 /// The first page of a week's reading: a small label with the dates, each book with its
-/// chapters, and a button to start. The link to the week's lesson waits on `WeekEndCard`.
+/// chapters, and a line saying to swipe up. The link to the week's lesson waits on `WeekEndCard`.
 struct WeekIntroCard: View {
     let week: ReadingWeek
-    /// "Start Reading", or "Continue Reading" when the reader is partway through the week.
-    let startTitle: String
-    let onStart: () -> Void
+    /// Whether the reader is partway through the week, so swiping up continues rather than starts.
+    var isResuming = false
 
     private var isThisWeek: Bool {
         week.contains(VersedApp.today)
@@ -18,6 +17,10 @@ struct WeekIntroCard: View {
     }
 
     private var books: [BookReading] { week.readingByBook }
+
+    private var swipeGoal: String {
+        isResuming ? "continue reading" : "start reading"
+    }
 
     /// One short book name gets the big title; longer names and several books need more room.
     private var titleSize: CGFloat {
@@ -37,10 +40,18 @@ struct WeekIntroCard: View {
                 .accessibilityLabel("\(isThisWeek ? "This Week" : "Week Of"), \(week.label), \(week.dateRangeText())")
                 .accessibilityAddTraits(.isHeader)
 
-                Button(startTitle, action: onStart)
-                    .buttonStyle(.primary)
-                    .padding(.top, 14)
-                    .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+                HStack(spacing: 8) {
+                    Image(systemName: "arrow.up")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.secondaryText)
+                        .accessibilityHidden(true)
+                    SmallCapsLabel("Swipe up to \(swipeGoal)")
+                        // With VoiceOver on, moving the page takes three fingers.
+                        .accessibilityLabel("Swipe up with three fingers to \(swipeGoal)")
+                        .accessibilityIdentifier("Swipe up to \(swipeGoal)")
+                }
+                .padding(.top, 14)
+                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
             }
         }
         .multilineTextAlignment(.center)
@@ -93,5 +104,5 @@ struct WeekIntroCard: View {
 
 #Preview {
     let schedule = try! ReadingSchedule.loadBundled()
-    WeekIntroCard(week: schedule.weeks[1], startTitle: "Start Reading") {}
+    WeekIntroCard(week: schedule.weeks[1])
 }

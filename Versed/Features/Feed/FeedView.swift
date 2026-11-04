@@ -42,7 +42,7 @@ struct FeedView: View {
         ScrollView(.vertical) {
             LazyVStack(spacing: 0) {
                 ForEach(items) { item in
-                    page(for: item, savedIDs: savedIDs, startTitle: "Start Reading", onStart: goToFirstVerse)
+                    page(for: item, savedIDs: savedIDs)
                         .containerRelativeFrame([.horizontal, .vertical])
                 }
             }
@@ -83,7 +83,7 @@ struct FeedView: View {
         GeometryReader { geometry in
             let height = geometry.size.height
             let dismissDistance = min(height / 3, 250)
-            page(for: item, savedIDs: [], startTitle: "Continue Reading") { dismissCover(height: height) }
+            page(for: item, savedIDs: [], isResuming: true)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .background(Color.appBackground)
                 .contentShape(Rectangle())
@@ -101,19 +101,11 @@ struct FeedView: View {
                             }
                         }
                 )
-                // A three-finger swipe or the button moves on, since the drag can't be used with VoiceOver on.
+                // A three-finger swipe moves on, since the drag can't be used with VoiceOver on.
                 .accessibilityElement(children: .contain)
                 .accessibilityScrollAction { _ in dismissCover(height: height) }
         }
         .ignoresSafeArea()
-    }
-
-    /// The Start Reading button: glides past the opening and chapter cards to the first verse.
-    private func goToFirstVerse() {
-        let firstVerse = items.first { if case .verse = $0 { true } else { false } }
-        withAnimation(reduceMotion ? nil : .easeOut(duration: 0.35)) {
-            currentItemID = firstVerse?.id
-        }
     }
 
     /// Slides the cover off the top (or just removes it with Reduce Motion on), showing the page underneath.
@@ -137,12 +129,11 @@ struct FeedView: View {
     private func page(
         for item: FeedItem,
         savedIDs: Set<String>,
-        startTitle: String,
-        onStart: @escaping () -> Void
+        isResuming: Bool = false
     ) -> some View {
         switch item {
         case .weekIntro(let week):
-            WeekIntroCard(week: week, startTitle: startTitle, onStart: onStart)
+            WeekIntroCard(week: week, isResuming: isResuming)
         case .weekEnd(let week):
             WeekEndCard(week: week)
         case .chapterTitle(let title):

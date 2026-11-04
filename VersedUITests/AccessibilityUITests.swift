@@ -19,7 +19,7 @@ final class AccessibilityUITests: XCTestCase {
 
             // This Week: the intro card, then a verse.
             app.tab("This Week").tap()
-            XCTAssertTrue(app.buttons["Start Reading"].waitForExistence(timeout: 10))
+            XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
             try audit("This Week intro, \(appearance)", except: Self.shrinkToFitIssues)
             app.swipeUp()
             app.swipeUp()
@@ -63,12 +63,12 @@ final class AccessibilityUITests: XCTestCase {
         XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
         let top = weekMenu.frame.maxY
 
-        // The week's intro card: its heading sits between the menu and the Start Reading button.
+        // The week's intro card: its heading sits between the menu and the line saying to swipe up.
         let heading = app.descendants(matching: .any).matching(NSPredicate(format: "label CONTAINS %@", "Jeremiah 31–33")).firstMatch
-        let start = app.buttons["Start Reading"]
+        let start = app.staticTexts["Swipe up to start reading"]
         attachScreenshot(named: "largest-text-intro")
         assertFits(heading, between: top, and: start.frame.minY, "week heading")
-        XCTAssertLessThanOrEqual(start.frame.maxY, app.tabBarTop, "Start Reading runs under the tab bar")
+        XCTAssertLessThanOrEqual(start.frame.maxY, app.tabBarTop, "The swipe line runs under the tab bar")
 
         // The chapter title card, then the first verse. SwiftUI reports the verse's frame as the
         // whole page, so the verse itself is checked by eye in this screenshot; the heart button
