@@ -95,7 +95,7 @@ App Store release (in progress; 16–19 done). Peyton's Apple Developer account 
 - Only take largest-text-size and dark-mode screenshots when a change affects how a screen looks, not for every change.
 
 ## Rules
-- Scripture text must come from a public-domain source. The current text is from github.com/bcbooks/scriptures-json (public domain). Don't use the Church's 2013 edition text, footnotes, or chapter summaries without a license.
+- Scripture text is the base text only, from github.com/bcbooks/scriptures-json. It includes the 2013 edition's small spelling and punctuation fixes, which Peyton reviewed and decided to keep on Nov 5, 2026. Don't add the Church's footnotes, chapter summaries, or chapter and section headings without a license.
 - Don't use the Church's name, logo, or "Come, Follow Me" as the app name, and nothing should look like an official Church app.
 - "Come, Follow Me" is a Church trademark. Never use it as the name of a tab, button, screen, or feature. It appears only in one descriptive line (`AboutSection.independenceNotice`), shown in the About section and on the last page of the first-time intro: "This Week follows the Come, Follow Me reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints." The lesson links (which contain "come-follow-me" in the web address) are fine.
 - Youth safety: youth groups need two adult leaders, parents can see group activity, and there are no private messages between adults and youth.
