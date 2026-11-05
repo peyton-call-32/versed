@@ -6,7 +6,8 @@ Updated Nov 5, 2026.
 
 - **Now:** Finishing step 20 in App Store Connect: privacy ("Data Not Collected"), age rating (4+), pricing (Free), and App Review information.
 - **Waiting:** Content Rights stays blank until BYU's Copyright Office answers about the 2013 edition fixes in the scripture text. Apple only needs this when submitting for review.
-- **Next:** Step 21. Upload a build to TestFlight and test it on Peyton's iPhone. Run the full test suite before uploading.
+- **Next:** Step 21. Version 1.0, build 1 was uploaded on Nov 5 with the full test suite passing. Peyton adds themself as an internal tester, then checks it on their iPhone. The next upload needs a higher build number (`CURRENT_PROJECT_VERSION` in `project.yml`).
+- **How to upload:** this Mac has no registered iPhone, so archive with `CODE_SIGNING_ALLOWED=NO`, then run `xcodebuild -exportArchive -allowProvisioningUpdates` with method `app-store-connect` and destination `upload`. Xcode signs it for distribution during that step.
 
 ## Design reset (done Nov 5)
 
