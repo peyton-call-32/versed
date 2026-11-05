@@ -11,6 +11,7 @@ struct SettingsView: View {
     @State private var showsIntro = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     private let scheduler = DailyReminderScheduler()
 
@@ -18,32 +19,30 @@ struct SettingsView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 22) {
-                    CardSection(title: "Appearance") {
+                    LedgerSection(title: "Appearance") {
                         appearancePicker
                     }
 
                     reminderSection
 
-                    CardSection(title: "Help") {
+                    LedgerSection(title: "Help") {
                         Button {
                             showsIntro = true
                         } label: {
-                            CardRowLabel(title: "Show Intro Again")
+                            LedgerRowLabel(title: "Show Intro Again")
                         }
-                        .buttonStyle(.cardRow)
+                        .buttonStyle(.ledgerRow)
                     }
 
                     AboutSection()
                 }
                 .versedPage()
             }
-            .background(Color.appBackground)
+            .versedScreen()
             .tint(Color.brand)
             .navigationTitle("Settings")
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
+                DoneToolbarItem { dismiss() }
             }
             .fullScreenCover(isPresented: $showsIntro) {
                 IntroView { showsIntro = false }
@@ -56,57 +55,60 @@ struct SettingsView: View {
         }
     }
 
-    /// Match Phone, Light, or Dark. The choice is a solid navy pill.
+    /// Match Phone, Light, or Dark. The choice is a solid navy block.
     private var appearancePicker: some View {
-        HStack(spacing: 4) {
+        // Stacked at the largest text sizes, so "Match Phone" never breaks in the middle.
+        let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 4)) : AnyLayout(HStackLayout(spacing: 4))
+        return layout {
             ForEach(Appearance.allCases) { option in
                 let isSelected = appearance == option
                 Button {
                     appearance = option
                 } label: {
                     Text(option.label)
-                        .font(.subheadline.weight(isSelected ? .semibold : .regular))
+                        .font(.versedDetail)
                         .foregroundStyle(isSelected ? Color("ProminentButtonLabel") : .brand)
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(isSelected ? Color("ProminentButton") : .clear, in: .rect(cornerRadius: 12))
+                        .background(isSelected ? Color("ProminentButton") : .clear, in: Hardcover.corner)
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
-        .padding(4)
+        .padding(.vertical, 6)
     }
 
     private var reminderSection: some View {
-        CardSection(
+        LedgerSection(
             title: "Daily Reminder",
             footer: notificationsBlocked
                 ? "Notifications for Versed are turned off on this iPhone."
                 : "A gentle note once a day. Nothing leaves your phone."
         ) {
             Toggle("Daily reminder", isOn: reminderSwitch)
+                .font(.versedRow)
                 .foregroundStyle(.brand)
-                .cardRowPadding()
+                .ledgerRowPadding()
 
             if reminderIsOn {
-                CardDivider()
+                LedgerRule()
                 DatePicker("Time", selection: reminderTime, displayedComponents: .hourAndMinute)
+                    .font(.versedRow)
                     .foregroundStyle(.brand)
-                    .padding(.horizontal, 16)
                     .padding(.vertical, 6)
             }
 
             if notificationsBlocked {
-                CardDivider()
+                LedgerRule()
                 Button {
                     if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
                         openURL(url)
                     }
                 } label: {
-                    CardRowLabel(title: "Turn On Notifications in iPhone Settings", symbol: CardRowLabel.externalLinkSymbol)
+                    LedgerRowLabel(title: "Turn On Notifications in iPhone Settings", symbol: LedgerRowLabel.externalLinkSymbol)
                 }
-                .buttonStyle(.cardRow)
+                .buttonStyle(.ledgerRow)
             }
         }
     }

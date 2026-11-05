@@ -48,6 +48,17 @@ final class ReadingChrome {
     }
 }
 
+/// How far the phone's own top and bottom edges reach, measured once at the root of the app, so
+/// every reading page lines up the same whether or not a navigation bar is above it.
+struct ScreenInsets: Equatable {
+    var top: CGFloat = 59
+    var bottom: CGFloat = 34
+}
+
+extension EnvironmentValues {
+    @Entry var screenInsets = ScreenInsets()
+}
+
 /// The app's signature spring: quick, with the smallest settle at the end.
 extension Animation {
     static let versed = Animation.spring(duration: 0.45, bounce: 0.16)
@@ -62,7 +73,7 @@ extension View {
             let progress = min(1, abs(moved) / max(proxy.size.height, 1))
             return content
                 .offset(y: -moved * drift)
-                .opacity(1 - progress * fade)
+                .opacity(max(0, 1 - progress * fade))
         }
     }
 

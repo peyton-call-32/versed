@@ -7,6 +7,8 @@ struct WeekEndCard: View {
     /// Whether this page is the one on screen. Reaching it draws the check mark.
     var isCurrent = true
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         ShrinkToFit {
             VStack(spacing: 18) {
@@ -20,7 +22,7 @@ struct WeekEndCard: View {
                     Ornament()
 
                     Text(week.displayLabel)
-                        .font(.subheadline)
+                        .font(.versedDetail)
                         .foregroundStyle(.secondaryText)
                 }
                 // VoiceOver reads "End of the Week's Reading, Daniel 1–7" as one heading.
@@ -47,10 +49,11 @@ struct WeekEndCard: View {
             }
         }
         .multilineTextAlignment(.center)
-        .padding(.horizontal, 32)
+        .padding(.horizontal, Hardcover.margin + 8)
         .padding(.top, FeedInsets.top)
         .padding(.bottom, FeedInsets.bottom)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .pageDepth(drift: reduceMotion ? 0 : 0.14, fade: 1.6)
         .sensoryFeedback(trigger: isCurrent) { _, reached in reached ? .success : nil }
     }
 }

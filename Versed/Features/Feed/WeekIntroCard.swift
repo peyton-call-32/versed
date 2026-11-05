@@ -1,13 +1,16 @@
 import SwiftUI
 
 /// The first page of a week's reading: a small label with the dates, each book with its
-/// tappable chapter sections, and a line saying to swipe up. The link to the week's lesson waits on `WeekEndCard`.
+/// tappable chapter sections, and a line at the foot saying to swipe up. The link to the week's lesson waits on `WeekEndCard`.
 struct WeekIntroCard: View {
     let week: ReadingWeek
     /// Whether the reader is partway through the week, so swiping up continues rather than starts.
     var isResuming = false
     /// Called when the reader taps a chapter section, with the chapter it starts on.
     var onSelectSection: (ChapterID) -> Void = { _ in }
+
+    @Environment(\.screenInsets) private var screenInsets
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private var isThisWeek: Bool {
         week.contains(VersedApp.today)
@@ -40,30 +43,34 @@ struct WeekIntroCard: View {
                     .accessibilityAddTraits(.isHeader)
                 reading
 
-                HStack(spacing: 8) {
-                    Image(systemName: "arrow.up")
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.secondaryText)
-                        .gentleBob(isActive: true)
-                        .accessibilityHidden(true)
-                    SmallCapsLabel("Swipe up to \(swipeGoal)")
-                        // With VoiceOver on, moving the page takes three fingers.
-                        .accessibilityLabel("Swipe up with three fingers to \(swipeGoal)")
-                        .accessibilityIdentifier("Swipe up to \(swipeGoal)")
-                }
-                .padding(.top, 28)
-                .dynamicTypeSize(...DynamicTypeSize.accessibility1)
             }
         }
         .multilineTextAlignment(.center)
-        .padding(.horizontal, 32)
+        .padding(.horizontal, Hardcover.margin + 8)
         .padding(.top, FeedInsets.top)
         .padding(.bottom, FeedInsets.bottom)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .pageDepth(drift: reduceMotion ? 0 : 0.14, fade: 1.6)
+        // The way forward always sits in the same place, just above the tab bar.
+        .overlay(alignment: .bottom) {
+            HStack(spacing: 8) {
+                Image(systemName: "arrow.up")
+                    .font(.system(size: 11, weight: .regular))
+                    .foregroundStyle(.secondaryText)
+                    .gentleBob(isActive: true)
+                    .accessibilityHidden(true)
+                SmallCapsLabel("Swipe up to \(swipeGoal)")
+                    // With VoiceOver on, moving the page takes three fingers.
+                    .accessibilityLabel("Swipe up with three fingers to \(swipeGoal)")
+                    .accessibilityIdentifier("Swipe up to \(swipeGoal)")
+            }
+            .padding(.bottom, screenInsets.bottom + VersedTabBar.height + 28)
+            .dynamicTypeSize(...DynamicTypeSize.accessibility1)
+        }
     }
 
     /// One book sits right above its chapters. Several books sit close together as one
-    /// group, with the line under the group, so they read as one week's reading.
+    /// group, so they read as one week's reading.
     @ViewBuilder
     private var reading: some View {
         if books.count == 1 {
@@ -74,13 +81,12 @@ struct WeekIntroCard: View {
                     book(at: index)
                 }
             }
-            Ornament()
         }
     }
 
     /// A book's name with its chapter sections close beneath it, so they read as one thing.
     private func book(at index: Int) -> some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 2) {
             title(books[index].name)
             if !books[index].chapters.isEmpty {
                 sections(of: index)
@@ -92,6 +98,9 @@ struct WeekIntroCard: View {
         Text(name)
             .font(.versedTitle(size: titleSize))
             .foregroundStyle(.brand)
+            // A long name like "Lamentations" shrinks rather than breaking in the middle.
+            .lineLimit(1)
+            .minimumScaleFactor(0.5)
             // VoiceOver already reads each book in the heading and its sections.
             .accessibilityHidden(true)
     }
@@ -112,14 +121,14 @@ struct WeekIntroCard: View {
         [.accessibility3, .accessibility1, .xxxLarge, .xLarge, .large, .small, .xSmall]
     }
 
-    /// Raised pills that each jump to where their section starts.
+    /// Underlined words that each jump to where their section starts.
     private func sectionRow(of index: Int) -> some View {
-        HStack(spacing: 8) {
+        HStack(spacing: 18) {
             ForEach(Array(week.sectionsByBook[index].enumerated()), id: \.offset) { _, section in
                 Button(section.title) {
                     onSelectSection(section.start)
                 }
-                .buttonStyle(.raisedPill)
+                .buttonStyle(.underlinedLink)
                 .font(.versedTitle(size: 25, relativeTo: .title3))
                 .lineLimit(1)
                 .fixedSize()

@@ -10,12 +10,11 @@ struct VerseCard: View {
     /// The heart button saves or un-saves.
     let onHeartTap: () -> Void
     var onTap: () -> Void = {}
-    /// Whether the tab bar is showing, so the heart moves up out of its way.
-    var liftsHeart = false
 
     /// Where the double-tap landed, while its heart is on screen.
     @State private var burst: HeartBurst?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.screenInsets) private var screenInsets
 
     private struct HeartBurst: Identifiable {
         let id = UUID()
@@ -42,11 +41,11 @@ struct VerseCard: View {
             .accessibilityAction(named: isSaved ? "Remove from Saved" : "Save Verse", onHeartTap)
         }
         .multilineTextAlignment(.center)
-        .padding(.horizontal, 30)
+        .padding(.horizontal, Hardcover.margin + 6)
         .padding(.top, FeedInsets.top)
         .padding(.bottom, FeedInsets.bottom)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .pageDepth(drift: reduceMotion ? 0 : 0.14, fade: 1)
+        .pageDepth(drift: reduceMotion ? 0 : 0.14, fade: 1.6)
         .contentShape(Rectangle())
         .onTapGesture(count: 2) { location in
             onDoubleTap()
@@ -83,7 +82,7 @@ struct VerseCard: View {
     private var heartButton: some View {
         Button(action: onHeartTap) {
             Image(systemName: isSaved ? "heart.fill" : "heart")
-                .font(.system(size: 25, weight: .light))
+                .font(.system(size: 24, weight: .light))
                 .foregroundStyle(.brand)
                 .contentTransition(.symbolEffect(.replace))
                 .symbolEffect(.bounce, value: isSaved)
@@ -93,10 +92,9 @@ struct VerseCard: View {
         .buttonStyle(.plain)
         .accessibilityLabel(isSaved ? "Remove from saved" : "Save verse")
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-        .padding(.trailing, 22)
-        // Sits above the progress line, or above the tab bar when it's showing.
-        .padding(.bottom, liftsHeart ? 108 : FeedInsets.progressBar + 22)
-        .animation(reduceMotion ? nil : .versed, value: liftsHeart)
+        .padding(.trailing, Hardcover.margin - 12)
+        // Stays in one place, just above the band that holds the progress line or the tab bar.
+        .padding(.bottom, screenInsets.bottom + VersedTabBar.height + 4)
     }
 
     private func showHeartBurst(at location: CGPoint) {

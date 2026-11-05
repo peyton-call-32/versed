@@ -1,12 +1,12 @@
 import SwiftUI
 
-/// The pill at the top of a feed. It says where the reader is, and opens a sheet for moving
+/// The words at the top of a feed. They say where the reader is, and open a sheet for moving
 /// to another chapter, back to the start of the week, or to another week.
 struct ChapterMenu: View {
     /// What the sheet offers in a week's feed, which Browse's feed doesn't have.
     struct WeekOptions {
         let schedule: ReadingSchedule
-        /// The week's dates, which the pill shows on pages outside any chapter.
+        /// The week's dates, shown in VoiceOver on pages outside any chapter.
         let dates: String
         /// Shows a week on the This Week tab: `nil` for this week, or any week from the schedule.
         let openWeek: (ReadingWeek.ID?) -> Void
@@ -16,9 +16,7 @@ struct ChapterMenu: View {
     let items: [FeedItem]
     let navigation: FeedNavigation
     var weekOptions: WeekOptions? = nil
-    /// Just the words and a small arrow, with no pill, for sitting quietly above a verse.
-    var isPlain = false
-    /// Whether a plain menu sits on a navy chapter opening, so it needs cream type.
+    /// Whether the menu sits on a navy chapter opening, so it needs cream type.
     var isOnCover = false
 
     @State private var showsSheet = false
@@ -39,24 +37,20 @@ struct ChapterMenu: View {
             showsSheet = true
         } label: {
             HStack(spacing: 6) {
-                Text(reference ?? weekOptions?.dates ?? "")
+                // A week's opening and closing cards already show its dates, so the menu just says what it does.
+                Text(reference ?? "Chapters")
+                    .font(.versedDetail)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
-                    .contentTransition(.numericText())
+                    .contentTransition(.opacity)
                 Image(systemName: "chevron.down")
-                    .imageScale(.small)
+                    .font(.system(size: 9, weight: .regular))
             }
-            .font(.subheadline.weight(.medium))
-            .foregroundStyle(isPlain && isOnCover ? Color.onCover : Color.brand)
-            .padding(.horizontal, 15)
+            .foregroundStyle(isOnCover ? Color.onCover : Color.brand)
+            .padding(.horizontal, 12)
             .frame(minHeight: 44)
-            .background {
-                if !isPlain {
-                    Color.clear.pillBackground()
-                }
-            }
-            .contentShape(Capsule())
-            .animation(.versed, value: reference)
+            .contentShape(Rectangle())
+            .animation(.easeInOut(duration: 0.2), value: reference)
         }
         .buttonStyle(ChapterMenuButtonStyle())
         .accessibilityLabel(reference ?? "Week of \(weekOptions?.dates ?? "")")
@@ -70,6 +64,7 @@ struct ChapterMenu: View {
                 navigation: navigation,
                 weekOptions: weekOptions
             )
+            .versedSheet()
         }
     }
 }
@@ -89,49 +84,46 @@ private struct ChapterMenuSheet: View {
     let weekOptions: ChapterMenu.WeekOptions?
 
     @Environment(\.dismiss) private var dismiss
-    /// Grows with the reader's text size so big chapter numbers still fit.
-    @ScaledMetric(relativeTo: .body) private var cellSize = 46.0
-
-    private var columns: [GridItem] { [GridItem(.adaptive(minimum: cellSize), spacing: 8)] }
-
     var body: some View {
         NavigationStack {
             ScrollViewReader { proxy in
                 ScrollView {
                     VStack(spacing: 22) {
                         if showsBackToStart {
-                            Card {
+                            Ledger {
                                 Button {
                                     navigation.goToStart()
                                     dismiss()
                                 } label: {
-                                    CardRowLabel(title: "Back to Week's Start", symbol: "arrow.up")
+                                    LedgerRowLabel(title: "Back to Week's Start", symbol: "arrow.up")
                                 }
-                                .buttonStyle(.cardRow)
+                                .buttonStyle(.ledgerRow)
                             }
                         }
                         ForEach(Array(groups.enumerated()), id: \.offset) { _, group in
-                            CardSection(title: group.book.name) {
+                            VStack(alignment: .leading, spacing: 10) {
+                                SmallCapsLabel(group.book.name)
+                                    .accessibilityAddTraits(.isHeader)
                                 chapterGrid(for: group)
                             }
                         }
                         if let weekOptions {
-                            Card {
+                            Ledger {
                                 NavigationLink {
                                     ReadingScheduleView(schedule: weekOptions.schedule) { weekID in
                                         weekOptions.openWeek(weekID)
                                         dismiss()
                                     }
                                 } label: {
-                                    CardRowLabel(title: "Other Weeks")
+                                    LedgerRowLabel(title: "Other Weeks")
                                 }
-                                .buttonStyle(.cardRow)
+                                .buttonStyle(.ledgerRow)
                             }
                         }
                     }
                     .versedPage()
                 }
-                .background(Color.appBackground)
+                .versedScreen()
                 .onAppear {
                     // A long book opens at the current chapter. A week's few chapters stay
                     // at the top, so "Back to Week's Start" doesn't slide under the title bar.
@@ -143,30 +135,25 @@ private struct ChapterMenuSheet: View {
             .navigationTitle("Go To")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
+                DoneToolbarItem { dismiss() }
             }
         }
-        .presentationDetents([.medium, .large])
     }
 
     private func chapterGrid(for group: ChapterGroup) -> some View {
-        LazyVGrid(columns: columns, spacing: 8) {
-            ForEach(group.chapters, id: \.self) { chapter in
-                let id = ChapterID(bookID: group.book.id, chapter: chapter)
-                let isCurrent = id == currentChapter
-                Button("\(chapter)") {
-                    navigation.go(to: id)
-                    dismiss()
-                }
-                .buttonStyle(.chapterCell(isCurrent: isCurrent))
-                .frame(minHeight: cellSize)
-                .accessibilityLabel(group.book.reference(chapter: chapter))
-                .accessibilityAddTraits(isCurrent ? .isSelected : [])
-                .id(id)
+        ChapterGrid(chapters: group.chapters) { chapter in
+            let id = ChapterID(bookID: group.book.id, chapter: chapter)
+            let isCurrent = id == currentChapter
+            Button {
+                navigation.go(to: id)
+                dismiss()
+            } label: {
+                ChapterCellLabel(chapter: chapter, isCurrent: isCurrent)
             }
+            .buttonStyle(.ledgerRow)
+            .accessibilityLabel(group.book.reference(chapter: chapter))
+            .accessibilityAddTraits(isCurrent ? .isSelected : [])
+            .id(id)
         }
-        .padding(12)
     }
 }

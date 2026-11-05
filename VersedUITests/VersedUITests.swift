@@ -302,13 +302,13 @@ final class VersedUITests: XCTestCase {
     }
 
     func testThisWeekHeader() {
-        // The chapter menu on the left, showing the week's dates; no count until the first verse is read.
+        // The chapter menu in the middle, named for the week's dates; no count until the first verse is read.
         XCTAssertTrue(app.buttons["Week of Oct 26 – Nov 1"].waitForExistence(timeout: 10))
         let weekMenu = app.buttons["Chapter menu"]
         XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
         XCTAssertTrue(app.buttons["Reading streak"].waitForExistence(timeout: 5))
         XCTAssertFalse(app.buttons["1-day reading streak"].exists)
-        XCTAssertLessThan(weekMenu.frame.midX, app.frame.midX)
+        XCTAssertEqual(weekMenu.frame.midX, app.frame.midX, accuracy: 1)
 
         // Once the streak counts, a tap on the page shows it on the right, and nothing overlaps.
         for _ in 1...3 { app.swipeUp() }

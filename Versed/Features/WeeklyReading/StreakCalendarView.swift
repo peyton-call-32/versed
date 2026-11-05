@@ -19,20 +19,20 @@ struct StreakCalendarView: View {
                     streakHeading
                     Ornament()
                     MonthCalendar(month: $month, readDays: readDays)
-                    HStack(spacing: 12) {
+                    HStack(spacing: 0) {
                         StreakStat(title: "Best Streak", value: ReadingStreak.best(readDays: readDays))
+                        Rectangle().fill(Color.hairline).frame(width: 1).padding(.vertical, 10).accessibilityHidden(true)
                         StreakStat(title: "Days Read", value: readDays.count)
                     }
+                    .fixedSize(horizontal: false, vertical: true)
                 }
                 .versedPage()
             }
-            .background(Color.appBackground)
+            .versedScreen()
             .navigationTitle("Your Streak")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Done") { dismiss() }
-                }
+                DoneToolbarItem { dismiss() }
             }
         }
     }
@@ -40,8 +40,9 @@ struct StreakCalendarView: View {
     @ViewBuilder private var streakHeading: some View {
         VStack(spacing: 2) {
             HStack(spacing: 8) {
-                Image(systemName: "flame.fill")
-                    .font(.system(size: flameSize))
+                FlameMark()
+                    .stroke(lineWidth: 1)
+                    .frame(width: flameSize * 0.72, height: flameSize)
                 if streak > 0 {
                     Text("\(streak)")
                         .font(.versedNumber(size: 84))
@@ -71,7 +72,7 @@ private struct MonthCalendar: View {
     }
 
     var body: some View {
-        Card {
+        Ledger {
             VStack(spacing: 8) {
                 monthHeader
                 // Seven columns need a limit: past this, two-digit days wouldn't fit across the phone.
@@ -79,7 +80,7 @@ private struct MonthCalendar: View {
                     LazyVGrid(columns: columns, spacing: 0) {
                         ForEach(Array(month.weekdayLetters.enumerated()), id: \.offset) { _, letter in
                             Text(letter)
-                                .font(.caption.weight(.semibold))
+                                .font(.versedVerse(size: 12, relativeTo: .caption))
                                 .foregroundStyle(.secondaryText)
                                 .accessibilityHidden(true)
                         }
@@ -95,7 +96,7 @@ private struct MonthCalendar: View {
                 }
                 .dynamicTypeSize(...DynamicTypeSize.accessibility2)
             }
-            .padding(12)
+            .padding(.vertical, 8)
         }
     }
 
@@ -120,7 +121,7 @@ private struct MonthCalendar: View {
     private func arrow(_ symbol: String, label: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: symbol)
-                .font(.body.weight(.medium))
+                .font(.system(size: 15, weight: .light))
                 .foregroundStyle(.brand)
                 .opacity(isEnabled ? 1 : 0.25)
                 .frame(width: 44, height: 44)
@@ -132,7 +133,7 @@ private struct MonthCalendar: View {
     }
 }
 
-/// One day: plain if unread, navy if read, with a small ring around today.
+/// One day: plain if unread, navy if read, with a short line under today.
 private struct CalendarDayCell: View {
     let day: ReadingMonth.Day
 
@@ -146,7 +147,7 @@ private struct CalendarDayCell: View {
 
     var body: some View {
         Text("\(day.number)")
-            .font(.subheadline)
+            .font(.versedDetail)
             .monospacedDigit()
             .lineLimit(1)
             .minimumScaleFactor(0.7)
@@ -156,11 +157,13 @@ private struct CalendarDayCell: View {
             .background {
                 if day.isRead { band }
             }
-            .overlay {
+            .overlay(alignment: .bottom) {
+                // A short line under today's number.
                 if day.isToday {
-                    Circle()
-                        .strokeBorder(numberColor, lineWidth: 1.5)
-                        .padding(2)
+                    Rectangle()
+                        .fill(numberColor)
+                        .frame(width: 14, height: 1)
+                        .padding(.bottom, 5)
                 }
             }
             // The row is taller than the band, which leaves a small gap between weeks.
@@ -171,7 +174,7 @@ private struct CalendarDayCell: View {
     }
 
     private var band: some View {
-        let round = height / 2
+        let round = Hardcover.cornerRadius
         return UnevenRoundedRectangle(
             topLeadingRadius: day.joinsPrevious ? 0 : round,
             bottomLeadingRadius: day.joinsPrevious ? 0 : round,
@@ -191,23 +194,21 @@ private struct CalendarDayCell: View {
     }
 }
 
-/// A number with a small label under it, in its own card.
+/// A number with a small label under it.
 private struct StreakStat: View {
     let title: String
     let value: Int
 
     var body: some View {
-        Card {
-            VStack(spacing: 3) {
-                Text("\(value)")
-                    .font(.versedNumber(size: 34, relativeTo: .title))
-                    .foregroundStyle(.brand)
-                SmallCapsLabel(title)
-                    .multilineTextAlignment(.center)
-            }
-            .frame(maxWidth: .infinity)
-            .padding(12)
+        VStack(spacing: 3) {
+            Text("\(value)")
+                .font(.versedNumber(size: 38, relativeTo: .title))
+                .foregroundStyle(.brand)
+            SmallCapsLabel(title)
+                .multilineTextAlignment(.center)
         }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(title)
         .accessibilityValue("\(value)")

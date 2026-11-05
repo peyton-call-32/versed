@@ -12,6 +12,8 @@ struct RootView: View {
     @State private var browsePath: [BrowseView.Route] = []
     @State private var savedPath: [VerseID] = []
     @State private var chrome = ReadingChrome()
+    /// The phone's own edges. Hiding the status bar can shrink them on some iPhones, so this keeps the largest.
+    @State private var screenInsets = ScreenInsets(top: 0, bottom: 0)
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private struct Content {
@@ -58,15 +60,17 @@ struct RootView: View {
                     // Animates only the bar, so nothing disturbs a page that's still settling.
                     ZStack {
                         if !chrome.hidesControls {
-                            FloatingTabBar(selection: $selectedTab, onReselect: goToStart(of:))
-                                .transition(reduceMotion ? .opacity : .move(edge: .bottom).combined(with: .opacity))
+                            VersedTabBar(selection: $selectedTab, isOnCover: chrome.isOnCover, onReselect: goToStart(of:))
+                                // Always solid, so it never leaves a pale band over a navy chapter opening.
+                                .transition(reduceMotion ? .opacity : .move(edge: .bottom))
                         }
                     }
-                    .animation(reduceMotion ? .easeInOut(duration: 0.2) : .versed, value: chrome.hidesControls)
+                    .animation(.easeOut(duration: 0.24), value: chrome.hidesControls)
                 }
                 // Arriving on a tab keeps the tab bar in view until the reader swipes on.
                 .onChange(of: selectedTab) { chrome.reveal() }
                 .environment(chrome)
+                .environment(\.screenInsets, screenInsets)
                 .statusBarHidden(chrome.hidesControls)
             } else {
                 ProgressView()
@@ -77,6 +81,10 @@ struct RootView: View {
             IntroView { hasSeenIntro = true }
         }
         .tint(Color.brand)
+        .background(Color.appBackground.ignoresSafeArea())
+        .onGeometryChange(for: EdgeInsets.self, of: \.safeAreaInsets) { insets in
+            screenInsets = ScreenInsets(top: max(screenInsets.top, insets.top), bottom: max(screenInsets.bottom, insets.bottom))
+        }
         .windowAppearance(appearance)
         .task {
             content = await Task.detached {
@@ -88,11 +96,11 @@ struct RootView: View {
         }
     }
 
-    /// One main screen. Lists stop short of the floating bar, while the bar still floats over them as they scroll.
+    /// One main screen. Lists stop at the bar instead of running under it.
     private func tab<Screen: View>(_ tab: AppTab, @ViewBuilder screen: () -> Screen) -> some View {
         screen()
             .safeAreaInset(edge: .bottom, spacing: 0) {
-                Color.clear.frame(height: FloatingTabBar.height)
+                Color.clear.frame(height: VersedTabBar.height)
             }
             .toolbar(.hidden, for: .tabBar)
             .tag(tab)

@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// Opens to this week's reading. A header row sits on top: the chapter menu on the left, and
+/// Opens to this week's reading. A header row sits on top: the chapter menu in the middle, and
 /// the streak on the right, which opens the streak calendar.
 ///
 /// Each week opens on its opening card. Swiping up goes to the page where the reader left off,
@@ -13,7 +13,6 @@ struct WeeklyReadingView: View {
 
     @Environment(\.modelContext) private var modelContext
     @Environment(ReadingChrome.self) private var chrome
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     /// The week picked from the menu or the schedule in Browse, or `nil` to show this week.
     @Binding var selectedWeekID: ReadingWeek.ID?
@@ -45,6 +44,7 @@ struct WeeklyReadingView: View {
             .overlay(alignment: .top) {
                 header(selected: week, items: items)
             }
+            .background(Color.appBackground)
         } else {
             ContentUnavailableView("No reading schedule", systemImage: "calendar")
         }
@@ -58,11 +58,10 @@ struct WeeklyReadingView: View {
                 items: items,
                 navigation: navigation,
                 weekOptions: .init(schedule: schedule, dates: selected.dateRangeText()) { selectedWeekID = $0 },
-                isPlain: chrome.isReading,
                 isOnCover: chrome.isOnCover
             )
-        // The pill on the week's cards glides to the middle as a quiet label while reading.
-        .frame(maxWidth: .infinity, alignment: chrome.isReading ? .center : .leading)
+        .frame(maxWidth: .infinity)
+        .frame(height: FeedInsets.header - 8)
         .opacity(hidesMenu ? 0 : 1)
         .allowsHitTesting(!hidesMenu)
         .accessibilityHidden(hidesMenu)
@@ -72,9 +71,8 @@ struct WeeklyReadingView: View {
                     .transition(.opacity)
             }
         }
-        .animation(reduceMotion ? .easeInOut(duration: 0.2) : .versed, value: chrome.hidesControls)
-        .animation(reduceMotion ? .easeInOut(duration: 0.2) : .versed, value: chrome.isReading)
-        .padding(.horizontal, 20)
+        .animation(.easeInOut(duration: 0.2), value: chrome.hidesControls)
+        .padding(.horizontal, Hardcover.margin - 12)
         .padding(.top, 8)
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
     }

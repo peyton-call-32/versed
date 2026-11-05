@@ -6,21 +6,22 @@ struct BookListView: View {
 
     var body: some View {
         ScrollView {
-            Card {
+            Ledger {
                 ForEach(volume.books) { book in
                     if book.id != volume.books.first?.id {
-                        CardDivider()
+                        LedgerRule()
                     }
                     NavigationLink(value: route(for: book)) {
-                        CardRowLabel(title: book.name, detail: "\(book.chapterCount)")
+                        LedgerRowLabel(title: book.name, detail: "\(book.chapterCount)", symbol: nil, hasLeader: true)
                     }
-                    .buttonStyle(.cardRow)
+                    .buttonStyle(.ledgerRow)
                 }
             }
             .versedPage()
         }
-        .background(Color.appBackground)
+        .versedScreen()
         .navigationTitle(volume.title)
+        .versedBackButton()
     }
 
     /// A book with one chapter (like Enos) opens straight to its reading.

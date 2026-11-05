@@ -21,13 +21,15 @@ struct SavedVersesView: View {
                     List(savedVerses) { saved in
                         if let id = saved.verse, let verse = library.verse(id) {
                             row(for: verse)
-                                .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
-                                .listRowSeparator(.hidden)
+                                .listRowInsets(EdgeInsets(top: 0, leading: Hardcover.margin, bottom: 0, trailing: Hardcover.margin))
+                                .listRowSeparatorTint(Color.hairline)
                                 .listRowBackground(Color.clear)
+                                .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
                         }
                     }
                     .listStyle(.plain)
-                    .versedListStyle()
+                    .scrollContentBackground(.hidden)
+                    .versedScreen()
                 }
             }
             .navigationTitle("Saved")
@@ -50,7 +52,7 @@ struct SavedVersesView: View {
                 .foregroundStyle(.brand)
             Ornament()
             Text("Double-tap a verse or tap its heart to save it here.")
-                .font(.subheadline)
+                .font(.versedDetail)
                 .foregroundStyle(.secondaryText)
         }
         .multilineTextAlignment(.center)
@@ -62,17 +64,17 @@ struct SavedVersesView: View {
         Button {
             path.append(verse.id)
         } label: {
-            VStack(spacing: 12) {
-                VerseText(verse.text, size: 19, relativeTo: .body)
+            VStack(spacing: 14) {
+                VerseText(verse.text, size: 20, relativeTo: .body)
                     .lineSpacing(3)
                     .lineLimit(6)
                     .foregroundStyle(.brand)
                 SmallCapsLabel(verse.reference)
             }
             .multilineTextAlignment(.center)
-            .padding(18)
+            .padding(.vertical, 26)
             .frame(maxWidth: .infinity)
-            .raised(in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .contentShape(Rectangle())
         }
         .buttonStyle(SavedVerseButtonStyle())
         .accessibilityLabel(verse.reference)
@@ -81,6 +83,7 @@ struct SavedVersesView: View {
             Button("Remove", systemImage: "heart.slash", role: .destructive) {
                 SavedVerseStore(context: modelContext).unsave(verse.id)
             }
+            .tint(Color.cover)
         }
     }
 }

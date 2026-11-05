@@ -18,32 +18,41 @@ enum AppTab: String, CaseIterable, Identifiable {
     }
 }
 
-/// The small raised bar that floats at the bottom of every main screen.
-struct FloatingTabBar: View {
-    /// The room to leave for the bar, including the small gap above it.
-    static let height: CGFloat = 66
+/// The band at the foot of every main screen, set flat across the page under a ruled line.
+/// A short line above the open tab slides across when the tab changes. On a navy chapter
+/// opening it turns navy too, so it's part of the page.
+struct VersedTabBar: View {
+    /// The band's height, above the phone's own bottom edge.
+    static let height: CGFloat = 54
 
     @Binding var selection: AppTab
+    var isOnCover = false
     /// Called when the reader taps the tab that's already open.
     var onReselect: (AppTab) -> Void = { _ in }
-    @Environment(\.dynamicTypeSize) private var typeSize
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     /// Counts taps per tab, to give each one a small bounce.
     @State private var bounces: [AppTab: Int] = [:]
-    @Namespace private var highlight
+    @Namespace private var marker
+
+    private var ink: Color { isOnCover ? .onCover : .brand }
+    private var quietInk: Color { isOnCover ? .onCover : .secondaryText }
 
     var body: some View {
-        HStack(spacing: 0) {
-            ForEach(AppTab.allCases) { tab in
-                button(for: tab)
+        VStack(spacing: 0) {
+            Rule(color: isOnCover ? Color.onCover.opacity(0.3) : .hairline)
+            HStack(spacing: 0) {
+                ForEach(AppTab.allCases) { tab in
+                    button(for: tab)
+                }
             }
+            .padding(.horizontal, 28)
+            .frame(minHeight: Self.height)
         }
-        .padding(.horizontal, 6)
         .animation(reduceMotion ? nil : .versed, value: selection)
-        .raised(in: Capsule())
-        // Wider at the largest text sizes, so the labels keep their room.
-        .padding(.horizontal, typeSize.isAccessibilitySize ? 12 : 56)
-        .padding(.top, 8)
+        .background((isOnCover ? Color.cover : Color.appBackground).ignoresSafeArea(edges: .bottom))
+        // The whole band takes touches, so a tap in its corners can't reach a list row underneath.
+        .contentShape(Rectangle())
+        .onTapGesture {}
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         .sensoryFeedback(.selection, trigger: selection)
         // UI tests find the bar's position through this name.
@@ -61,26 +70,25 @@ struct FloatingTabBar: View {
                 selection = tab
             }
         } label: {
-            VStack(spacing: 3) {
+            VStack(spacing: 2) {
                 Image(systemName: tab.symbol)
                     .symbolVariant(isSelected ? .fill : .none)
-                    .font(.system(size: 18, weight: .light))
+                    .font(.system(size: 17, weight: .light))
                     .symbolEffect(.bounce, value: bounces[tab, default: 0])
                     .frame(height: 22)
                 Text(tab.rawValue)
-                    .font(.caption.weight(isSelected ? .semibold : .medium))
+                    .font(.versedVerse(size: 12, relativeTo: .caption))
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
             }
-            .foregroundStyle(isSelected ? AnyShapeStyle(.brand) : AnyShapeStyle(.secondaryText))
-            .frame(maxWidth: .infinity, minHeight: 58)
-            .background {
-                // A soft shape behind the open tab, which slides over when the tab changes.
+            .foregroundStyle(isSelected ? ink : quietInk)
+            .frame(maxWidth: .infinity, minHeight: Self.height)
+            .overlay(alignment: .top) {
                 if isSelected {
-                    Capsule()
-                        .fill(Color.brand.opacity(0.07))
-                        .padding(.vertical, 5)
-                        .matchedGeometryEffect(id: "open tab", in: highlight)
+                    Rectangle()
+                        .fill(ink)
+                        .frame(width: 28, height: 1.5)
+                        .matchedGeometryEffect(id: "open tab", in: marker)
                 }
             }
             .contentShape(Rectangle())
@@ -94,7 +102,6 @@ struct FloatingTabBar: View {
 
 #Preview {
     @Previewable @State var selection = AppTab.thisWeek
-    FloatingTabBar(selection: $selection)
-        .padding(.vertical)
+    VersedTabBar(selection: $selection)
         .background(Color.appBackground)
 }

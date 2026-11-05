@@ -34,7 +34,7 @@ struct IntroView: View {
         Page(
             symbol: "calendar",
             title: "This Week's Reading, Ready",
-            message: "Versed opens to this week's reading. Tap the dates at the top, or open Browse, to pick another week."
+            message: "Versed opens to this week's reading. Tap Chapters at the top, or open Browse, to pick another week."
         ),
     ]
 
@@ -47,12 +47,12 @@ struct IntroView: View {
                 Spacer()
                 if !isLastPage {
                     Button("Skip", action: onFinish)
-                        .buttonStyle(.secondary)
+                        .buttonStyle(.plainWord)
                         .dynamicTypeSize(...DynamicTypeSize.accessibility2)
                 }
             }
             .frame(minHeight: 52)
-            .padding(.horizontal, 20)
+            .padding(.horizontal, Hardcover.margin)
 
             TabView(selection: $page) {
                 ForEach(pages.indices, id: \.self) { index in
@@ -63,11 +63,14 @@ struct IntroView: View {
             .tabViewStyle(.page(indexDisplayMode: .never))
 
             if !isLastPage {
-                Button("Next") {
+                Button {
                     // Slides to the next page, or just switches with Reduce Motion on.
                     withAnimation(reduceMotion ? nil : .default) { page += 1 }
+                } label: {
+                    Text("Next").frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.primary)
+                .padding(.horizontal, Hardcover.margin)
                 .padding(.vertical, 20)
                 .dynamicTypeSize(...DynamicTypeSize.accessibility2)
             }
@@ -76,15 +79,15 @@ struct IntroView: View {
         .tint(Color.brand)
     }
 
-    /// One page, centered when it fits. At the largest text sizes it scrolls instead,
-    /// starting from the top so nothing is cut off.
+    /// One page. Every page starts at the same height, so nothing jumps between them.
+    /// At the largest text sizes it scrolls, so nothing is cut off.
     private func pageView(_ page: Page, offersReminder: Bool) -> some View {
         GeometryReader { proxy in
             ScrollView {
-                // Full height so short pages sit centered; never squeezed, so long pages scroll.
+                // Never squeezed, so long pages scroll.
                 pageContent(page, offersReminder: offersReminder)
                     .fixedSize(horizontal: false, vertical: true)
-                    .frame(minHeight: proxy.size.height)
+                    .frame(minHeight: proxy.size.height, alignment: .top)
             }
             .scrollBounceBehavior(.basedOnSize)
         }
@@ -95,11 +98,9 @@ struct IntroView: View {
     private func pageContent(_ page: Page, offersReminder: Bool) -> some View {
         VStack(spacing: 20) {
             Image(systemName: page.symbol)
-                .font(.system(size: 24, weight: .light))
+                .font(.system(size: 30, weight: .ultraLight))
                 .foregroundStyle(.brand)
-                .frame(width: 72, height: 72)
-                .raised(in: Circle())
-                .padding(.bottom, 10)
+                .frame(height: 44)
                 .accessibilityHidden(true)
 
             Text(page.title)
@@ -110,7 +111,7 @@ struct IntroView: View {
             Ornament()
 
             Text(page.message)
-                .font(.body)
+                .font(.versedRow)
                 .foregroundStyle(.secondaryText)
 
             if offersReminder {
@@ -119,14 +120,16 @@ struct IntroView: View {
             }
         }
         .multilineTextAlignment(.center)
-        .padding(32)
+        .padding(.horizontal, Hardcover.margin)
+        .padding(.top, 36)
+        .padding(.bottom, 24)
         .frame(maxWidth: .infinity)
     }
 
     private var reminderOffer: some View {
         VStack(spacing: 12) {
             Text("Want a gentle reminder to read each day?")
-                .font(.headline)
+                .font(.versedRow)
                 .foregroundStyle(.brand)
 
             Button {
@@ -137,15 +140,17 @@ struct IntroView: View {
             }
             .buttonStyle(.primary)
 
-            Button("Not Now", action: onFinish)
-                .buttonStyle(.secondary)
+            Button(action: onFinish) {
+                Text("Not Now").frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.secondary)
 
             Text("You can change this anytime in Settings.")
-                .font(.footnote)
+                .font(.versedNote)
                 .foregroundStyle(.secondaryText)
 
             Text(AboutSection.independenceNotice)
-                .font(.footnote)
+                .font(.versedNote)
                 .foregroundStyle(.secondaryText)
                 .padding(.top, 16)
         }

@@ -18,36 +18,36 @@ struct AboutSection: View {
     }
 
     var body: some View {
-        CardSection(
+        LedgerSection(
             title: "About",
             footer: "Scripture text is in the public domain. Versed collects no data: everything stays on your phone, with no accounts, ads, or tracking."
         ) {
             Text(Self.independenceNotice)
-                .font(.footnote)
+                .font(.versedNote)
                 .foregroundStyle(.secondaryText)
-                .cardRowPadding()
+                .ledgerRowPadding()
 
-            CardDivider()
+            LedgerRule()
             Link(destination: Self.scriptureSourceURL) {
-                CardRowLabel(title: "Scripture Text", detail: "bcbooks/scriptures-json", symbol: CardRowLabel.externalLinkSymbol)
+                LedgerRowLabel(title: "Scripture Text", detail: "bcbooks/scriptures-json", symbol: LedgerRowLabel.externalLinkSymbol)
             }
-            .buttonStyle(.cardRow)
+            .buttonStyle(.ledgerRow)
             .accessibilityHint("Public domain. Opens the source in Safari.")
 
-            CardDivider()
+            LedgerRule()
             Link(destination: Self.privacyPolicyURL) {
-                CardRowLabel(title: "Privacy Policy", symbol: CardRowLabel.externalLinkSymbol)
+                LedgerRowLabel(title: "Privacy Policy", symbol: LedgerRowLabel.externalLinkSymbol)
             }
-            .buttonStyle(.cardRow)
+            .buttonStyle(.ledgerRow)
 
-            CardDivider()
+            LedgerRule()
             Link(destination: URL(string: "mailto:\(Self.contactEmail)")!) {
-                CardRowLabel(title: "Contact", detail: Self.contactEmail, symbol: CardRowLabel.externalLinkSymbol)
+                LedgerRowLabel(title: "Contact", detail: Self.contactEmail, symbol: LedgerRowLabel.externalLinkSymbol)
             }
-            .buttonStyle(.cardRow)
+            .buttonStyle(.ledgerRow)
 
-            CardDivider()
-            CardRowLabel(title: "Version", detail: Self.versionText(), symbol: nil)
+            LedgerRule()
+            LedgerRowLabel(title: "Version", detail: Self.versionText(), symbol: nil)
         }
     }
 }

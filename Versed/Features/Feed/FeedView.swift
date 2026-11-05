@@ -16,6 +16,7 @@ struct FeedView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverIsOn
     @Environment(\.accessibilitySwitchControlEnabled) private var switchControlIsOn
+    @Environment(\.screenInsets) private var screenInsets
     @Query private var savedVerses: [SavedVerse]
 
     /// The ID of the page currently on screen.
@@ -26,8 +27,6 @@ struct FeedView: View {
     @State private var coverOffset: CGFloat = 0
     /// The cover's height, for sliding it all the way off the top.
     @State private var coverHeight: CGFloat = 0
-    /// How far down the phone's top bar reaches, for the border on chapter openings.
-    @State private var topSafeArea: CGFloat = 0
     /// Tells this feed apart from others when reporting to `chrome`.
     @State private var feedID = UUID()
 
@@ -87,7 +86,7 @@ struct FeedView: View {
             navigation.request = nil
         }
         .scrollIndicators(.hidden)
-        .hidesTopScrollEdgeEffect()
+        .hidesScrollEdgeEffects()
         .background(Color.appBackground)
         .ignoresSafeArea()
         .accessibilityHidden(showsCover)
@@ -100,11 +99,6 @@ struct FeedView: View {
                     .transition(.move(edge: .top))
             }
         }
-        .overlay {
-            Color.clear
-                .allowsHitTesting(false)
-                .onGeometryChange(for: CGFloat.self, of: \.safeAreaInsets.top) { topSafeArea = $0 }
-        }
     }
 
     /// The line at the bottom of verse pages. It makes way for the tab bar when that's showing.
@@ -116,9 +110,10 @@ struct FeedView: View {
                     .transition(.opacity)
             }
         }
+        .frame(height: VersedTabBar.height)
         .frame(maxHeight: .infinity, alignment: .bottom)
-        .padding(.bottom, FeedInsets.progressBar)
-        .animation(.easeInOut(duration: 0.25), value: position == nil)
+        .padding(.bottom, screenInsets.bottom)
+        .animation(.easeInOut(duration: 0.2), value: position == nil)
         .allowsHitTesting(false)
         .ignoresSafeArea()
     }
@@ -236,7 +231,7 @@ struct FeedView: View {
         case .weekEnd(let week):
             WeekEndCard(week: week, isCurrent: isCurrent)
         case .chapterTitle(let title):
-            ChapterTitleCard(title: title, isCurrent: isCurrent, topInset: topSafeArea, onTap: chrome.toggleControls)
+            ChapterTitleCard(title: title, isCurrent: isCurrent, showsSwipeHint: chrome.hidesControls, onTap: chrome.toggleControls)
         case .verse(let verse):
             let store = SavedVerseStore(context: modelContext)
             VerseCard(
@@ -244,34 +239,20 @@ struct FeedView: View {
                 isSaved: savedIDs.contains(verse.id.rawValue),
                 onDoubleTap: { store.save(verse.id) },
                 onHeartTap: { store.toggle(verse.id) },
-                onTap: chrome.toggleControls,
-                liftsHeart: !chrome.hidesControls
+                onTap: chrome.toggleControls
             )
         }
     }
 }
 
-private extension View {
-    /// Newer iOS versions draw a strip behind a top bar with its own items, like Browse's chapter
-    /// menu. The feed's pages run under the bar, so the strip would look out of place.
-    @ViewBuilder
-    func hidesTopScrollEdgeEffect() -> some View {
-        if #available(iOS 26, *) {
-            scrollEdgeEffectHidden(true, for: .top)
-        } else {
-            self
-        }
-    }
-}
-
-/// Room the feed's pages leave for what floats over them: the chapter menu at the top, and the
-/// heart button and progress line at the bottom. Those are capped at the first
-/// accessibility text size, so these fit them at every size.
+/// Room the feed's pages leave for what sits around them: the chapter menu at the top, and the
+/// heart button and bottom band at the foot. Those are capped at the first accessibility text
+/// size, so these fit them at every size.
 enum FeedInsets {
-    static let top: CGFloat = 116
-    static let bottom: CGFloat = 126
-    /// How far the progress line sits above the bottom of the screen.
-    static let progressBar: CGFloat = 44
+    static let top: CGFloat = 118
+    static let bottom: CGFloat = 150
+    /// The height of the row at the top that holds the chapter menu, below the phone's own top edge.
+    static let header: CGFloat = 52
 }
 
 #Preview {

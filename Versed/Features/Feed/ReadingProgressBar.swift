@@ -7,8 +7,8 @@ struct ReadingProgressBar: View {
     var body: some View {
         HStack(spacing: 12) {
             Capsule()
-                .fill(Color.brand.opacity(0.14))
-                .frame(height: 2)
+                .fill(Color.hairline)
+                .frame(height: 1)
                 .overlay(alignment: .leading) {
                     GeometryReader { track in
                         Capsule()
@@ -17,14 +17,14 @@ struct ReadingProgressBar: View {
                     }
                 }
             Text("\(position.page) of \(position.pageCount)")
-                .font(.footnote.weight(.medium))
+                .font(.versedNote)
                 .monospacedDigit()
                 .foregroundStyle(.secondaryText)
                 .contentTransition(.numericText())
                 .lineLimit(1)
                 .fixedSize()
         }
-        .padding(.horizontal, 32)
+        .padding(.horizontal, Hardcover.margin)
         .animation(.versed, value: position)
         .dynamicTypeSize(...DynamicTypeSize.accessibility1)
         // It only shows while the controls are aside, which never happens with VoiceOver on.

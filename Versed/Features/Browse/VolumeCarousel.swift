@@ -2,14 +2,12 @@ import SwiftUI
 
 /// The five books of scripture as navy hardcovers, one in the middle with the edges of its
 /// neighbors showing on each side. Swipe between them, or tap an edge to bring that book forward.
-/// Tapping the book in the middle opens it, zooming out of its cover on iOS 18 and later.
+/// Tapping the book in the middle opens it.
 struct VolumeCarousel: View {
     let volumes: [Volume]
     /// The book in the middle.
     @Binding var selection: Volume.ID?
     let coverHeight: CGFloat
-    /// Shared with the screen the cover opens, for the zoom.
-    let zoomNamespace: Namespace.ID
     let subtitle: (Volume) -> String
     let onOpen: (Volume) -> Void
 
@@ -63,7 +61,6 @@ struct VolumeCarousel: View {
             VolumeCover(title: volume.title, subtitle: subtitle(volume), height: coverHeight)
         }
         .buttonStyle(CoverButtonStyle())
-        .coverZoomSource(id: volume.id, in: zoomNamespace)
         // The space left between the margins, which is what leaves the neighbors' edges showing.
         .containerRelativeFrame(.horizontal)
         .scrollTransition(axis: .horizontal) { content, phase in
@@ -74,17 +71,17 @@ struct VolumeCarousel: View {
         .accessibilityHint("Opens this book.")
     }
 
-    /// One dot per book. The current one stretches into a short bar. Decoration only: VoiceOver
+    /// One dot per book, with the current one in full ink. Decoration only: VoiceOver
     /// reads the covers themselves.
     private var dots: some View {
         HStack(spacing: 7) {
             ForEach(volumes) { volume in
-                Capsule()
+                Circle()
                     .fill(volume.id == selection ? Color.brand : Color.brand.opacity(0.22))
-                    .frame(width: volume.id == selection ? 20 : 6, height: 6)
+                    .frame(width: 5, height: 5)
             }
         }
-        .animation(reduceMotion ? nil : .versed, value: selection)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.2), value: selection)
         .accessibilityHidden(true)
         .accessibilityIdentifier("Book dots")
     }
@@ -117,27 +114,31 @@ private struct VolumeCover: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
             }
-            .padding(.horizontal, 26)
+            .padding(.leading, 34)
+            .padding(.trailing, 26)
             .padding(.vertical, 34)
         }
         .frame(maxWidth: .infinity)
         .frame(height: height)
         .background {
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            Hardcover.corner
                 .fill(Color.cover)
-                .shadow(color: Color.cover.opacity(0.3), radius: 18, y: 12)
+                .shadow(color: .cardShadow, radius: 14, y: 10)
         }
-        .contentShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .contentShape(Hardcover.corner)
     }
 
+    /// The frame, with a thin groove down the left where a real cover hinges at the spine.
     private var border: some View {
-        ZStack {
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .strokeBorder(Color.onCover.opacity(0.5))
-                .padding(9)
-            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                .strokeBorder(Color.onCover.opacity(0.22))
-                .padding(14)
+        HStack(spacing: 0) {
+            Rectangle()
+                .fill(Color.onCover.opacity(0.2))
+                .frame(width: 1)
+                .padding(.leading, 9)
+            CoverFrame()
+                .padding(.leading, 8)
+                .padding(.trailing, 12)
+                .padding(.vertical, 12)
         }
     }
 }
@@ -174,30 +175,6 @@ private extension View {
             let frame = proxy.frame(in: .scrollView(axis: .horizontal))
             let visibleWidth = proxy.bounds(of: .scrollView(axis: .horizontal))?.width ?? frame.width
             return content.offset(x: (frame.midX - visibleWidth / 2) * amount)
-        }
-    }
-}
-
-extension View {
-    /// Marks a cover as where the zoom into its book starts. Does nothing before iOS 18.
-    @ViewBuilder
-    func coverZoomSource(id: String, in namespace: Namespace.ID) -> some View {
-        if #available(iOS 18, *) {
-            matchedTransitionSource(id: id, in: namespace) { source in
-                source.clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-            }
-        } else {
-            self
-        }
-    }
-
-    /// Opens this screen by zooming out of a cover. A plain slide before iOS 18.
-    @ViewBuilder
-    func zoomsFromCover(id: String, in namespace: Namespace.ID) -> some View {
-        if #available(iOS 18, *) {
-            navigationTransition(.zoom(sourceID: id, in: namespace))
-        } else {
-            self
         }
     }
 }

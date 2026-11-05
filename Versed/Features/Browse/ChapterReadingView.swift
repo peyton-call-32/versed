@@ -30,17 +30,17 @@ struct ChapterReadingView: View {
             onPageChange: { positions.setPosition($0, in: .browse) }
         )
         .toolbar {
-            ToolbarItem(placement: .principal) {
+            PlainToolbarItem(placement: .principal) {
                 let hidesMenu = chrome.isOnCover && chrome.hidesControls
-                ChapterMenu(library: library, items: items, navigation: navigation, isPlain: true, isOnCover: chrome.isOnCover)
+                ChapterMenu(library: library, items: items, navigation: navigation, isOnCover: chrome.isOnCover)
                     .opacity(hidesMenu ? 0 : 1)
                     .allowsHitTesting(!hidesMenu)
                     .accessibilityHidden(hidesMenu)
             }
         }
         // Keeps the back button readable: cream on a navy chapter opening.
-        .toolbarColorScheme(chrome.isOnCover ? .dark : nil, for: .navigationBar)
-        // The pill and title cards already say where the reader is, so the bar has no title.
+        .versedBackButton(color: chrome.isOnCover ? .onCover : .brand)
+        // The menu and title cards already say where the reader is, so the bar has no title.
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
     }

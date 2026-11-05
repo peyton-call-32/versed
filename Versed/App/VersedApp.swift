@@ -38,9 +38,14 @@ struct VersedApp: App {
         let ink = UIColor(named: "AccentColor") ?? .label
         func titled(_ appearance: UINavigationBarAppearance) -> UINavigationBarAppearance {
             if let large = UIFont(name: Font.Bundled.title, size: 40) {
+                // iOS sets large titles 16 points in. This lines them up with the page's margin.
+                let margin = NSMutableParagraphStyle()
+                margin.firstLineHeadIndent = Hardcover.margin - 16
                 appearance.largeTitleTextAttributes = [
-                    .font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large),
+                    // iOS cuts long titles off rather than wrapping them, so they stop growing here.
+                    .font: UIFontMetrics(forTextStyle: .largeTitle).scaledFont(for: large, maximumPointSize: 46),
                     .foregroundColor: ink,
+                    .paragraphStyle: margin,
                 ]
             }
             if let inline = UIFont(name: Font.Bundled.title, size: 21) {
@@ -55,7 +60,9 @@ struct VersedApp: App {
         let atTop = UINavigationBarAppearance()
         atTop.configureWithTransparentBackground()
         let scrolled = UINavigationBarAppearance()
-        scrolled.configureWithDefaultBackground()
+        scrolled.configureWithOpaqueBackground()
+        scrolled.backgroundColor = UIColor(named: "AppBackground")
+        scrolled.shadowColor = UIColor(named: "Hairline")
 
         let navigationBar = UINavigationBar.appearance()
         navigationBar.scrollEdgeAppearance = titled(atTop)

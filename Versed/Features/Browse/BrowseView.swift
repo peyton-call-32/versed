@@ -19,7 +19,6 @@ struct BrowseView: View {
     @State private var selectedVolume: Volume.ID?
     @State private var availableHeight: CGFloat = 0
     @State private var weekCardHeight: CGFloat = 0
-    @Namespace private var coverZoom
 
     /// The screens the browse tab can open.
     enum Route: Hashable {
@@ -39,13 +38,12 @@ struct BrowseView: View {
                         volumes: library.volumes,
                         selection: $selectedVolume,
                         coverHeight: coverHeight,
-                        zoomNamespace: coverZoom,
                         subtitle: subtitle(for:)
                     ) { volume in
                         path.append(route(for: volume))
                     }
                     weeklyReadingSection
-                        .padding(.horizontal, 20)
+                        .padding(.horizontal, Hardcover.margin)
                         .onGeometryChange(for: CGFloat.self, of: \.size.height) { weekCardHeight = $0 }
                 }
                 .padding(.top, 10)
@@ -53,7 +51,7 @@ struct BrowseView: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .onGeometryChange(for: CGFloat.self, of: { $0.size.height - $0.safeAreaInsets.bottom }) { availableHeight = $0 }
-            .background(Color.appBackground)
+            .versedScreen()
             .onAppear {
                 if selectedVolume == nil { selectedVolume = library.lastReadVolumeID(from: positions) }
             }
@@ -64,12 +62,24 @@ struct BrowseView: View {
             .navigationTitle("Browse")
             .navigationDestination(for: Route.self, destination: destination)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Settings", systemImage: "gearshape") { showsSettings = true }
+                PlainToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showsSettings = true
+                    } label: {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 18, weight: .light))
+                            .foregroundStyle(.brand)
+                            .padding(.trailing, Hardcover.margin - 16)
+                            .frame(width: 44, height: 44, alignment: .trailing)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Settings")
                 }
             }
             .sheet(isPresented: $showsSettings) {
                 SettingsView()
+                    .versedSheet()
             }
         }
     }
@@ -77,37 +87,37 @@ struct BrowseView: View {
     /// The covers take the room left over, so This Week stays in view below them on every iPhone.
     /// At the largest text sizes the screen scrolls instead of squeezing the covers.
     private var coverHeight: CGFloat {
-        let reserved: CGFloat = 10 + 24 + 20 + 38 // Margins, and the dots under the covers.
+        let reserved: CGFloat = 10 + 24 + 20 + 32 // Margins, and the dots under the covers.
         return min(max(availableHeight - weekCardHeight - reserved, 250), 460)
     }
 
     private var weeklyReadingSection: some View {
-        Card {
+        Ledger {
             if let week = schedule.currentWeek() {
                 Button {
                     openWeek(nil)
                 } label: {
                     thisWeekRow(week)
                 }
-                .buttonStyle(.cardRow)
+                .buttonStyle(.ledgerRow)
                 .accessibilityLabel("This Week, \(week.label), \(week.dateRangeText())")
                 .accessibilityHint("Opens this week's reading.")
                 .accessibilityIdentifier("This Week")
 
-                CardDivider()
+                LedgerRule()
             }
 
             NavigationLink(value: Route.schedule) {
-                CardRowLabel(title: "Reading Schedule")
+                LedgerRowLabel(title: "Reading Schedule")
             }
-            .buttonStyle(.cardRow)
+            .buttonStyle(.ledgerRow)
 
             if let itemID = lastBrowsePosition, let reference = reference(for: itemID) {
-                CardDivider()
+                LedgerRule()
                 NavigationLink(value: Route.resume(itemID)) {
-                    CardRowLabel(title: "Continue Reading", detail: reference)
+                    LedgerRowLabel(title: "Continue Reading", detail: reference)
                 }
-                .buttonStyle(.cardRow)
+                .buttonStyle(.ledgerRow)
             }
         }
     }
@@ -118,7 +128,7 @@ struct BrowseView: View {
             VStack(alignment: .leading, spacing: 3) {
                 SmallCapsLabel("This Week · \(week.dateRangeText())")
                 Text(week.readingByBook.map(\.name).joined(separator: ", "))
-                    .font(.versedTitle(size: 24, relativeTo: .title3))
+                    .font(.versedTitle(size: 25, relativeTo: .title3))
                     .foregroundStyle(.brand)
                     // Shrinks a little at the largest sizes, so a long name like "Lamentations" stays whole.
                     .lineLimit(2)
@@ -126,9 +136,9 @@ struct BrowseView: View {
             }
             .multilineTextAlignment(.leading)
             Spacer(minLength: 8)
-            CardRowArrow()
+            LedgerRowArrow()
         }
-        .cardRowPadding()
+        .ledgerRowPadding()
         .contentShape(Rectangle())
     }
 
@@ -140,17 +150,10 @@ struct BrowseView: View {
         case .volume(let id):
             if let volume = library.volume(id: id) {
                 BookListView(volume: volume)
-                    .zoomsFromCover(id: volume.id, in: coverZoom)
             }
         case .book(let id):
             if let book = library.book(id: id) {
-                // A volume with a single book opens its chapters directly from the cover.
-                if let volume = library.volumes.first(where: { $0.books.count == 1 && $0.books[0].id == id }) {
-                    ChapterGridView(book: book)
-                        .zoomsFromCover(id: volume.id, in: coverZoom)
-                } else {
-                    ChapterGridView(book: book)
-                }
+                ChapterGridView(book: book)
             }
         case .reading(let chapterID):
             if let book = library.book(id: chapterID.bookID) {
