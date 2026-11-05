@@ -99,21 +99,20 @@ final class VersedUITests: XCTestCase {
         saveScreenshot(named: "4-saved")
     }
 
-    func testBrowseShowsThisWeekAtTheTop() {
-        // Start on another week, so going back to this week is a real change.
+    func testBrowseOpensThisWeekFromItsCover() {
+        // With nothing read yet, the weekly cover is in front, ahead of the books.
         app.tab("Browse").tap()
-        let thisWeek = app.scrollViews.buttons["This Week"]
-        XCTAssertTrue(thisWeek.waitForExistence(timeout: 5))
-        let schedule = app.scrollViews.buttons["Reading Schedule"]
-        let firstBook = app.buttons["Old Testament"]
-        XCTAssertLessThan(thisWeek.frame.maxY, schedule.frame.maxY, "This Week comes first")
-        XCTAssertGreaterThan(thisWeek.frame.minY, firstBook.frame.maxY, "Both sit below the book covers")
-        XCTAssertTrue(schedule.isHittable, "Stays in view below the covers")
-        XCTAssertTrue(thisWeek.label.contains("Jeremiah 31–33"), "Got: \(thisWeek.label)")
-        attachScreenshot(named: "browse-weekly-reading")
+        let cover = app.buttons["weekly-reading"]
+        XCTAssertTrue(cover.waitForExistence(timeout: 5))
+        XCTAssertEqual(cover.frame.midX, app.frame.midX, accuracy: 2)
+        XCTAssertLessThan(cover.frame.maxX, app.buttons["Old Testament"].frame.minX, "It comes before the books")
+        XCTAssertEqual(cover.label, "Come, Follow Me, Weekly Reading Schedule")
+        XCTAssertTrue(app.scrollViews.buttons["Reading Schedule"].isHittable, "Stays in view below the covers")
+        XCTAssertFalse(app.scrollViews.buttons["This Week"].exists, "The old row is gone")
+        attachScreenshot(named: "browse-weekly-cover")
 
-        // This Week opens this week's reading on the This Week tab.
-        thisWeek.tap()
+        // It opens this week's reading on the This Week tab.
+        cover.tap()
         XCTAssertTrue(app.tab("This Week").isSelected)
         XCTAssertTrue(weekHeading(containing: "Jeremiah 31–33").waitForExistence(timeout: 5))
         XCTAssertTrue(weekHeading(containing: "This Week").exists)
@@ -139,10 +138,10 @@ final class VersedUITests: XCTestCase {
         app.swipeUp()
         XCTAssertTrue(chapterHeading("Daniel, Chapter 1").waitForExistence(timeout: 5))
 
-        // Browse's This Week row goes back to this week.
+        // The weekly cover on Browse goes back to this week.
         app.tab("Browse").tap()
         app.navigationBars.buttons.firstMatch.tap()
-        app.scrollViews.buttons["This Week"].tap()
+        app.openWeeklyCover()
         XCTAssertTrue(app.buttons["Week of Oct 26 – Nov 1"].waitForExistence(timeout: 5))
     }
 
@@ -226,7 +225,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(weekHeading(containing: "Daniel 1–7").waitForExistence(timeout: 5))
         app.tab("Browse").tap()
         app.navigationBars.buttons.firstMatch.tap()
-        app.scrollViews.buttons["This Week"].tap()
+        app.openWeeklyCover()
 
         // It opens on the This Week card, with the saved verse hidden underneath.
         XCTAssertTrue(weekHeading(containing: "This Week").waitForExistence(timeout: 5))
@@ -259,7 +258,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(weekHeading(containing: "Daniel 1–7").waitForExistence(timeout: 5))
         app.tab("Browse").tap()
         app.navigationBars.buttons.firstMatch.tap()
-        app.scrollViews.buttons["This Week"].tap()
+        app.openWeeklyCover()
         XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].waitForExistence(timeout: 5))
 
         app.buttons["Jeremiah 36–39"].tap()
@@ -277,7 +276,7 @@ final class VersedUITests: XCTestCase {
         // Go to this week, then reopen the finished week.
         app.tab("Browse").tap()
         app.navigationBars.buttons.firstMatch.tap()
-        app.scrollViews.buttons["This Week"].tap()
+        app.openWeeklyCover()
         XCTAssertTrue(weekHeading(containing: "This Week").waitForExistence(timeout: 5))
         app.openWeekFromSchedule(XCUIApplication.shortWeek.row)
 
@@ -363,15 +362,19 @@ final class VersedUITests: XCTestCase {
     }
 
     func testBrowseCoversOpenOnTheLastBookRead() {
-        // With nothing read yet, the middle book is in front, with neighbors on both sides.
+        // With nothing read yet, the weekly cover is in front, with the first book beside it.
         app.tab("Browse").tap()
-        let bookOfMormon = app.buttons["Book of Mormon"]
-        XCTAssertTrue(bookOfMormon.waitForExistence(timeout: 5))
-        XCTAssertEqual(bookOfMormon.frame.midX, app.frame.midX, accuracy: 2)
-        XCTAssertLessThan(app.buttons["New Testament"].frame.maxX, bookOfMormon.frame.minX)
+        let weeklyCover = app.buttons["weekly-reading"]
+        XCTAssertTrue(weeklyCover.waitForExistence(timeout: 5))
+        XCTAssertEqual(weeklyCover.frame.midX, app.frame.midX, accuracy: 2)
 
         // Tapping an edge brings that book forward without opening it.
-        app.buttons["New Testament"].coordinate(withNormalizedOffset: CGVector(dx: 0.97, dy: 0.5)).tap()
+        let edge = CGVector(dx: 0.03, dy: 0.5)
+        app.buttons["Old Testament"].coordinate(withNormalizedOffset: edge).tap()
+        let firstBook = app.buttons["Old Testament"]
+        let firstIsCentered = NSPredicate { _, _ in abs(firstBook.frame.midX - self.app.frame.midX) < 2 }
+        wait(for: [expectation(for: firstIsCentered, evaluatedWith: nil)], timeout: 5)
+        app.buttons["New Testament"].coordinate(withNormalizedOffset: edge).tap()
         let newTestament = app.buttons["New Testament"]
         let isCentered = NSPredicate { _, _ in abs(newTestament.frame.midX - self.app.frame.midX) < 2 }
         wait(for: [expectation(for: isCentered, evaluatedWith: nil)], timeout: 5)
@@ -387,6 +390,45 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(oldTestament.waitForExistence(timeout: 5))
         let oldIsCentered = NSPredicate { _, _ in abs(oldTestament.frame.midX - self.app.frame.midX) < 2 }
         wait(for: [expectation(for: oldIsCentered, evaluatedWith: nil)], timeout: 5)
+    }
+
+    func testBrowseMovesToTheBookReadBeforeItsFirstVisit() {
+        // Read on This Week before Browse has ever been on screen.
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        for _ in 1...2 { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
+
+        // The Old Testament is in front, and a single tap opens it.
+        app.tab("Browse").tap()
+        let oldTestament = app.buttons["Old Testament"]
+        XCTAssertTrue(oldTestament.waitForExistence(timeout: 5))
+        let isCentered = NSPredicate { _, _ in abs(oldTestament.frame.midX - self.app.frame.midX) < 2 }
+        wait(for: [expectation(for: isCentered, evaluatedWith: nil)], timeout: 5)
+        attachScreenshot(named: "browse-first-visit")
+        oldTestament.tap()
+        XCTAssertTrue(app.buttons["Genesis"].waitForExistence(timeout: 5))
+    }
+
+    func testBrowseCoverAndDotsAgreeAfterReadingElsewhere() {
+        // Browse has been on screen, then the reader goes off to read on This Week.
+        app.openSettings()
+        app.buttons["Light"].tap()
+        app.buttons["Done"].tap()
+        XCTAssertTrue(app.buttons["weekly-reading"].waitForExistence(timeout: 5))
+        app.tab("This Week").tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 5))
+        for _ in 1...2 { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
+
+        // Coming back, the book they were reading is in front, and one tap opens it.
+        app.tab("Browse").tap()
+        attachScreenshot(named: "browse-back-at-once")
+        sleep(2)
+        attachScreenshot(named: "browse-back-settled")
+        let oldTestament = app.buttons["Old Testament"]
+        XCTAssertEqual(oldTestament.frame.midX, app.frame.midX, accuracy: 2)
+        oldTestament.tap()
+        XCTAssertTrue(app.buttons["Genesis"].waitForExistence(timeout: 5))
     }
 
     func testChoosingAnAppearance() {

@@ -1,15 +1,17 @@
 import SwiftUI
 
-/// The five books of scripture as navy hardcovers, one in the middle with the edges of its
-/// neighbors showing on each side. Swipe between them, or tap an edge to bring that book forward.
-/// Tapping the book in the middle opens it.
+/// The weekly reading cover and the five books of scripture as navy hardcovers, one in the middle
+/// with the edges of its neighbors showing on each side. Swipe between them, or tap an edge to bring
+/// that cover forward. Tapping the cover in the middle opens it.
 struct VolumeCarousel: View {
     let volumes: [Volume]
-    /// The book in the middle.
+    /// The cover in the middle: a volume's ID, or `WeeklyCover.id`.
     @Binding var selection: Volume.ID?
     let coverHeight: CGFloat
     let subtitle: (Volume) -> String
     let onOpen: (Volume) -> Void
+    /// Opens this week's reading. `nil` leaves the weekly cover out, for dates the schedule doesn't cover.
+    let onOpenWeek: (() -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverIsOn
@@ -24,6 +26,9 @@ struct VolumeCarousel: View {
         VStack(spacing: 18) {
             ScrollView(.horizontal) {
                 HStack(spacing: Self.gap) {
+                    if let onOpenWeek {
+                        weeklyCover(open: onOpenWeek)
+                    }
                     ForEach(volumes) { volume in
                         cover(for: volume)
                     }
@@ -49,16 +54,40 @@ struct VolumeCarousel: View {
     }
 
     private func cover(for volume: Volume) -> some View {
-        Button {
-            // VoiceOver reaches each cover directly, so there's nothing to bring forward first.
-            if volume.id == selection || voiceOverIsOn {
-                openCount += 1
-                onOpen(volume)
-            } else {
-                withAnimation(reduceMotion ? nil : .versed) { selection = volume.id }
-            }
+        coverButton(id: volume.id) {
+            onOpen(volume)
         } label: {
             VolumeCover(title: volume.title, subtitle: subtitle(volume), height: coverHeight)
+        }
+        .accessibilityLabel(volume.title)
+        .accessibilityValue(subtitle(volume))
+        .accessibilityHint("Opens this book.")
+    }
+
+    private func weeklyCover(open: @escaping () -> Void) -> some View {
+        coverButton(id: WeeklyCover.id, open: open) {
+            WeeklyCover(height: coverHeight)
+        }
+        // Lets the carousel's selection follow this cover. The books get theirs from `ForEach`.
+        .id(WeeklyCover.id)
+        .accessibilityLabel("\(WeeklyCover.title), \(WeeklyCover.subtitle)")
+        .accessibilityValue(WeeklyCover.notice)
+        .accessibilityHint("Opens this week's reading.")
+        .accessibilityIdentifier(WeeklyCover.id)
+    }
+
+    /// A cover that opens when it's in the middle, and comes forward when it's at the side.
+    private func coverButton(id: Volume.ID, open: @escaping () -> Void, @ViewBuilder label: () -> some View) -> some View {
+        Button {
+            // VoiceOver reaches each cover directly, so there's nothing to bring forward first.
+            if id == selection || voiceOverIsOn {
+                openCount += 1
+                open()
+            } else {
+                withAnimation(reduceMotion ? nil : .versed) { selection = id }
+            }
+        } label: {
+            label()
         }
         .buttonStyle(CoverButtonStyle())
         // The space left between the margins, which is what leaves the neighbors' edges showing.
@@ -66,18 +95,15 @@ struct VolumeCarousel: View {
         .scrollTransition(axis: .horizontal) { content, phase in
             content.scaleEffect(phase.isIdentity || reduceMotion ? 1 : 0.95)
         }
-        .accessibilityLabel(volume.title)
-        .accessibilityValue(subtitle(volume))
-        .accessibilityHint("Opens this book.")
     }
 
-    /// One dot per book, with the current one in full ink. Decoration only: VoiceOver
+    /// One dot per cover, with the current one in full ink. Decoration only: VoiceOver
     /// reads the covers themselves.
     private var dots: some View {
         HStack(spacing: 7) {
-            ForEach(volumes) { volume in
+            ForEach((onOpenWeek == nil ? [] : [WeeklyCover.id]) + volumes.map(\.id), id: \.self) { id in
                 Circle()
-                    .fill(volume.id == selection ? Color.brand : Color.brand.opacity(0.22))
+                    .fill(id == selection ? Color.brand : Color.brand.opacity(0.22))
                     .frame(width: 5, height: 5)
             }
         }
@@ -87,7 +113,7 @@ struct VolumeCarousel: View {
     }
 }
 
-/// One hardcover: solid navy, a thin double border, and the book's name in cream.
+/// A book of scripture's cover: its name, with how many books or sections it holds at the foot.
 private struct VolumeCover: View {
     let title: String
     let subtitle: String
@@ -96,23 +122,78 @@ private struct VolumeCover: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
+        CoverBoard(height: height) {
+            Text(CoverTitle.lines(for: title))
+                .font(.versedTitle(size: 44))
+                .lineSpacing(-2)
+                .multilineTextAlignment(.center)
+                .lineLimit(3)
+                .minimumScaleFactor(0.55)
+                .foregroundStyle(.onCover)
+                .titleDrift(by: reduceMotion ? 0 : 0.12)
+        } foot: {
+            SmallCapsLabel(subtitle, color: .onCover)
+                .lineLimit(1)
+                .minimumScaleFactor(0.7)
+        }
+    }
+}
+
+/// The cover for the weekly reading, first in line ahead of the books. Its words all live here, so
+/// they're easy to change. They name the schedule and say plainly that the Church didn't make the app.
+struct WeeklyCover: View {
+    static let id = "weekly-reading"
+    static let title = "Come, Follow Me"
+    static let subtitle = "Weekly Reading Schedule"
+    static let notice = "Versed is an independent app, not made or endorsed by The Church of Jesus Christ of Latter-day Saints."
+
+    let height: CGFloat
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        CoverBoard(height: height) {
+            VStack(spacing: 6) {
+                Text(Self.title)
+                    .font(.versedTitle(size: 36))
+                    .lineLimit(1)
+                Text(Self.subtitle)
+                    .font(.versedTitle(size: 22, relativeTo: .title2))
+                    .lineLimit(2)
+                    // Stays smaller than the title, which shrinks to fit on one line at the largest sizes.
+                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+            }
+            .multilineTextAlignment(.center)
+            .minimumScaleFactor(0.55)
+            .foregroundStyle(.onCover)
+            .titleDrift(by: reduceMotion ? 0 : 0.12)
+        } foot: {
+            Text(Self.notice)
+                .font(.versedVerse(size: 13, relativeTo: .footnote))
+                .lineSpacing(2)
+                .multilineTextAlignment(.center)
+                .lineLimit(6)
+                .minimumScaleFactor(0.55)
+                .foregroundStyle(.onCover)
+        }
+    }
+}
+
+/// One hardcover: solid navy and a thin double border, with cream words set in the middle and at the foot.
+private struct CoverBoard<Middle: View, Foot: View>: View {
+    let height: CGFloat
+    @ViewBuilder let middle: Middle
+    @ViewBuilder let foot: Foot
+
+    var body: some View {
         ZStack {
             border
             VStack(spacing: 0) {
                 Ornament(color: .onCover)
                 Spacer(minLength: 8)
-                Text(CoverTitle.lines(for: title))
-                    .font(.versedTitle(size: 44))
-                    .lineSpacing(-2)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(3)
-                    .minimumScaleFactor(0.55)
-                    .foregroundStyle(.onCover)
-                    .titleDrift(by: reduceMotion ? 0 : 0.12)
+                middle
                 Spacer(minLength: 8)
-                SmallCapsLabel(subtitle, color: .onCover)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
+                foot
             }
             .padding(.leading, 34)
             .padding(.trailing, 26)

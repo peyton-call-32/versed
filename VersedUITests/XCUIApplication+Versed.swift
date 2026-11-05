@@ -6,7 +6,7 @@ extension XCUIApplication {
     /// (opening card, chapter title, verses, closing card).
     static let shortWeek = (row: "Jan 11–17, John 1", pageCount: 54)
 
-    /// A button in the floating tab bar. It has its own name because Browse also has a "This Week" row.
+    /// A button in the floating tab bar.
     /// The bar steps aside while reading, so this taps the page to bring it back first.
     func tab(_ title: String) -> XCUIElement {
         let button = buttons.matching(identifier: "Tab \(title)").firstMatch
@@ -33,6 +33,11 @@ extension XCUIApplication {
             sleep(1)
         }
         cover.tap()
+    }
+
+    /// Opens this week's reading from its cover on Browse.
+    func openWeeklyCover() {
+        openVolume("weekly-reading")
     }
 
     /// The top edge of the floating tab bar, for checking nothing slides under it.

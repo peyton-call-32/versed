@@ -2,9 +2,10 @@ import SwiftData
 import SwiftUI
 
 /// Pick any volume, book, and chapter, then read from there in the feed.
-/// At the top: the five volumes as swipeable book covers, opening on the last one read.
-/// Below them: this week's reading, the full reading schedule, and a "Continue Reading" row
-/// that returns to the last page read here or from Saved.
+/// At the top: the weekly reading and the five volumes as swipeable covers, opening on the last
+/// volume read, or the weekly reading with nothing read yet.
+/// Below them: the full reading schedule, and a "Continue Reading" row that returns to the last
+/// page read here or from Saved.
 struct BrowseView: View {
     let library: ScriptureLibrary
     let schedule: ReadingSchedule
@@ -15,8 +16,12 @@ struct BrowseView: View {
 
     @Query private var positions: [ReadingPosition]
     @State private var showsSettings = false
-    /// The volume in the middle of the carousel.
+    /// The cover in the middle of the carousel.
     @State private var selectedVolume: Volume.ID?
+    /// Where the covers should move once they're back on screen. Covers that are out of sight
+    /// can't scroll, and moving the selection then would leave it out of step with what's shown.
+    @State private var pendingCover: Volume.ID?
+    @State private var isOnScreen = false
     @State private var availableHeight: CGFloat = 0
     @State private var weekCardHeight: CGFloat = 0
 
@@ -38,10 +43,10 @@ struct BrowseView: View {
                         volumes: library.volumes,
                         selection: $selectedVolume,
                         coverHeight: coverHeight,
-                        subtitle: subtitle(for:)
-                    ) { volume in
-                        path.append(route(for: volume))
-                    }
+                        subtitle: subtitle(for:),
+                        onOpen: { path.append(route(for: $0)) },
+                        onOpenWeek: hasCurrentWeek ? { openWeek(nil) } : nil
+                    )
                     weeklyReadingSection
                         .padding(.horizontal, Hardcover.margin)
                         .onGeometryChange(for: CGFloat.self, of: \.size.height) { weekCardHeight = $0 }
@@ -53,11 +58,27 @@ struct BrowseView: View {
             .onGeometryChange(for: CGFloat.self, of: { $0.size.height - $0.safeAreaInsets.bottom }) { availableHeight = $0 }
             .versedScreen()
             .onAppear {
-                if selectedVolume == nil { selectedVolume = library.lastReadVolumeID(from: positions) }
+                if selectedVolume == nil {
+                    selectedVolume = library.lastReadVolumeID(from: positions)
+                        ?? (hasCurrentWeek ? WeeklyCover.id : library.middleVolumeID)
+                }
+                if let pendingCover {
+                    selectedVolume = pendingCover
+                    self.pendingCover = nil
+                }
+                isOnScreen = true
+            }
+            .onDisappear {
+                isOnScreen = false
             }
             // Reading somewhere else moves the covers to that book, ready for coming back here.
             .onChange(of: library.lastReadVolumeID(from: positions)) { _, volumeID in
-                selectedVolume = volumeID
+                guard let volumeID else { return }
+                if isOnScreen {
+                    selectedVolume = volumeID
+                } else {
+                    pendingCover = volumeID
+                }
             }
             .navigationTitle("Browse")
             .navigationDestination(for: Route.self, destination: destination)
@@ -84,7 +105,7 @@ struct BrowseView: View {
         }
     }
 
-    /// The covers take the room left over, so This Week stays in view below them on every iPhone.
+    /// The covers take the room left over, so the rows stay in view below them on every iPhone.
     /// At the largest text sizes the screen scrolls instead of squeezing the covers.
     private var coverHeight: CGFloat {
         let reserved: CGFloat = 10 + 24 + 20 + 32 // Margins, and the dots under the covers.
@@ -93,20 +114,6 @@ struct BrowseView: View {
 
     private var weeklyReadingSection: some View {
         Ledger {
-            if let week = schedule.currentWeek() {
-                Button {
-                    openWeek(nil)
-                } label: {
-                    thisWeekRow(week)
-                }
-                .buttonStyle(.ledgerRow)
-                .accessibilityLabel("This Week, \(week.label), \(week.dateRangeText())")
-                .accessibilityHint("Opens this week's reading.")
-                .accessibilityIdentifier("This Week")
-
-                LedgerRule()
-            }
-
             NavigationLink(value: Route.schedule) {
                 LedgerRowLabel(title: "Reading Schedule")
             }
@@ -122,24 +129,8 @@ struct BrowseView: View {
         }
     }
 
-    /// The week's book names, with its dates under them.
-    private func thisWeekRow(_ week: ReadingWeek) -> some View {
-        HStack(spacing: 10) {
-            VStack(alignment: .leading, spacing: 3) {
-                SmallCapsLabel("This Week · \(week.dateRangeText())")
-                Text(week.readingByBook.map(\.name).joined(separator: ", "))
-                    .font(.versedTitle(size: 25, relativeTo: .title3))
-                    .foregroundStyle(.brand)
-                    // Shrinks a little at the largest sizes, so a long name like "Lamentations" stays whole.
-                    .lineLimit(2)
-                    .minimumScaleFactor(0.6)
-            }
-            .multilineTextAlignment(.leading)
-            Spacer(minLength: 8)
-            LedgerRowArrow()
-        }
-        .ledgerRowPadding()
-        .contentShape(Rectangle())
+    private var hasCurrentWeek: Bool {
+        schedule.currentWeek() != nil
     }
 
     @ViewBuilder

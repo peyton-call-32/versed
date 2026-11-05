@@ -40,6 +40,9 @@ final class AccessibilityUITests: XCTestCase {
             app.buttons["Done"].tap()
 
             app.tab("Browse").tap()
+            let readBook = app.buttons["Old Testament"]
+            let isCentered = NSPredicate { _, _ in abs(readBook.frame.midX - self.app.frame.midX) < 2 }
+            wait(for: [expectation(for: isCentered, evaluatedWith: nil)], timeout: 5)
             try audit("Browse, \(appearance)")
 
             app.scrollViews.buttons["Reading Schedule"].tap()
@@ -60,6 +63,18 @@ final class AccessibilityUITests: XCTestCase {
     }
 
     /// At the largest text size, the calendar can still be read and closed.
+    func testWeeklyCoverFitsAtTheLargestTextSize() throws {
+        app.terminate()
+        launch(extraArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
+        app.tab("Browse").tap()
+        let cover = app.buttons["weekly-reading"]
+        XCTAssertTrue(cover.waitForExistence(timeout: 5))
+        sleep(1)
+        attachScreenshot(named: "largest-text-weekly-cover")
+        let notice = cover.staticTexts.element(boundBy: 2)
+        XCTAssertLessThan(notice.frame.maxY, cover.frame.maxY)
+    }
+
     func testStreakCalendarAtTheLargestTextSize() {
         launch(extraArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
         app.buttons["Streak"].tap()
@@ -246,7 +261,7 @@ final class AccessibilityUITests: XCTestCase {
     ///   bars and the page text keep their room.
     /// - "Clipped" text in Settings that's fully visible in both the normal and the
     ///   "largest-text-settings" screenshots. The audit misreads these two labels.
-    /// - The same for the last intro page's title and Browse's "THIS WEEK" label, fully visible in
+    /// - The same for the last intro page's title and the weekly cover's "Weekly Reading Schedule", fully visible in
     ///   the "audit-intro last page" and "audit-Browse" screenshots.
     /// - The same for the chapter menu's first row and book names, fully visible in the
     ///   "audit-chapter menu" and "largest-chapter-menu" screenshots.
@@ -267,7 +282,7 @@ final class AccessibilityUITests: XCTestCase {
             return ["This Week", "Browse", "Saved", "Skip", "Next", "Done"].contains(element.label)
         case .textClipped:
             return ["DAILY REMINDER", "peytoncall32@icloud.com", "JEREMIAH", "LAMENTATIONS", "Back to Week's Start", "This Week's Reading, Ready"].contains(element.label)
-                || element.label.hasPrefix("THIS WEEK")
+                || element.label == "Weekly Reading Schedule"
         default:
             return false
         }

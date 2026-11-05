@@ -14,8 +14,15 @@ struct BrowseCoverTests {
         #expect(CoverTitle.lines(for: "Old Testament") == "Old\nTestament")
     }
 
-    @Test @MainActor func opensOnTheMiddleVolumeWithNothingRead() {
-        #expect(library.lastReadVolumeID(from: []) == "bofm")
+    @Test @MainActor func hasNoLastVolumeWithNothingRead() {
+        #expect(library.lastReadVolumeID(from: []) == nil)
+        #expect(library.middleVolumeID == "bofm")
+    }
+
+    /// The cover must keep saying the Church didn't make the app. Changing this is a deliberate decision.
+    @Test func weeklyCoverSaysTheAppIsIndependent() {
+        #expect(WeeklyCover.title == "Come, Follow Me")
+        #expect(WeeklyCover.notice == "Versed is an independent app, not made or endorsed by The Church of Jesus Christ of Latter-day Saints.")
     }
 
     @Test @MainActor func opensOnTheVolumeReadMostRecently() {

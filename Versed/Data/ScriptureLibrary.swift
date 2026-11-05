@@ -52,7 +52,12 @@ struct ScriptureLibrary: Sendable {
             .compactMap { FeedItem.chapterID(of: $0.itemID)?.bookID }
             .compactMap { bookID in volumes.first { $0.books.contains { $0.id == bookID } } }
             .first
-        return (lastRead ?? (volumes.isEmpty ? nil : volumes[volumes.count / 2]))?.id
+        return lastRead?.id
+    }
+
+    /// The volume in the middle of the list, for when no other cover is a better place to open.
+    var middleVolumeID: Volume.ID? {
+        volumes.isEmpty ? nil : volumes[volumes.count / 2].id
     }
 
     var verseCount: Int {

@@ -48,7 +48,7 @@ Versed is an independent app. It is not affiliated with, made, approved, or endo
 
 LDS,Book of Mormon,Bible,Doctrine and Covenants,Pearl of Great Price,KJV,devotional,study,gospel
 
-Left out on purpose: "Come Follow Me" and the Church's name, which are the Church's trademarks. Apple can reject keywords that use other people's trademarks. The listing never uses "Come, Follow Me" as a name; the app mentions it only in one descriptive line (see the trademark rule in CLAUDE.md).
+Left out on purpose: "Come Follow Me" and the Church's name, which are the Church's trademarks. Apple can reject keywords that use other people's trademarks. The listing never uses "Come, Follow Me" as a name; inside the app it appears only on the Browse cover and in one descriptive line (see the trademark rule in CLAUDE.md).
 
 ## What's New [4,000 max]
 *Apple doesn't show this for a first version. Use it for 1.0.1 and later.*
