@@ -329,6 +329,7 @@ struct BlockPicker<Option: Hashable & Identifiable>: View {
                     Text(label(option))
                         .font(.versedDetail)
                         .foregroundStyle(isSelected ? Color("ProminentButtonLabel") : .brand)
+                        .padding(.vertical, 8)
                         .frame(maxWidth: .infinity, minHeight: 44)
                         .background(isSelected ? Color("ProminentButton") : .clear, in: Hardcover.corner)
                         .contentShape(Rectangle())

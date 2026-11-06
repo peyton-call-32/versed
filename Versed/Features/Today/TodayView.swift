@@ -180,6 +180,8 @@ private struct PlanRow: View {
                         Text(title)
                             .font(.versedTitle(size: 25, relativeTo: .title3))
                             .foregroundStyle(.brand)
+                            // Wraps at the largest text sizes instead of cutting the name off.
+                            .fixedSize(horizontal: false, vertical: true)
                         if !typeSize.isAccessibilitySize { Spacer(minLength: 0) }
                         Text(status.periodText)
                             .font(.versedNote)
@@ -190,6 +192,7 @@ private struct PlanRow: View {
                             .font(.versedDetail)
                             .foregroundStyle(.brand)
                             .lineLimit(typeSize.isAccessibilitySize ? nil : 2)
+                            .fixedSize(horizontal: false, vertical: typeSize.isAccessibilitySize)
                         if !typeSize.isAccessibilitySize { Spacer(minLength: 0) }
                         if let doneText = status.doneText {
                             HStack(spacing: 4) {

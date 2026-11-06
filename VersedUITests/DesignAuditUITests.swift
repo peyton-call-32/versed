@@ -122,7 +122,10 @@ final class DesignAuditUITests: XCTestCase {
         shoot("22-books")
         app.buttons["Alma"].tap()
         shoot("23-chapters")
-        app.buttons["Alma 32"].tap()
+        // At the largest text sizes the chapter is further down the page.
+        let chapter = app.buttons["Alma 32"]
+        for _ in 1...6 where !(chapter.exists && chapter.isHittable) { app.swipeUp() }
+        chapter.tap()
         shoot("24-browse-chapter-opening")
         app.swipeUp()
         shoot("25-browse-verse")
