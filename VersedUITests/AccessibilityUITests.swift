@@ -1,5 +1,10 @@
 import XCTest
 
+/// The cover's second line. It lives in the app, which UI tests can't read directly.
+private enum WeeklyCoverWords {
+    static let subtitle = "For Home and Church"
+}
+
 /// Checks the app works for readers who use bigger text, VoiceOver, or dark mode.
 @MainActor
 final class AccessibilityUITests: XCTestCase {
@@ -17,10 +22,24 @@ final class AccessibilityUITests: XCTestCase {
             launch()
             setAppearance(appearance)
 
-            // This Week: the intro card, then a verse.
-            app.tab("This Week").tap()
+            // Today, with its plans and the streak calendar.
+            app.goToToday()
+            try audit("Today, \(appearance)")
+            app.buttons["Streak"].tap()
+            XCTAssertTrue(app.navigationBars["Your Streak"].waitForExistence(timeout: 5))
+            // The calendar's days stop growing at a set size so seven columns still fit.
+            // `testStreakCalendarAtTheLargestTextSize` checks that size properly instead.
+            try audit("streak calendar, \(appearance)", except: .dynamicType)
+            app.buttons["Done"].tap()
+
+            // A plan's details, then its reading: the opening card, then a verse.
+            app.buttons["Plan details, Come, Follow Me"].tap()
+            XCTAssertTrue(app.navigationBars["Come, Follow Me"].waitForExistence(timeout: 5))
+            try audit("plan details, \(appearance)")
+            app.navigationBars.buttons.firstMatch.tap()
+            app.buttons["Plan Come, Follow Me"].tap()
             XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
-            try audit("This Week intro, \(appearance)", except: Self.shrinkToFitIssues)
+            try audit("reading intro, \(appearance)", except: Self.shrinkToFitIssues)
             app.swipeUp()
             app.swipeUp()
             XCTAssertTrue(app.buttons["Save verse"].waitForExistence(timeout: 5))
@@ -31,19 +50,23 @@ final class AccessibilityUITests: XCTestCase {
             try audit("chapter menu, \(appearance)")
             app.buttons["Done"].tap()
 
-            app.revealControls()
-            app.buttons["Streak"].tap()
-            XCTAssertTrue(app.navigationBars["Your Streak"].waitForExistence(timeout: 5))
-            // The calendar's days stop growing at a set size so seven columns still fit.
-            // `testStreakCalendarAtTheLargestTextSize` checks that size properly instead.
-            try audit("streak calendar, \(appearance)", except: .dynamicType)
-            app.buttons["Done"].tap()
-
             app.tab("Browse").tap()
+            XCTAssertTrue(app.buttons["weekly-reading"].waitForExistence(timeout: 5))
+            sleep(1)
+            try audit("Browse, \(appearance)")
+
+            // Setting up a plan, from the cover.
+            app.buttons["weekly-reading"].tap()
+            XCTAssertTrue(app.buttons["Join This Week"].waitForExistence(timeout: 5))
+            try audit("plan setup, \(appearance)")
+            app.buttons["Cancel"].tap()
+            app.showVolumeCover("Old Testament")
             let readBook = app.buttons["Old Testament"]
             let isCentered = NSPredicate { _, _ in abs(readBook.frame.midX - self.app.frame.midX) < 2 }
             wait(for: [expectation(for: isCentered, evaluatedWith: nil)], timeout: 5)
-            try audit("Browse, \(appearance)")
+            try audit("Browse covers, \(appearance)")
+            app.swipeDown()
+            sleep(1)
 
             app.scrollViews.buttons["Reading Schedule"].tap()
             XCTAssertTrue(app.navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
@@ -77,6 +100,7 @@ final class AccessibilityUITests: XCTestCase {
 
     func testStreakCalendarAtTheLargestTextSize() {
         launch(extraArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
+        XCTAssertTrue(app.buttons["Streak"].waitForExistence(timeout: 10))
         app.buttons["Streak"].tap()
         XCTAssertTrue(app.navigationBars["Your Streak"].waitForExistence(timeout: 5))
         XCTAssertTrue(app.buttons["Previous month"].exists)
@@ -97,7 +121,8 @@ final class AccessibilityUITests: XCTestCase {
     /// At the largest accessibility text size, each page still fits on one screen.
     func testLargestTextSizeStillFitsOnOneScreen() {
         launch(extraArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
-        let weekMenu = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Week of")).firstMatch
+        app.openWeeklyPlan()
+        let weekMenu = app.buttons["Chapter menu"]
         XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
         let top = weekMenu.frame.maxY
 
@@ -111,6 +136,7 @@ final class AccessibilityUITests: XCTestCase {
         app.buttons["Back to Week's Start"].tap()
         XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].waitForExistence(timeout: 5))
         launch(extraArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
+        app.openWeeklyPlan()
         XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
 
         // The week's intro card: its heading sits between the menu and the line saying to swipe up.
@@ -134,7 +160,9 @@ final class AccessibilityUITests: XCTestCase {
 
         app.tab("Browse").tap()
         attachScreenshot(named: "largest-text-browse")
-        app.scrollViews.buttons["Reading Schedule"].tap()
+        let schedule = app.scrollViews.buttons["Reading Schedule"]
+        for _ in 1...3 where !schedule.isHittable { app.swipeUp() }
+        schedule.tap()
         XCTAssertTrue(app.navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
         attachScreenshot(named: "largest-text-reading-schedule")
         app.navigationBars.buttons.firstMatch.tap()
@@ -158,7 +186,7 @@ final class AccessibilityUITests: XCTestCase {
             let lessonLink = onScreen(app.links.matching(identifier: "Open This Week's Lesson"))
             XCTAssertTrue(lessonLink.waitForExistence(timeout: 5))
             try audit("week end card, \(name)", except: Self.shrinkToFitIssues)
-            let top = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "Week of")).firstMatch.frame.maxY
+            let top = app.buttons["Chapter menu"].frame.maxY
             assertFits(lessonLink, between: top, and: app.tabBarTop, "lesson button, \(name)")
         }
         // Relaunch so Browse is back on its main list, then put the default back.
@@ -178,7 +206,7 @@ final class AccessibilityUITests: XCTestCase {
         let pages = [
             ("Swipe Up for the Next Verse", "Versed shows one verse at a time. Swipe up to keep reading."),
             ("Double-Tap to Save", "Double-tap a verse, or tap the heart, to keep it in your Saved tab."),
-            ("This Week's Reading, Ready", VersedUITests.independenceNotice),
+            ("Read at Your Own Pace", VersedUITests.independenceNotice),
         ]
         for (number, (heading, lastLine)) in zip(1..., pages) {
             let headingText = app.staticTexts[heading]
@@ -202,6 +230,8 @@ final class AccessibilityUITests: XCTestCase {
     /// VoiceOver reads each verse as its reference followed by the text.
     func testVoiceOverReadsTheVerseWithItsReference() {
         launch()
+        app.openWeeklyPlan()
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
         app.swipeUp()
         app.swipeUp()
         let verse = app.otherElements.matching(NSPredicate(format: "label == %@", "Jeremiah 31:1")).firstMatch
@@ -261,7 +291,7 @@ final class AccessibilityUITests: XCTestCase {
     ///   bars and the page text keep their room.
     /// - "Clipped" text in Settings that's fully visible in both the normal and the
     ///   "largest-text-settings" screenshots. The audit misreads these two labels.
-    /// - The same for the last intro page's title and the weekly cover's "Weekly Reading Schedule", fully visible in
+    /// - The same for the last intro page's title and the weekly cover's smaller lines, fully visible in
     ///   the "audit-intro last page" and "audit-Browse" screenshots.
     /// - The same for the chapter menu's first row and book names, fully visible in the
     ///   "audit-chapter menu" and "largest-chapter-menu" screenshots.
@@ -279,10 +309,10 @@ final class AccessibilityUITests: XCTestCase {
                 || Int(element.label) != nil
                 || element.label.contains(/^\d+ of \d+$/)
         case .dynamicType:
-            return ["This Week", "Browse", "Saved", "Skip", "Next", "Done"].contains(element.label)
+            return ["Today", "Browse", "Saved", "Skip", "Next", "Done", "Cancel"].contains(element.label)
         case .textClipped:
-            return ["DAILY REMINDER", "peytoncall32@icloud.com", "JEREMIAH", "LAMENTATIONS", "Back to Week's Start", "This Week's Reading, Ready"].contains(element.label)
-                || element.label == "Weekly Reading Schedule"
+            return ["DAILY REMINDER", "peytoncall32@icloud.com", "JEREMIAH", "LAMENTATIONS", "Back to Week's Start", "Read at Your Own Pace"].contains(element.label)
+                || element.label == WeeklyCoverWords.subtitle || element.label.hasSuffix("2026") || element.label.hasSuffix("2027")
         default:
             return false
         }

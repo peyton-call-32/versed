@@ -1,17 +1,15 @@
 import SwiftUI
 
-/// The weekly reading cover and the five books of scripture as navy hardcovers, one in the middle
+/// The five books of scripture as navy hardcovers, one in the middle
 /// with the edges of its neighbors showing on each side. Swipe between them, or tap an edge to bring
 /// that cover forward. Tapping the cover in the middle opens it.
 struct VolumeCarousel: View {
     let volumes: [Volume]
-    /// The cover in the middle: a volume's ID, or `WeeklyCover.id`.
+    /// The cover in the middle.
     @Binding var selection: Volume.ID?
     let coverHeight: CGFloat
     let subtitle: (Volume) -> String
     let onOpen: (Volume) -> Void
-    /// Opens this week's reading. `nil` leaves the weekly cover out, for dates the schedule doesn't cover.
-    let onOpenWeek: (() -> Void)?
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverIsOn
@@ -26,9 +24,6 @@ struct VolumeCarousel: View {
         VStack(spacing: 18) {
             ScrollView(.horizontal) {
                 HStack(spacing: Self.gap) {
-                    if let onOpenWeek {
-                        weeklyCover(open: onOpenWeek)
-                    }
                     ForEach(volumes) { volume in
                         cover(for: volume)
                     }
@@ -64,18 +59,6 @@ struct VolumeCarousel: View {
         .accessibilityHint("Opens this book.")
     }
 
-    private func weeklyCover(open: @escaping () -> Void) -> some View {
-        coverButton(id: WeeklyCover.id, open: open) {
-            WeeklyCover(height: coverHeight)
-        }
-        // Lets the carousel's selection follow this cover. The books get theirs from `ForEach`.
-        .id(WeeklyCover.id)
-        .accessibilityLabel("\(WeeklyCover.title), \(WeeklyCover.subtitle)")
-        .accessibilityValue(WeeklyCover.notice)
-        .accessibilityHint("Opens this week's reading.")
-        .accessibilityIdentifier(WeeklyCover.id)
-    }
-
     /// A cover that opens when it's in the middle, and comes forward when it's at the side.
     private func coverButton(id: Volume.ID, open: @escaping () -> Void, @ViewBuilder label: () -> some View) -> some View {
         Button {
@@ -101,7 +84,7 @@ struct VolumeCarousel: View {
     /// reads the covers themselves.
     private var dots: some View {
         HStack(spacing: 7) {
-            ForEach((onOpenWeek == nil ? [] : [WeeklyCover.id]) + volumes.map(\.id), id: \.self) { id in
+            ForEach(volumes.map(\.id), id: \.self) { id in
                 Circle()
                     .fill(id == selection ? Color.brand : Color.brand.opacity(0.22))
                     .frame(width: 5, height: 5)
@@ -139,41 +122,51 @@ private struct VolumeCover: View {
     }
 }
 
-/// The cover for the weekly reading, first in line ahead of the books. Its words all live here, so
-/// they're easy to change. They name the schedule and say plainly that the Church didn't make the app.
+/// The cover for the weekly schedule, at the top of Browse. Its words all live here, so they're easy
+/// to change. They name the manual and say plainly that the Church didn't make the app.
 struct WeeklyCover: View {
     static let id = "weekly-reading"
     static let title = "Come, Follow Me"
-    static let subtitle = "Weekly Reading Schedule"
+    static let subtitle = "For Home and Church"
     static let notice = "Versed is an independent app, not made or endorsed by The Church of Jesus Christ of Latter-day Saints."
 
+    /// The manual's whole title, as VoiceOver reads it.
+    static func spokenTitle(course: String) -> String {
+        "\(title)—\(subtitle): \(course)"
+    }
+
+    /// The course the calendar is on, such as "Old Testament 2026". It changes with the year.
+    let course: String
     let height: CGFloat
 
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         CoverBoard(height: height) {
             VStack(spacing: 6) {
                 Text(Self.title)
-                    .font(.versedTitle(size: 36))
+                    .font(.versedTitle(size: 40))
                     .lineLimit(1)
-                Text(Self.subtitle)
-                    .font(.versedTitle(size: 22, relativeTo: .title2))
-                    .lineLimit(2)
-                    // Stays smaller than the title, which shrinks to fit on one line at the largest sizes.
-                    .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
+                VStack(spacing: 2) {
+                    Text(Self.subtitle)
+                    Text(course)
+                }
+                .font(.versedTitle(size: 21, relativeTo: .title2))
+                .lineLimit(1)
+                // Stays smaller than the title, which shrinks to fit on one line at the largest sizes.
+                .dynamicTypeSize(...DynamicTypeSize.xxxLarge)
             }
             .multilineTextAlignment(.center)
             .minimumScaleFactor(0.55)
             .foregroundStyle(.onCover)
-            .titleDrift(by: reduceMotion ? 0 : 0.12)
         } foot: {
             Text(Self.notice)
-                .font(.versedVerse(size: 13, relativeTo: .footnote))
-                .lineSpacing(2)
+                .font(.versedVerse(size: 11, relativeTo: .caption2))
+                .lineSpacing(1)
                 .multilineTextAlignment(.center)
-                .lineLimit(6)
-                .minimumScaleFactor(0.55)
+                // Two lines, unless the reader's text size needs more to stay readable.
+                .lineLimit(typeSize.isAccessibilitySize ? 6 : 2)
+                .minimumScaleFactor(typeSize.isAccessibilitySize ? 0.55 : 0.85)
                 .foregroundStyle(.onCover)
         }
     }
@@ -241,7 +234,7 @@ enum CoverTitle {
 }
 
 /// A cover gives slightly under the finger: it presses in with a soft spring.
-private struct CoverButtonStyle: ButtonStyle {
+struct CoverButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .pressEffect(configuration.isPressed, scale: 0.975)

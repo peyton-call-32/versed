@@ -1,16 +1,14 @@
 import SwiftData
 import SwiftUI
 
-/// Pick any volume, book, and chapter, then read from there in the feed.
-/// At the top: the weekly reading and the five volumes as swipeable covers, opening on the last
-/// volume read, or the weekly reading with nothing read yet.
-/// Below them: the full reading schedule, and a "Continue Reading" row that returns to the last
-/// page read here or from Saved.
+/// Study plans at the top: the weekly schedule's cover, and a way to make a plan for any book.
+/// Below them: the five volumes as swipeable covers, opening on the last volume read, to pick any
+/// book and chapter, and a "Continue Reading" row that returns to the last page read here or from Saved.
 struct BrowseView: View {
     let library: ScriptureLibrary
     let schedule: ReadingSchedule
-    /// Shows a week on the This Week tab: `nil` for this week, or any week from the schedule.
-    let openWeek: (ReadingWeek.ID?) -> Void
+    /// Shows Today, where a plan that was just opened or started is waiting.
+    let showToday: (String) -> Void
     /// The screens open on top of the main list. Emptying it goes back to the list.
     @Binding var path: [Route]
 
@@ -22,12 +20,17 @@ struct BrowseView: View {
     /// can't scroll, and moving the selection then would leave it out of step with what's shown.
     @State private var pendingCover: Volume.ID?
     @State private var isOnScreen = false
-    @State private var availableHeight: CGFloat = 0
-    @State private var weekCardHeight: CGFloat = 0
+    @State private var setupSource: PlanSource?
+    @State private var showsPlanPicker = false
+    /// A choice from the picker, set up once the picker has closed.
+    @State private var pickedSource: PlanSource?
+    @Environment(\.modelContext) private var modelContext
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     /// The screens the browse tab can open.
     enum Route: Hashable {
         case schedule
+        case week(ReadingWeek.ID)
         case volume(Volume.ID)
         case book(Book.ID)
         case reading(ChapterID)
@@ -38,29 +41,18 @@ struct BrowseView: View {
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
-                VStack(spacing: 20) {
-                    VolumeCarousel(
-                        volumes: library.volumes,
-                        selection: $selectedVolume,
-                        coverHeight: coverHeight,
-                        subtitle: subtitle(for:),
-                        onOpen: { path.append(route(for: $0)) },
-                        onOpenWeek: hasCurrentWeek ? { openWeek(nil) } : nil
-                    )
-                    weeklyReadingSection
-                        .padding(.horizontal, Hardcover.margin)
-                        .onGeometryChange(for: CGFloat.self, of: \.size.height) { weekCardHeight = $0 }
+                VStack(spacing: 26) {
+                    studyPlans
+                    scriptures
                 }
                 .padding(.top, 10)
                 .padding(.bottom, 24)
             }
             .scrollBounceBehavior(.basedOnSize)
-            .onGeometryChange(for: CGFloat.self, of: { $0.size.height - $0.safeAreaInsets.bottom }) { availableHeight = $0 }
             .versedScreen()
             .onAppear {
                 if selectedVolume == nil {
-                    selectedVolume = library.lastReadVolumeID(from: positions)
-                        ?? (hasCurrentWeek ? WeeklyCover.id : library.middleVolumeID)
+                    selectedVolume = library.lastReadVolumeID(from: positions) ?? library.middleVolumeID
                 }
                 if let pendingCover {
                     selectedVolume = pendingCover
@@ -102,49 +94,113 @@ struct BrowseView: View {
                 SettingsView()
                     .versedSheet()
             }
+            .sheet(item: $setupSource) { source in
+                PlanSetupView(engine: engine, source: source, onOpenPlan: showToday)
+                    .versedSheet()
+            }
+            .sheet(isPresented: $showsPlanPicker, onDismiss: {
+                setupSource = pickedSource
+                pickedSource = nil
+            }) {
+                PlanPickerView(engine: engine) { source in
+                    pickedSource = source
+                    showsPlanPicker = false
+                }
+                .versedSheet()
+            }
         }
     }
 
-    /// The covers take the room left over, so the rows stay in view below them on every iPhone.
-    /// At the largest text sizes the screen scrolls instead of squeezing the covers.
-    private var coverHeight: CGFloat {
-        let reserved: CGFloat = 10 + 24 + 20 + 32 // Margins, and the dots under the covers.
-        return min(max(availableHeight - weekCardHeight - reserved, 250), 460)
-    }
+    private var engine: PlanEngine { PlanEngine(library: library, schedule: schedule) }
 
-    private var weeklyReadingSection: some View {
-        Ledger {
-            NavigationLink(value: Route.schedule) {
-                LedgerRowLabel(title: "Reading Schedule")
+    /// The weekly schedule's cover and the plan-making row, with the schedule itself beneath.
+    private var studyPlans: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionLabel("Study Plans")
+            if let course = schedule.currentWeek()?.course {
+                Button {
+                    setupSource = .weeklySchedule(course: nil)
+                } label: {
+                    WeeklyCover(course: course, height: typeSize.isAccessibilitySize ? 380 : 290)
+                }
+                .buttonStyle(CoverButtonStyle())
+                .padding(.horizontal, Hardcover.margin)
+                .accessibilityLabel(WeeklyCover.spokenTitle(course: course))
+                .accessibilityValue(WeeklyCover.notice)
+                .accessibilityHint("Sets up this plan.")
+                .accessibilityIdentifier(WeeklyCover.id)
             }
-            .buttonStyle(.ledgerRow)
-
-            if let itemID = lastBrowsePosition, let reference = reference(for: itemID) {
+            Ledger {
+                Button {
+                    showsPlanPicker = true
+                } label: {
+                    LedgerRowLabel(title: "Make Your Own Plan")
+                }
+                .buttonStyle(.ledgerRow)
                 LedgerRule()
-                NavigationLink(value: Route.resume(itemID)) {
-                    LedgerRowLabel(title: "Continue Reading", detail: reference)
+                NavigationLink(value: Route.schedule) {
+                    LedgerRowLabel(title: "Reading Schedule")
                 }
                 .buttonStyle(.ledgerRow)
             }
+            .padding(.horizontal, Hardcover.margin)
+            .padding(.top, 8)
         }
     }
 
-    private var hasCurrentWeek: Bool {
-        schedule.currentWeek() != nil
+    /// The five volumes, and a way back to the last page read among them.
+    private var scriptures: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            sectionLabel("Scriptures")
+            VolumeCarousel(
+                volumes: library.volumes,
+                selection: $selectedVolume,
+                coverHeight: 320,
+                subtitle: subtitle(for:),
+                onOpen: { path.append(route(for: $0)) }
+            )
+            if let itemID = lastBrowsePosition, let reference = reference(for: itemID) {
+                Ledger {
+                    NavigationLink(value: Route.resume(itemID)) {
+                        LedgerRowLabel(title: "Continue Reading", detail: reference)
+                    }
+                    .buttonStyle(.ledgerRow)
+                }
+                .padding(.horizontal, Hardcover.margin)
+                .padding(.top, 8)
+            }
+        }
+    }
+
+    private func sectionLabel(_ title: String) -> some View {
+        SmallCapsLabel(title)
+            .accessibilityAddTraits(.isHeader)
+            .padding(.horizontal, Hardcover.margin)
+    }
+
+    /// Opens the plan for a book or volume if there is one, or sets one up.
+    private func startOrOpenPlan(for source: PlanSource) {
+        if let plan = ReadingPlanStore(context: modelContext, engine: engine).plan(for: source) {
+            showToday(plan.id)
+        } else {
+            setupSource = source
+        }
     }
 
     @ViewBuilder
     private func destination(for route: Route) -> some View {
         switch route {
         case .schedule:
-            ReadingScheduleView(schedule: schedule, openWeek: openWeek)
+            ReadingScheduleView(schedule: schedule) { path.append(.week($0)) }
+        case .week(let id):
+            WeekReadingView(library: library, schedule: schedule, weekID: id)
         case .volume(let id):
             if let volume = library.volume(id: id) {
-                BookListView(volume: volume)
+                BookListView(volume: volume) { startOrOpenPlan(for: .volume(id)) }
             }
         case .book(let id):
             if let book = library.book(id: id) {
-                ChapterGridView(book: book)
+                ChapterGridView(book: book) { startOrOpenPlan(for: .book(id)) }
             }
         case .reading(let chapterID):
             if let book = library.book(id: chapterID.bookID) {
@@ -191,7 +247,7 @@ struct BrowseView: View {
 }
 
 #Preview {
-    BrowseView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled(), openWeek: { _ in }, path: .constant([]))
+    BrowseView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled(), showToday: { _ in }, path: .constant([]))
         .environment(ReadingChrome())
         .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }

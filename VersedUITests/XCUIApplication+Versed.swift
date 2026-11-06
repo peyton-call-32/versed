@@ -23,11 +23,10 @@ extension XCUIApplication {
     /// Brings a book cover on Browse to the middle and opens it. The first tap on a cover at
     /// the side only brings it forward, so swipe until it's in the middle, then tap.
     func openVolume(_ title: String) {
-        let cover = buttons[title]
-        XCTAssertTrue(cover.waitForExistence(timeout: 5))
+        let cover = showVolumeCover(title)
         for _ in 1...6 where abs(cover.frame.midX - frame.midX) > 5 {
             let moveLeft = cover.frame.midX > frame.midX
-            let carousel = coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35))
+            let carousel = coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: frame.midX, dy: cover.frame.midY))
             let target = carousel.withOffset(CGVector(dx: moveLeft ? -260 : 260, dy: 0))
             carousel.press(forDuration: 0.05, thenDragTo: target)
             sleep(1)
@@ -35,9 +34,32 @@ extension XCUIApplication {
         cover.tap()
     }
 
-    /// Opens this week's reading from its cover on Browse.
-    func openWeeklyCover() {
-        openVolume("weekly-reading")
+    /// Scrolls Browse down to the book covers.
+    @discardableResult
+    func showVolumeCover(_ title: String) -> XCUIElement {
+        let cover = buttons[title]
+        XCTAssertTrue(cover.waitForExistence(timeout: 5))
+        let bar = descendants(matching: .any).matching(identifier: "Tab bar").firstMatch
+        for _ in 1...3 where cover.frame.maxY > bar.frame.minY {
+            swipeUp()
+            sleep(1)
+        }
+        return cover
+    }
+
+    /// Opens the weekly plan from its row on Today.
+    func openWeeklyPlan() {
+        tab("Today").tap()
+        let row = buttons["Plan Come, Follow Me"]
+        XCTAssertTrue(row.waitForExistence(timeout: 10))
+        row.tap()
+    }
+
+    /// Goes back to Today's list of plans.
+    func goToToday() {
+        tab("Today").tap()
+        if !navigationBars["Today"].waitForExistence(timeout: 1) { tab("Today").tap() }
+        XCTAssertTrue(navigationBars["Today"].waitForExistence(timeout: 5))
     }
 
     /// The top edge of the floating tab bar, for checking nothing slides under it.
@@ -55,14 +77,16 @@ extension XCUIApplication {
     /// Opens a week from Browse > Reading Schedule, by its row's VoiceOver label ("Nov 9–15, Daniel 1–7").
     func openWeekFromSchedule(_ rowLabel: String) {
         tab("Browse").tap()
+        if !navigationBars["Browse"].waitForExistence(timeout: 1) { tab("Browse").tap() }
         let schedule = scrollViews.buttons["Reading Schedule"]
         XCTAssertTrue(schedule.waitForExistence(timeout: 5))
+        for _ in 1...3 where !schedule.isHittable { swipeUp() }
         schedule.tap()
         XCTAssertTrue(navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
 
         // The list opens on this week, so swipe until the row is loaded and on screen.
         let row = buttons[rowLabel]
-        for _ in 1...10 where !(row.exists && row.isHittable) {
+        for _ in 1...14 where !(row.exists && row.isHittable) {
             swipeUp()
         }
         row.tap()

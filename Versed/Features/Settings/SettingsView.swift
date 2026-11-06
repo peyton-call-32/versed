@@ -11,7 +11,6 @@ struct SettingsView: View {
     @State private var showsIntro = false
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
-    @Environment(\.dynamicTypeSize) private var typeSize
 
     private let scheduler = DailyReminderScheduler()
 
@@ -55,28 +54,9 @@ struct SettingsView: View {
         }
     }
 
-    /// Match Phone, Light, or Dark. The choice is a solid navy block.
+    /// Match Phone, Light, or Dark.
     private var appearancePicker: some View {
-        // Stacked at the largest text sizes, so "Match Phone" never breaks in the middle.
-        let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 4)) : AnyLayout(HStackLayout(spacing: 4))
-        return layout {
-            ForEach(Appearance.allCases) { option in
-                let isSelected = appearance == option
-                Button {
-                    appearance = option
-                } label: {
-                    Text(option.label)
-                        .font(.versedDetail)
-                        .foregroundStyle(isSelected ? Color("ProminentButtonLabel") : .brand)
-                        .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(isSelected ? Color("ProminentButton") : .clear, in: Hardcover.corner)
-                        .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-                .accessibilityAddTraits(isSelected ? .isSelected : [])
-            }
-        }
-        .padding(.vertical, 6)
+        BlockPicker(options: Appearance.allCases, selection: $appearance) { $0.label }
     }
 
     private var reminderSection: some View {

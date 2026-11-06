@@ -1,7 +1,7 @@
 import SwiftData
 import SwiftUI
 
-/// The words at the top right of This Week: a flame and how many days in a row the reader has
+/// The words at the top right of Today: a flame and how many days in a row the reader has
 /// read. It opens the streak calendar, so it stays visible even with no streak going.
 struct StreakBadge: View {
     @Query private var readingDays: [ReadingDay]

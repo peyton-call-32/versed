@@ -3,10 +3,19 @@ import SwiftUI
 /// The books in one volume.
 struct BookListView: View {
     let volume: Volume
+    /// Starts a plan for the whole volume, or opens the one already going.
+    let startPlan: () -> Void
 
     var body: some View {
         ScrollView {
-            Ledger {
+            VStack(spacing: 22) {
+                Ledger {
+                    Button(action: startPlan) {
+                        LedgerRowLabel(title: "Make a Plan for All \(volume.books.count) Books")
+                    }
+                    .buttonStyle(.ledgerRow)
+                }
+                Ledger {
                 ForEach(volume.books) { book in
                     if book.id != volume.books.first?.id {
                         LedgerRule()
@@ -15,6 +24,7 @@ struct BookListView: View {
                         LedgerRowLabel(title: book.name, detail: "\(book.chapterCount)", symbol: nil, hasLeader: true)
                     }
                     .buttonStyle(.ledgerRow)
+                }
                 }
             }
             .versedPage()

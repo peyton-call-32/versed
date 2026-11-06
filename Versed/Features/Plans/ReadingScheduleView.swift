@@ -2,11 +2,10 @@ import SwiftUI
 
 /// Every week in the schedule, with its dates and chapters, grouped by year's course.
 /// The current week is a solid navy band, and the list opens scrolled to it.
-/// Tapping a week opens its reading on the This Week tab.
+/// Tapping a week opens its reading.
 struct ReadingScheduleView: View {
     let schedule: ReadingSchedule
-    /// Shows a week on the This Week tab: `nil` for this week, or any week from the schedule.
-    let openWeek: (ReadingWeek.ID?) -> Void
+    let openWeek: (ReadingWeek.ID) -> Void
 
     private var thisWeekID: ReadingWeek.ID? { schedule.currentWeek()?.id }
 
@@ -32,8 +31,7 @@ struct ReadingScheduleView: View {
                                     LedgerRule()
                                 }
                                 WeekRow(week: week, isThisWeek: week.id == thisWeekID) {
-                                    // This week opens as "this week", so it keeps following the calendar.
-                                    openWeek(week.id == thisWeekID ? nil : week.id)
+                                    openWeek(week.id)
                                 }
                                 .id(week.id)
                             }

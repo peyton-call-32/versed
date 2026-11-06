@@ -33,8 +33,8 @@ struct IntroView: View {
         ),
         Page(
             symbol: "calendar",
-            title: "This Week's Reading, Ready",
-            message: "Versed opens to this week's reading. Tap Chapters at the top, or open Browse, to pick another week."
+            title: "Read at Your Own Pace",
+            message: "Pick a book or the weekly schedule and how long to take. Versed breaks it into days or weeks, and you can follow more than one."
         ),
     ]
 

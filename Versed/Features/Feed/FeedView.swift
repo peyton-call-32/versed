@@ -10,6 +10,8 @@ struct FeedView: View {
     let navigation: FeedNavigation
     /// Whether going back to the first page lays it over the feed, so swiping up continues reading.
     private let usesCover: Bool
+    /// What the closing card offers besides the lesson link.
+    private let closingActions: ReadingClosingCard.Actions
 
     @Environment(\.modelContext) private var modelContext
     @Environment(ReadingChrome.self) private var chrome
@@ -40,12 +42,14 @@ struct FeedView: View {
         startingAt itemID: FeedItem.ID? = nil,
         showsFirstPageOnResume: Bool = false,
         navigation: FeedNavigation,
+        closingActions: ReadingClosingCard.Actions = .init(),
         onPageChange: @escaping (FeedItem.ID) -> Void = { _ in }
     ) {
         self.items = items
         self.onPageChange = onPageChange
         self.navigation = navigation
         usesCover = showsFirstPageOnResume
+        self.closingActions = closingActions
         let start = items.contains { $0.id == itemID } ? itemID : nil
         _currentItemID = State(initialValue: start)
         _showsCover = State(initialValue: showsFirstPageOnResume && start != nil && start != items.first?.id)
@@ -226,10 +230,10 @@ struct FeedView: View {
     ) -> some View {
         let isCurrent = (currentItemID ?? items.first?.id) == item.id && !showsCover
         switch item {
-        case .weekIntro(let week):
-            WeekIntroCard(week: week, isResuming: isResuming, onSelectSection: onSelectSection)
-        case .weekEnd(let week):
-            WeekEndCard(week: week, isCurrent: isCurrent)
+        case .opening(let reading):
+            ReadingOpeningCard(reading: reading, isResuming: isResuming, onSelectSection: onSelectSection)
+        case .closing(let reading):
+            ReadingClosingCard(reading: reading, isCurrent: isCurrent, actions: closingActions)
         case .chapterTitle(let title):
             ChapterTitleCard(title: title, isCurrent: isCurrent, showsSwipeHint: chrome.hidesControls, onTap: chrome.toggleControls)
         case .verse(let verse):

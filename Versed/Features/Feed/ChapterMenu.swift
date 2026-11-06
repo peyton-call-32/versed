@@ -1,21 +1,29 @@
 import SwiftUI
 
 /// The words at the top of a feed. They say where the reader is, and open a sheet for moving
-/// to another chapter, back to the start of the week, or to another week.
+/// to another chapter, back to the start of the reading, or to another week.
 struct ChapterMenu: View {
-    /// What the sheet offers in a week's feed, which Browse's feed doesn't have.
-    struct WeekOptions {
+    /// What the sheet offers in a reading with opening and closing cards, which a whole book's feed doesn't have.
+    struct Options {
+        /// What VoiceOver says for the menu on the opening and closing cards, such as "Week of Nov 2–8".
+        let spokenPlace: String
+        /// "Back to Week's Start" or "Back to Reading's Start".
+        var backToStartTitle = "Back to Week's Start"
+        /// The weekly schedule and what to do with a week picked from it, if "Other Weeks" should show.
+        var otherWeeks: OtherWeeks? = nil
+        /// Opens the plan's details, if this reading belongs to a plan.
+        var planDetails: (() -> Void)? = nil
+    }
+
+    struct OtherWeeks {
         let schedule: ReadingSchedule
-        /// The week's dates, shown in VoiceOver on pages outside any chapter.
-        let dates: String
-        /// Shows a week on the This Week tab: `nil` for this week, or any week from the schedule.
-        let openWeek: (ReadingWeek.ID?) -> Void
+        let open: (ReadingWeek.ID) -> Void
     }
 
     let library: ScriptureLibrary
     let items: [FeedItem]
     let navigation: FeedNavigation
-    var weekOptions: WeekOptions? = nil
+    var options: Options? = nil
     /// Whether the menu sits on a navy chapter opening, so it needs cream type.
     var isOnCover = false
 
@@ -53,16 +61,16 @@ struct ChapterMenu: View {
             .animation(.easeInOut(duration: 0.2), value: reference)
         }
         .buttonStyle(ChapterMenuButtonStyle())
-        .accessibilityLabel(reference ?? "Week of \(weekOptions?.dates ?? "")")
+        .accessibilityLabel(reference ?? options?.spokenPlace ?? "Chapters")
         .accessibilityHint("Moves to another chapter.")
         .accessibilityIdentifier("Chapter menu")
         .sheet(isPresented: $showsSheet) {
             ChapterMenuSheet(
                 groups: library.chapterGroups(in: items),
                 currentChapter: currentChapter,
-                showsBackToStart: weekOptions != nil && navigation.visibleItemID != items.first?.id,
+                showsBackToStart: options != nil && navigation.visibleItemID != items.first?.id,
                 navigation: navigation,
-                weekOptions: weekOptions
+                options: options
             )
             .versedSheet()
         }
@@ -81,7 +89,7 @@ private struct ChapterMenuSheet: View {
     let currentChapter: ChapterID?
     let showsBackToStart: Bool
     let navigation: FeedNavigation
-    let weekOptions: ChapterMenu.WeekOptions?
+    let options: ChapterMenu.Options?
 
     @Environment(\.dismiss) private var dismiss
     var body: some View {
@@ -95,7 +103,7 @@ private struct ChapterMenuSheet: View {
                                     navigation.goToStart()
                                     dismiss()
                                 } label: {
-                                    LedgerRowLabel(title: "Back to Week's Start", symbol: "arrow.up")
+                                    LedgerRowLabel(title: options?.backToStartTitle ?? "Back to Start", symbol: "arrow.up")
                                 }
                                 .buttonStyle(.ledgerRow)
                             }
@@ -107,27 +115,17 @@ private struct ChapterMenuSheet: View {
                                 chapterGrid(for: group)
                             }
                         }
-                        if let weekOptions {
-                            Ledger {
-                                NavigationLink {
-                                    ReadingScheduleView(schedule: weekOptions.schedule) { weekID in
-                                        weekOptions.openWeek(weekID)
-                                        dismiss()
-                                    }
-                                } label: {
-                                    LedgerRowLabel(title: "Other Weeks")
-                                }
-                                .buttonStyle(.ledgerRow)
-                            }
+                        if options?.otherWeeks != nil || options?.planDetails != nil {
+                            moreOptions
                         }
                     }
                     .versedPage()
                 }
                 .versedScreen()
                 .onAppear {
-                    // A long book opens at the current chapter. A week's few chapters stay
+                    // A long book opens at the current chapter. A reading's few chapters stay
                     // at the top, so "Back to Week's Start" doesn't slide under the title bar.
-                    if weekOptions == nil, let currentChapter {
+                    if options == nil, let currentChapter {
                         proxy.scrollTo(currentChapter, anchor: .center)
                     }
                 }
@@ -136,6 +134,32 @@ private struct ChapterMenuSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 DoneToolbarItem { dismiss() }
+            }
+        }
+    }
+
+    private var moreOptions: some View {
+        Ledger {
+            if let otherWeeks = options?.otherWeeks {
+                NavigationLink {
+                    ReadingScheduleView(schedule: otherWeeks.schedule) { weekID in
+                        dismiss()
+                        otherWeeks.open(weekID)
+                    }
+                } label: {
+                    LedgerRowLabel(title: "Other Weeks")
+                }
+                .buttonStyle(.ledgerRow)
+            }
+            if let planDetails = options?.planDetails {
+                if options?.otherWeeks != nil { LedgerRule() }
+                Button {
+                    dismiss()
+                    planDetails()
+                } label: {
+                    LedgerRowLabel(title: "Plan Details")
+                }
+                .buttonStyle(.ledgerRow)
             }
         }
     }

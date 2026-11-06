@@ -19,11 +19,12 @@ struct PlainToolbarItem<Content: View>: ToolbarContent {
 
 /// "Done", at the top right of every sheet.
 struct DoneToolbarItem: ToolbarContent {
+    var title = "Done"
     let action: () -> Void
 
     var body: some ToolbarContent {
         PlainToolbarItem(placement: .topBarTrailing) {
-            Button("Done", action: action)
+            Button(title, action: action)
                 .buttonStyle(.plainWord)
                 .padding(.trailing, Hardcover.margin - 16)
         }

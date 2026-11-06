@@ -2,7 +2,7 @@ import SwiftUI
 
 /// The app's three main screens.
 enum AppTab: String, CaseIterable, Identifiable {
-    case thisWeek = "This Week"
+    case today = "Today"
     case browse = "Browse"
     case saved = "Saved"
 
@@ -11,7 +11,7 @@ enum AppTab: String, CaseIterable, Identifiable {
     /// The outline icon, which fills in while the tab is selected.
     var symbol: String {
         switch self {
-        case .thisWeek: "calendar"
+        case .today: "calendar"
         case .browse: "book"
         case .saved: "heart"
         }
@@ -101,7 +101,7 @@ struct VersedTabBar: View {
 }
 
 #Preview {
-    @Previewable @State var selection = AppTab.thisWeek
+    @Previewable @State var selection = AppTab.today
     VersedTabBar(selection: $selection)
         .background(Color.appBackground)
 }

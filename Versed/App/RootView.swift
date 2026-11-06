@@ -5,16 +5,15 @@ struct RootView: View {
     @State private var content: Content?
     @AppStorage(Appearance.storageKey) private var appearance: Appearance = .matchPhone
     @AppStorage(IntroView.hasSeenKey) private var hasSeenIntro = false
-    @State private var selectedTab = AppTab.thisWeek
-    /// The week shown on the This Week tab, or `nil` for this week.
-    @State private var selectedWeekID: ReadingWeek.ID?
-    @State private var weekNavigation = FeedNavigation()
+    @State private var selectedTab = AppTab.today
+    @State private var todayPath: [TodayView.Route] = []
     @State private var browsePath: [BrowseView.Route] = []
     @State private var savedPath: [VerseID] = []
     @State private var chrome = ReadingChrome()
     /// The phone's own edges. Hiding the status bar can shrink them on some iPhones, so this keeps the largest.
     @State private var screenInsets = ScreenInsets(top: 0, bottom: 0)
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.modelContext) private var modelContext
 
     private struct Content {
         let library: ScriptureLibrary
@@ -26,16 +25,16 @@ struct RootView: View {
         Binding { content != nil && !hasSeenIntro } set: { hasSeenIntro = !$0 }
     }
 
-    /// Shows a week's reading on the This Week tab: `nil` for this week, or any week from the schedule.
-    private func openWeek(_ weekID: ReadingWeek.ID?) {
-        selectedWeekID = weekID
-        selectedTab = .thisWeek
+    /// Goes to Today's list of plans.
+    private func showToday() {
+        todayPath = []
+        selectedTab = .today
     }
 
     /// Tapping the tab that's already open goes back to its start.
     private func goToStart(of tab: AppTab) {
         switch tab {
-        case .thisWeek: weekNavigation.goToStart()
+        case .today: todayPath = []
         case .browse: browsePath = []
         case .saved: savedPath = []
         }
@@ -46,11 +45,11 @@ struct RootView: View {
             if let content {
                 // iOS's tab container keeps each screen's place; our own bar replaces its bar.
                 TabView(selection: $selectedTab) {
-                    tab(.thisWeek) {
-                        WeeklyReadingView(library: content.library, schedule: content.schedule, navigation: weekNavigation, selectedWeekID: $selectedWeekID)
+                    tab(.today) {
+                        TodayView(library: content.library, schedule: content.schedule, openBrowse: { selectedTab = .browse }, path: $todayPath)
                     }
                     tab(.browse) {
-                        BrowseView(library: content.library, schedule: content.schedule, openWeek: openWeek, path: $browsePath)
+                        BrowseView(library: content.library, schedule: content.schedule, showToday: { _ in showToday() }, path: $browsePath)
                     }
                     tab(.saved) {
                         SavedVersesView(library: content.library, path: $savedPath)
@@ -87,12 +86,31 @@ struct RootView: View {
         }
         .windowAppearance(appearance)
         .task {
-            content = await Task.detached {
+            let loaded: Content? = await Task.detached {
                 guard let library = try? ScriptureLibrary.loadBundled(),
                       let schedule = try? ReadingSchedule.loadBundled()
                 else { return nil }
                 return Content(library: library, schedule: schedule)
             }.value
+            if let loaded {
+                prepareSavedPlans(engine: PlanEngine(library: loaded.library, schedule: loaded.schedule))
+            }
+            content = loaded
+        }
+    }
+
+    /// Carries earlier weekly reading into a plan, and sets up any plans a UI test asks for.
+    private func prepareSavedPlans(engine: PlanEngine) {
+        let store = ReadingPlanStore(context: modelContext, engine: engine)
+        store.adoptEarlierWeeklyReading()
+        guard VersedApp.isUITesting else { return }
+        let arguments = ProcessInfo.processInfo.arguments
+        if arguments.contains("-seed-weekly-plan") {
+            store.start(source: .weeklySchedule(course: nil), pace: .week, finish: nil)
+        }
+        if arguments.contains("-seed-book-plan") {
+            let finish = Calendar.current.date(byAdding: .day, value: 56, to: VersedApp.today)
+            store.start(source: .volume("bofm"), pace: .day, finish: finish)
         }
     }
 

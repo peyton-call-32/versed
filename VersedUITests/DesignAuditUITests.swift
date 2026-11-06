@@ -25,7 +25,7 @@ final class DesignAuditUITests: XCTestCase {
         if let size = ProcessInfo.processInfo.environment["VERSED_AUDIT_TEXT_SIZE"] {
             textSize = ["-UIPreferredContentSizeCategoryName", size]
         }
-        app.launchArguments = ["-ui-testing", "-today", "2026-10-28", "-appearance", appearance] + textSize + extra
+        app.launchArguments = ["-ui-testing", "-today", "2026-10-28", "-appearance", appearance, "-seed-weekly-plan", "-seed-book-plan"] + textSize + extra
         app.launch()
     }
 
@@ -52,6 +52,18 @@ final class DesignAuditUITests: XCTestCase {
 
     func test2Week() {
         launch()
+        shoot("09-today")
+        app.buttons["Plan details, Book of Mormon"].tap()
+        shoot("09-plan-details")
+        app.terminate()
+
+        launch()
+        app.buttons["Plan Book of Mormon"].tap()
+        shoot("09-plan-open")
+        app.terminate()
+
+        launch()
+        app.openWeeklyPlan()
         shoot("10-week-open")
         app.swipeUp()
         shoot("11-chapter-opening")
@@ -67,6 +79,7 @@ final class DesignAuditUITests: XCTestCase {
         shoot("16-go-to")
         app.buttons["Done"].tap()
         sleep(1)
+        app.goToToday()
         app.buttons["Streak"].tap()
         shoot("18-streak")
         app.buttons["Done"].tap()
@@ -79,6 +92,26 @@ final class DesignAuditUITests: XCTestCase {
         launch()
         app.tab("Browse").tap()
         shoot("20-browse")
+        app.buttons["weekly-reading"].tap()
+        shoot("20-setup-weekly")
+        app.buttons["Start from the Beginning"].tap()
+        shoot("20-setup-beginning")
+        app.buttons["Cancel"].tap()
+        sleep(1)
+        app.buttons["Make Your Own Plan"].tap()
+        shoot("20-picker")
+        app.buttons["Old Testament"].tap()
+        shoot("20-picker-books")
+        app.buttons["Genesis"].tap()
+        shoot("20-setup-book")
+        app.buttons["By a Date"].tap()
+        shoot("20-setup-book-date")
+        app.buttons["Cancel"].tap()
+        sleep(1)
+        app.showVolumeCover("Book of Mormon")
+        shoot("20-browse-scriptures")
+        app.swipeDown()
+        sleep(1)
         app.scrollViews.buttons["Reading Schedule"].tap()
         shoot("21-schedule")
         app.terminate()
@@ -125,6 +158,7 @@ final class DesignAuditUITests: XCTestCase {
     /// Writes when each step starts, so each one can be found in the recording.
     func test6Motion() {
         launch()
+        app.openWeeklyPlan()
         var log = ""
         func step(_ name: String, _ action: () -> Void) {
             sleep(2)
@@ -146,7 +180,7 @@ final class DesignAuditUITests: XCTestCase {
         step("cover-open") { app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)).tap() }
         step("cover-back") { app.navigationBars.buttons.firstMatch.tap() }
         step("tab-saved") { app.tab("Saved").tap() }
-        step("tab-week") { app.tab("This Week").tap() }
+        step("tab-today") { app.tab("Today").tap() }
         step("settings-tab") { app.tab("Browse").tap() }
         step("settings-open") { app.buttons["Settings"].tap() }
         step("settings-close") { app.buttons["Done"].tap() }

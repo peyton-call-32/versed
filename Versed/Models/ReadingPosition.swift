@@ -23,11 +23,14 @@ enum ReadingFeed: Hashable, Sendable {
     case week(ReadingWeek.ID)
     /// Reading from the Browse or Saved tab.
     case browse
+    /// One study plan, by its `ReadingPlan.id`.
+    case plan(String)
 
     var key: String {
         switch self {
         case .week(let id): "week:\(id)"
         case .browse: "browse"
+        case .plan(let id): "plan:\(id)"
         }
     }
 }

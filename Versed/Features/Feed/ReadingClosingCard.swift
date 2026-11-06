@@ -1,13 +1,24 @@
 import SwiftUI
 
-/// The last page of a week's reading, after the final verse: a quiet note that the reading
-/// is done, and a link to the week's official lesson for anyone who wants to go further.
-struct WeekEndCard: View {
-    let week: ReadingWeek
+/// The last page of a reading, after the final verse: a quiet note that the reading is done,
+/// a link to the week's official lesson when there is one, and the way onward.
+struct ReadingClosingCard: View {
+    /// The ways onward from a plan's reading. A week opened from the schedule has none.
+    struct Actions {
+        var backToToday: (() -> Void)? = nil
+        var readAhead: (() -> Void)? = nil
+    }
+
+    let reading: ReadingPortion
     /// Whether this page is the one on screen. Reaching it draws the check mark.
     var isCurrent = true
+    var actions = Actions()
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var spokenTitle: String {
+        reading.closingTitle.replacingOccurrences(of: "’", with: "'")
+    }
 
     var body: some View {
         ShrinkToFit {
@@ -15,37 +26,54 @@ struct WeekEndCard: View {
                 VStack(spacing: 18) {
                     FinishedMark(isDrawn: isCurrent)
 
-                    Text("End of the Week’s Reading")
+                    Text(reading.closingTitle)
                         .font(.versedTitle(size: 42, relativeTo: .title))
                         .foregroundStyle(.brand)
 
                     Ornament()
 
-                    Text(week.displayLabel)
+                    Text(reading.displayLabel)
                         .font(.versedDetail)
                         .foregroundStyle(.secondaryText)
                 }
                 // VoiceOver reads "End of the Week's Reading, Daniel 1–7" as one heading.
                 .accessibilityElement(children: .ignore)
-                .accessibilityLabel("End of the Week's Reading, \(week.label)")
+                .accessibilityLabel("\(spokenTitle), \(reading.label)")
                 .accessibilityAddTraits(.isHeader)
 
-                // Only a link: the lesson itself opens in Gospel Library if it's installed
-                // (iOS hands churchofjesuschrist.org links to it), otherwise in Safari.
-                Link(destination: week.lessonURL) {
-                    HStack(spacing: 8) {
-                        Text("Open This Week’s Lesson")
-                        Image(systemName: "arrow.up.right")
-                            .imageScale(.small)
-                            .accessibilityHidden(true)
+                VStack(spacing: 10) {
+                    // Only a link: the lesson itself opens in Gospel Library if it's installed
+                    // (iOS hands churchofjesuschrist.org links to it), otherwise in Safari.
+                    if let lessonURL = reading.lessonURL {
+                        Link(destination: lessonURL) {
+                            HStack(spacing: 8) {
+                                Text("Open This Week’s Lesson")
+                                Image(systemName: "arrow.up.right")
+                                    .imageScale(.small)
+                                    .accessibilityHidden(true)
+                            }
+                        }
+                        .buttonStyle(.primary)
+                        .accessibilityLabel("Open This Week's Lesson")
+                        .accessibilityIdentifier("Open This Week's Lesson")
+                        .accessibilityHint("Opens the lesson in Gospel Library or Safari.")
+                    }
+                    if let readAhead = actions.readAhead {
+                        Button("Read Ahead", action: readAhead)
+                            .buttonStyle(.secondary)
+                    }
+                    if let backToToday = actions.backToToday {
+                        if reading.lessonURL == nil && actions.readAhead == nil {
+                            Button("Back to Today", action: backToToday)
+                                .buttonStyle(.primary)
+                        } else {
+                            Button("Back to Today", action: backToToday)
+                                .buttonStyle(.secondary)
+                        }
                     }
                 }
-                .buttonStyle(.primary)
                 .padding(.top, 14)
                 .dynamicTypeSize(...DynamicTypeSize.accessibility1)
-                .accessibilityLabel("Open This Week's Lesson")
-                .accessibilityIdentifier("Open This Week's Lesson")
-                .accessibilityHint("Opens the lesson in Gospel Library or Safari.")
             }
         }
         .multilineTextAlignment(.center)
@@ -58,7 +86,7 @@ struct WeekEndCard: View {
     }
 }
 
-/// A thin circle and check mark that draw themselves when the reader finishes the week.
+/// A thin circle and check mark that draw themselves when the reader finishes the reading.
 private struct FinishedMark: View {
     let isDrawn: Bool
 
@@ -95,5 +123,5 @@ private struct CheckMark: Shape {
 
 #Preview {
     let schedule = try! ReadingSchedule.loadBundled()
-    WeekEndCard(week: schedule.weeks[1])
+    ReadingClosingCard(reading: ReadingPortion(week: schedule.weeks[1]))
 }

@@ -6,10 +6,10 @@ struct AboutSection: View {
     static let privacyPolicyURL = URL(string: "https://peyton-call-32.github.io/versed/privacy/")!
     static let contactEmail = "peytoncall32@icloud.com"
 
-    /// A plain description of the Come, Follow Me schedule, never a name for a tab, button, screen,
-    /// or feature. Also shown on the last page of the first-time intro. The one other place the app
-    /// uses the name is the cover on Browse (`WeeklyCover`), which carries its own short notice.
-    static let independenceNotice = "This Week follows the Come, Follow Me reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."
+    /// A plain description of the Come, Follow Me plan. Also shown on the last page of the first-time
+    /// intro. The other places the app uses the name are the cover on Browse (`WeeklyCover`) and the
+    /// plan's own title, which come with the cover's short notice.
+    static let independenceNotice = "The Come, Follow Me plan follows the Church’s published reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."
 
     /// "1.0 (1)": the version people see in the App Store, then the build number.
     static func versionText(bundle: Bundle = .main) -> String {

@@ -3,12 +3,13 @@ import XCTest
 /// Walks through the whole app the way a reader would, and captures the README screenshots on the way.
 ///
 /// The app launches with `-ui-testing`, so it starts with nothing saved and never touches real data,
-/// and with `-today` set to a fixed date, so "this week" is always the week of Oct 26, 2026.
+/// with `-today` set to a fixed date, so "this week" is always the week of Oct 26, 2026, and with
+/// `-seed-weekly-plan`, so a weekly plan is waiting on Today.
 /// To save the screenshots as files, run the tests with `TEST_RUNNER_SCREENSHOT_DIR` set to a folder.
 @MainActor
 final class VersedUITests: XCTestCase {
     let app = XCUIApplication()
-    static let launchArguments = ["-ui-testing", "-today", "2026-10-28"]
+    static let launchArguments = ["-ui-testing", "-today", "2026-10-28", "-seed-weekly-plan"]
 
     override func setUp() async throws {
         continueAfterFailure = false
@@ -17,8 +18,8 @@ final class VersedUITests: XCTestCase {
     }
 
     func testReadingSavingBrowsingAndResuming() {
-        // This Week opens on the week's intro card, which keeps the lesson link for the end.
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        // Today shows the plan, and it opens on the week's card, which keeps the lesson link for the end.
+        openPlan()
         XCTAssertFalse(onScreen(app.links.matching(identifier: "Open This Week's Lesson")).isHittable)
         attachScreenshot(named: "week-intro")
 
@@ -29,11 +30,12 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Save verse"].waitForExistence(timeout: 5))
         onScreen(app.buttons.matching(identifier: "Save verse")).tap()
         XCTAssertTrue(app.buttons["Remove from saved"].waitForExistence(timeout: 5))
-
-        // Reading a verse starts the streak. It waits for a tap, along with the tab bar.
-        app.revealControls()
-        XCTAssertTrue(app.buttons["1-day reading streak"].waitForExistence(timeout: 5))
         saveScreenshot(named: "1-this-week")
+
+        // Reading a verse starts the streak, shown on Today.
+        app.revealControls()
+        app.goToToday()
+        XCTAssertTrue(app.buttons["1-day reading streak"].waitForExistence(timeout: 5))
 
         // Browse to Alma 32 and read to verse 2.
         app.tab("Browse").tap()
@@ -46,9 +48,9 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Alma 32:2"].waitForExistence(timeout: 5))
 
         // Back on the Browse list, Continue Reading points to where we stopped.
-        while app.navigationBars.buttons.firstMatch.exists, !app.navigationBars["Browse"].exists {
-            app.navigationBars.buttons.firstMatch.tap()
-        }
+        app.revealControls()
+        app.tab("Browse").tap()
+        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 5))
         let continueReading = app.buttons["Continue Reading"]
         XCTAssertTrue(continueReading.waitForExistence(timeout: 5))
         XCTAssertEqual(continueReading.value as? String, "Alma 32:2")
@@ -68,10 +70,12 @@ final class VersedUITests: XCTestCase {
 
     /// Captures the App Store screenshots. Run on the largest iPhone with `TEST_RUNNER_SCREENSHOT_DIR` set.
     func testCapturingAppStoreScreenshots() {
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
-        saveScreenshot(named: "2-this-week")
+        relaunch(extraArguments: ["-seed-book-plan"])
+        XCTAssertTrue(app.buttons["Plan Book of Mormon"].waitForExistence(timeout: 10))
+        saveScreenshot(named: "2-today")
 
         // Jeremiah 31:3, then save it and the next verse so the Saved tab has something to show.
+        openPlan()
         app.swipeUp()
         app.swipeUp()
         XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
@@ -87,10 +91,7 @@ final class VersedUITests: XCTestCase {
         onScreen(app.buttons.matching(identifier: "Save verse")).tap()
 
         app.tab("Browse").tap()
-        XCTAssertTrue(app.buttons["Reading Schedule"].waitForExistence(timeout: 5))
-        // One swipe over, so a book's edge shows on each side of the cover in front.
-        let covers = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35))
-        covers.press(forDuration: 0.05, thenDragTo: covers.withOffset(CGVector(dx: -260, dy: 0)))
+        XCTAssertTrue(app.buttons["weekly-reading"].waitForExistence(timeout: 5))
         sleep(2)
         saveScreenshot(named: "3-browse")
 
@@ -99,23 +100,152 @@ final class VersedUITests: XCTestCase {
         saveScreenshot(named: "4-saved")
     }
 
-    func testBrowseOpensThisWeekFromItsCover() {
-        // With nothing read yet, the weekly cover is in front, ahead of the books.
+    func testStartingTheWeeklyPlanFromItsCover() {
+        relaunch(seeded: false)
+        XCTAssertTrue(app.staticTexts["What would you like to read?"].waitForExistence(timeout: 10))
+
+        // The cover sits at the top of Browse, above the books.
         app.tab("Browse").tap()
         let cover = app.buttons["weekly-reading"]
         XCTAssertTrue(cover.waitForExistence(timeout: 5))
-        XCTAssertEqual(cover.frame.midX, app.frame.midX, accuracy: 2)
-        XCTAssertLessThan(cover.frame.maxX, app.buttons["Old Testament"].frame.minX, "It comes before the books")
-        XCTAssertEqual(cover.label, "Come, Follow Me, Weekly Reading Schedule")
-        XCTAssertTrue(app.scrollViews.buttons["Reading Schedule"].isHittable, "Stays in view below the covers")
-        XCTAssertFalse(app.scrollViews.buttons["This Week"].exists, "The old row is gone")
+        XCTAssertEqual(cover.label, "Come, Follow Me—For Home and Church: Old Testament 2026")
+        XCTAssertLessThan(cover.frame.maxY, app.buttons["Book of Mormon"].frame.minY)
         attachScreenshot(named: "browse-weekly-cover")
 
-        // It opens this week's reading on the This Week tab.
+        // It joins this week by default, reading by week, and lands on Today.
         cover.tap()
-        XCTAssertTrue(app.tab("This Week").isSelected)
-        XCTAssertTrue(weekHeading(containing: "Jeremiah 31–33").waitForExistence(timeout: 5))
-        XCTAssertTrue(weekHeading(containing: "This Week").exists)
+        XCTAssertTrue(app.buttons["Join This Week"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Join This Week"].isSelected)
+        XCTAssertTrue(app.buttons["Week"].isSelected)
+        attachScreenshot(named: "plan-setup-weekly")
+        app.buttons["Start Plan"].tap()
+        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 5))
+        let row = app.buttons["Plan Come, Follow Me"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertTrue((row.value as? String ?? "").contains("Jeremiah 31–33"))
+
+        row.tap()
+        XCTAssertTrue(weekHeading(containing: "This Week").waitForExistence(timeout: 5))
+    }
+
+    func testStartingTheScheduleFromTheBeginning() {
+        relaunch(seeded: false)
+        app.tab("Browse").tap()
+        app.buttons["weekly-reading"].tap()
+        app.buttons["Start from the Beginning"].tap()
+
+        // Both years are offered, and it starts at week 1.
+        XCTAssertTrue(app.buttons["New Testament 2027"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Old Testament 2026"].isSelected)
+        attachScreenshot(named: "plan-setup-beginning")
+        app.buttons["Start Plan"].tap()
+
+        let row = app.buttons["Plan Come, Follow Me"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertTrue((row.value as? String ?? "").hasPrefix("Week 1 of 52, Introduction"), "Got \(row.value ?? "")")
+    }
+
+    func testMakingAPlanForABookAndFinishingIt() {
+        relaunch(seeded: false)
+        XCTAssertTrue(app.buttons["Choose Something Else"].waitForExistence(timeout: 10))
+        app.buttons["Choose Something Else"].tap()
+
+        // Pick a book from the picker. Obadiah is one short chapter.
+        app.buttons["Make Your Own Plan"].tap()
+        app.buttons["Old Testament"].tap()
+        let book = app.buttons["Obadiah"]
+        for _ in 1...5 where !(book.exists && book.isHittable) { app.swipeUp() }
+        book.tap()
+
+        // The preview follows the choices.
+        XCTAssertTrue(app.buttons["Start Plan"].waitForExistence(timeout: 5))
+        let preview = app.descendants(matching: .any).matching(identifier: "Plan preview").firstMatch
+        XCTAssertTrue(preview.label.contains("About 1 chapter a day"), "Got \(preview.label)")
+        app.buttons["Week"].tap()
+        XCTAssertTrue(preview.label.contains("About 1 chapter a week"), "Got \(preview.label)")
+        attachScreenshot(named: "plan-setup-book")
+        app.buttons["Day"].tap()
+        app.buttons["Start Plan"].tap()
+
+        // It waits on Today, and opens on its reading.
+        let row = app.buttons["Plan Obadiah"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertTrue((row.value as? String ?? "").hasPrefix("Day 1 of 30, Obadiah 1"), "Got \(row.value ?? "")")
+        row.tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 5))
+
+        // Opening card, chapter card, 21 verses, closing card.
+        for _ in 1...24 { app.swipeUp() }
+        let end = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "End of the Plan, Obadiah 1")).firstMatch
+        XCTAssertTrue(end.waitForExistence(timeout: 5))
+        attachScreenshot(named: "plan-finished")
+
+        onScreen(app.buttons.matching(identifier: "Back to Today")).tap()
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertTrue((row.value as? String ?? "").contains("You finished this plan"), "Got \(row.value ?? "")")
+    }
+
+    func testPlansSitTogetherOnToday() {
+        relaunch(extraArguments: ["-seed-book-plan"])
+        let weekly = app.buttons["Plan Come, Follow Me"]
+        let book = app.buttons["Plan Book of Mormon"]
+        XCTAssertTrue(weekly.waitForExistence(timeout: 10))
+        XCTAssertTrue(book.exists)
+        XCTAssertLessThan(weekly.frame.maxY, book.frame.minY + 1)
+        attachScreenshot(named: "today-two-plans")
+
+        // Each keeps its own place: reading one doesn't move the other.
+        book.tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 5))
+        for _ in 1...3 { app.swipeUp() }
+        XCTAssertTrue(app.staticTexts["1 Nephi 1:2"].waitForExistence(timeout: 5))
+        app.revealControls()
+        app.goToToday()
+        weekly.tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 5))
+        app.goToToday()
+        book.tap()
+        XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].waitForExistence(timeout: 5))
+        app.swipeUp()
+        XCTAssertTrue(app.staticTexts["1 Nephi 1:2"].waitForExistence(timeout: 5))
+    }
+
+    func testChangingAndRemovingAPlan() {
+        relaunch(extraArguments: ["-seed-book-plan"])
+        app.buttons["Plan details, Book of Mormon"].tap()
+        XCTAssertTrue(app.navigationBars["Book of Mormon"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Day"].isSelected)
+        attachScreenshot(named: "plan-details")
+
+        // Reading by week changes what Today says.
+        app.buttons["Week"].tap()
+        XCTAssertTrue(app.buttons["Week"].isSelected)
+        app.navigationBars.buttons.firstMatch.tap()
+        let row = app.buttons["Plan Book of Mormon"]
+        XCTAssertTrue(row.waitForExistence(timeout: 5))
+        XCTAssertTrue((row.value as? String ?? "").hasPrefix("Week 1 of"), "Got \(row.value ?? "")")
+
+        // Removing it leaves the other plan.
+        app.buttons["Plan details, Book of Mormon"].tap()
+        let remove = app.buttons["Remove Plan"]
+        for _ in 1...3 where !remove.isHittable { app.swipeUp() }
+        remove.tap()
+        app.sheets.buttons["Remove Plan"].firstMatch.tap()
+        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 5))
+        XCTAssertFalse(row.waitForExistence(timeout: 1))
+        XCTAssertTrue(app.buttons["Plan Come, Follow Me"].exists)
+    }
+
+    func testABookOffersAPlanWithoutRequiringOne() {
+        app.tab("Browse").tap()
+        app.openVolume("Book of Mormon")
+        XCTAssertTrue(app.buttons["Make a Plan for All 15 Books"].waitForExistence(timeout: 5))
+        app.buttons["Alma"].tap()
+        XCTAssertTrue(app.buttons["Make a Plan for This Book"].waitForExistence(timeout: 5))
+
+        // A chapter still opens right away, with no plan asked for.
+        app.buttons["Alma 32"].tap()
+        XCTAssertTrue(chapterHeading("Alma, Chapter 32").waitForExistence(timeout: 5))
     }
 
     func testOpeningAWeekFromTheReadingSchedule() {
@@ -131,22 +261,15 @@ final class VersedUITests: XCTestCase {
 
         // Tapping another week opens its chapters in the feed.
         app.buttons["Nov 9–15, Daniel 1–7"].tap()
-        XCTAssertTrue(app.tab("This Week").isSelected)
         XCTAssertTrue(weekHeading(containing: "Daniel 1–7").waitForExistence(timeout: 5))
         XCTAssertTrue(weekHeading(containing: "Week Of").exists)
         XCTAssertTrue(app.buttons["Week of Nov 9–15"].exists)
         app.swipeUp()
         XCTAssertTrue(chapterHeading("Daniel, Chapter 1").waitForExistence(timeout: 5))
-
-        // The weekly cover on Browse goes back to this week.
-        app.tab("Browse").tap()
-        app.navigationBars.buttons.firstMatch.tap()
-        app.openWeeklyCover()
-        XCTAssertTrue(app.buttons["Week of Oct 26 – Nov 1"].waitForExistence(timeout: 5))
     }
 
     func testChapterMenuMovesAroundTheWeek() {
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        openPlan()
         for _ in 1...4 { app.swipeUp() }
         XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].waitForExistence(timeout: 5))
 
@@ -178,11 +301,11 @@ final class VersedUITests: XCTestCase {
     }
 
     func testTappingTheOpenTabGoesBackToItsStart() {
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        openPlan()
         for _ in 1...4 { app.swipeUp() }
         XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].waitForExistence(timeout: 5))
-        app.tab("This Week").tap()
-        XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].waitForExistence(timeout: 5))
+        app.tab("Today").tap()
+        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 5))
 
         app.tab("Browse").tap()
         app.openVolume("Book of Mormon")
@@ -214,18 +337,17 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(chapterHeading("Psalms, Chapter 1").waitForExistence(timeout: 10))
     }
 
-    func testThisWeekPicksUpWhereTheReaderStopped() {
+    func testAPlanPicksUpWhereTheReaderStopped() {
         // Read to Jeremiah 31:3: past the opening card, the chapter title, and two verses.
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        openPlan()
         for _ in 1...4 { app.swipeUp() }
         XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].waitForExistence(timeout: 5))
 
-        // Leave for another week, then come back to this one.
+        // Leave for another week, then come back to the plan.
         app.openWeekFromSchedule("Nov 9–15, Daniel 1–7")
         XCTAssertTrue(weekHeading(containing: "Daniel 1–7").waitForExistence(timeout: 5))
-        app.tab("Browse").tap()
-        app.navigationBars.buttons.firstMatch.tap()
-        app.openWeeklyCover()
+        app.goToToday()
+        app.buttons["Plan Come, Follow Me"].tap()
 
         // It opens on the This Week card, with the saved verse hidden underneath.
         XCTAssertTrue(weekHeading(containing: "This Week").waitForExistence(timeout: 5))
@@ -241,7 +363,7 @@ final class VersedUITests: XCTestCase {
     }
 
     func testTappingASectionJumpsToIt() {
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        openPlan()
         app.buttons["Lamentations 3"].tap()
         XCTAssertTrue(app.descendants(matching: .any)["Lamentations, Chapter 3"].waitForExistence(timeout: 5))
 
@@ -251,14 +373,12 @@ final class VersedUITests: XCTestCase {
     }
 
     func testTappingASectionWorksWhenResuming() {
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        openPlan()
         for _ in 1...4 { app.swipeUp() }
         XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].waitForExistence(timeout: 5))
-        app.openWeekFromSchedule("Nov 9–15, Daniel 1–7")
-        XCTAssertTrue(weekHeading(containing: "Daniel 1–7").waitForExistence(timeout: 5))
-        app.tab("Browse").tap()
-        app.navigationBars.buttons.firstMatch.tap()
-        app.openWeeklyCover()
+        app.revealControls()
+        app.goToToday()
+        app.buttons["Plan Come, Follow Me"].tap()
         XCTAssertTrue(app.staticTexts["Swipe up to continue reading"].waitForExistence(timeout: 5))
 
         app.buttons["Jeremiah 36–39"].tap()
@@ -273,12 +393,10 @@ final class VersedUITests: XCTestCase {
         let end = app.descendants(matching: .any).matching(NSPredicate(format: "label == %@", "End of the Week's Reading, John 1")).firstMatch
         XCTAssertTrue(end.waitForExistence(timeout: 5))
 
-        // Go to this week, then reopen the finished week.
-        app.tab("Browse").tap()
+        // Reopen the finished week from the schedule.
         app.navigationBars.buttons.firstMatch.tap()
-        app.openWeeklyCover()
-        XCTAssertTrue(weekHeading(containing: "This Week").waitForExistence(timeout: 5))
-        app.openWeekFromSchedule(XCUIApplication.shortWeek.row)
+        XCTAssertTrue(app.navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
+        app.buttons[XCUIApplication.shortWeek.row].tap()
 
         // Swiping up from its opening card starts at the beginning again.
         XCTAssertTrue(weekHeading(containing: "John 1").waitForExistence(timeout: 5))
@@ -300,24 +418,24 @@ final class VersedUITests: XCTestCase {
         attachScreenshot(named: "week-end-with-lesson-link")
     }
 
-    func testThisWeekHeader() {
-        // The chapter menu in the middle, named for the week's dates; no count until the first verse is read.
-        XCTAssertTrue(app.buttons["Week of Oct 26 – Nov 1"].waitForExistence(timeout: 10))
+    func testTodayHeaderAndStreak() {
+        // The streak sits at the top right of Today, with no count until a verse is read.
+        XCTAssertTrue(app.buttons["Reading streak"].waitForExistence(timeout: 10))
+        XCTAssertFalse(app.buttons["1-day reading streak"].exists)
+
+        // The chapter menu sits in the middle while reading.
+        openPlan()
         let weekMenu = app.buttons["Chapter menu"]
         XCTAssertTrue(weekMenu.waitForExistence(timeout: 10))
-        XCTAssertTrue(app.buttons["Reading streak"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["1-day reading streak"].exists)
         XCTAssertEqual(weekMenu.frame.midX, app.frame.midX, accuracy: 1)
-
-        // Once the streak counts, a tap on the page shows it on the right, and nothing overlaps.
         for _ in 1...3 { app.swipeUp() }
         app.revealControls()
+        app.goToToday()
+
+        // Tapping the count opens the calendar, with today marked as read.
         let streak = app.buttons["1-day reading streak"]
         XCTAssertTrue(streak.waitForExistence(timeout: 5))
-        XCTAssertGreaterThan(streak.frame.minX, weekMenu.frame.maxX)
-        attachScreenshot(named: "this-week-header")
-
-        // Tapping it opens the calendar, with today marked as read.
+        attachScreenshot(named: "today-header")
         streak.tap()
         XCTAssertTrue(app.navigationBars["Your Streak"].waitForExistence(timeout: 5))
         let today = Date.now.formatted(.dateTime.month(.wide).day())
@@ -334,16 +452,17 @@ final class VersedUITests: XCTestCase {
     }
 
     func testSwipingFromTheOpeningCardReachesTheFirstVerse() {
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        openPlan()
         app.swipeUp()
         app.swipeUp()
         XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
         app.revealControls()
+        app.goToToday()
         XCTAssertTrue(app.buttons["1-day reading streak"].waitForExistence(timeout: 5))
     }
 
     func testControlsStepAsideWhileReading() {
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        openPlan()
         let tabBar = app.descendants(matching: .any).matching(identifier: "Tab bar").firstMatch
         XCTAssertTrue(tabBar.exists)
 
@@ -362,26 +481,21 @@ final class VersedUITests: XCTestCase {
     }
 
     func testBrowseCoversOpenOnTheLastBookRead() {
-        // With nothing read yet, the weekly cover is in front, with the first book beside it.
+        // With nothing read yet, the middle book is in front, with a book's edge on each side.
         app.tab("Browse").tap()
-        let weeklyCover = app.buttons["weekly-reading"]
-        XCTAssertTrue(weeklyCover.waitForExistence(timeout: 5))
-        XCTAssertEqual(weeklyCover.frame.midX, app.frame.midX, accuracy: 2)
+        let bookOfMormon = app.showVolumeCover("Book of Mormon")
+        XCTAssertEqual(bookOfMormon.frame.midX, app.frame.midX, accuracy: 2)
 
         // Tapping an edge brings that book forward without opening it.
         let edge = CGVector(dx: 0.03, dy: 0.5)
-        app.buttons["Old Testament"].coordinate(withNormalizedOffset: edge).tap()
-        let firstBook = app.buttons["Old Testament"]
-        let firstIsCentered = NSPredicate { _, _ in abs(firstBook.frame.midX - self.app.frame.midX) < 2 }
-        wait(for: [expectation(for: firstIsCentered, evaluatedWith: nil)], timeout: 5)
-        app.buttons["New Testament"].coordinate(withNormalizedOffset: edge).tap()
-        let newTestament = app.buttons["New Testament"]
-        let isCentered = NSPredicate { _, _ in abs(newTestament.frame.midX - self.app.frame.midX) < 2 }
+        let dc = app.buttons["Doctrine and Covenants"]
+        dc.coordinate(withNormalizedOffset: edge).tap()
+        let isCentered = NSPredicate { _, _ in abs(dc.frame.midX - self.app.frame.midX) < 2 }
         wait(for: [expectation(for: isCentered, evaluatedWith: nil)], timeout: 5)
         XCTAssertTrue(app.navigationBars["Browse"].exists)
 
-        // Reading the week's Jeremiah moves the covers to the Old Testament.
-        app.tab("This Week").tap()
+        // Reading the plan's Jeremiah moves the covers to the Old Testament.
+        app.openWeeklyPlan()
         XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 5))
         for _ in 1...2 { app.swipeUp() }
         XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
@@ -393,15 +507,14 @@ final class VersedUITests: XCTestCase {
     }
 
     func testBrowseMovesToTheBookReadBeforeItsFirstVisit() {
-        // Read on This Week before Browse has ever been on screen.
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        // Read a plan before Browse has ever been on screen.
+        openPlan()
         for _ in 1...2 { app.swipeUp() }
         XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
 
         // The Old Testament is in front, and a single tap opens it.
         app.tab("Browse").tap()
-        let oldTestament = app.buttons["Old Testament"]
-        XCTAssertTrue(oldTestament.waitForExistence(timeout: 5))
+        let oldTestament = app.showVolumeCover("Old Testament")
         let isCentered = NSPredicate { _, _ in abs(oldTestament.frame.midX - self.app.frame.midX) < 2 }
         wait(for: [expectation(for: isCentered, evaluatedWith: nil)], timeout: 5)
         attachScreenshot(named: "browse-first-visit")
@@ -410,22 +523,19 @@ final class VersedUITests: XCTestCase {
     }
 
     func testBrowseCoverAndDotsAgreeAfterReadingElsewhere() {
-        // Browse has been on screen, then the reader goes off to read on This Week.
-        app.openSettings()
-        app.buttons["Light"].tap()
-        app.buttons["Done"].tap()
+        // Browse has been on screen, then the reader goes off to read a plan.
+        app.tab("Browse").tap()
         XCTAssertTrue(app.buttons["weekly-reading"].waitForExistence(timeout: 5))
-        app.tab("This Week").tap()
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 5))
+        openPlan()
         for _ in 1...2 { app.swipeUp() }
         XCTAssertTrue(app.staticTexts["Jeremiah 31:1"].waitForExistence(timeout: 5))
 
         // Coming back, the book they were reading is in front, and one tap opens it.
         app.tab("Browse").tap()
         attachScreenshot(named: "browse-back-at-once")
+        let oldTestament = app.showVolumeCover("Old Testament")
         sleep(2)
         attachScreenshot(named: "browse-back-settled")
-        let oldTestament = app.buttons["Old Testament"]
         XCTAssertEqual(oldTestament.frame.midX, app.frame.midX, accuracy: 2)
         oldTestament.tap()
         XCTAssertTrue(app.buttons["Genesis"].waitForExistence(timeout: 5))
@@ -453,7 +563,7 @@ final class VersedUITests: XCTestCase {
 
         app.terminate()
         app.launch()
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 10))
         attachScreenshot(named: "appearance-after-relaunch")
 
         // Put the default back so the simulator is left as it was.
@@ -463,14 +573,14 @@ final class VersedUITests: XCTestCase {
     }
 
     func testFirstTimeIntro() {
-        relaunch(showingIntro: true)
+        relaunch(seeded: false, extraArguments: ["-show-intro"])
         XCTAssertTrue(app.staticTexts["Swipe Up for the Next Verse"].waitForExistence(timeout: 10))
         saveScreenshot(named: "4-intro")
 
         app.buttons["Next"].tap()
         XCTAssertTrue(app.staticTexts["Double-Tap to Save"].waitForExistence(timeout: 5))
         app.buttons["Next"].tap()
-        XCTAssertTrue(app.staticTexts["This Week's Reading, Ready"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Read at Your Own Pace"].waitForExistence(timeout: 5))
 
         // The last page carries the one line that names the reading schedule.
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label == %@", Self.independenceNotice)).firstMatch.exists)
@@ -480,12 +590,14 @@ final class VersedUITests: XCTestCase {
         XCTAssertFalse(app.buttons["Skip"].exists)
         attachScreenshot(named: "intro-reminder-offer")
 
+        // With nothing chosen yet, Today asks what to read. No plan is started on the reader's behalf.
         app.buttons["Not Now"].tap()
-        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["What would you like to read?"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Plan Come, Follow Me"].exists)
     }
 
     func testSkippingTheIntroAndSeeingItAgain() {
-        relaunch(showingIntro: true)
+        relaunch(extraArguments: ["-show-intro"])
         let skip = app.buttons["Skip"]
         XCTAssertTrue(skip.waitForExistence(timeout: 10))
         skip.tap()
@@ -539,7 +651,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertFalse(app.buttons["Time Picker"].waitForExistence(timeout: 2))
     }
 
-    static let independenceNotice = "This Week follows the Come, Follow Me reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."
+    static let independenceNotice = "The Come, Follow Me plan follows the Church’s published reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."
 
     /// The week intro card's heading, which VoiceOver reads as one line: "This Week, Daniel 1–7, Nov 9–15".
     /// A chapter's title card, which VoiceOver reads as one heading: "Alma, Chapter 32".
@@ -552,11 +664,17 @@ final class VersedUITests: XCTestCase {
         return onScreen(app.descendants(matching: .any).matching(match).matching(NSPredicate(format: "label CONTAINS %@", ",")))
     }
 
-    /// Restarts the app, with or without the first-time intro.
-    private func relaunch(showingIntro: Bool) {
+    /// Restarts the app, with or without the weekly plan already started.
+    private func relaunch(seeded: Bool = true, extraArguments: [String] = []) {
         app.terminate()
-        app.launchArguments = Self.launchArguments + (showingIntro ? ["-show-intro"] : [])
+        app.launchArguments = Self.launchArguments.filter { seeded || $0 != "-seed-weekly-plan" } + extraArguments
         app.launch()
+    }
+
+    /// Opens the weekly plan from Today, on its opening card.
+    private func openPlan() {
+        app.openWeeklyPlan()
+        XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
     }
 
     /// The feed keeps neighboring pages loaded off-screen, so pick the match the reader can actually see.

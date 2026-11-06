@@ -17,8 +17,8 @@ struct ReadingScheduleTests {
 
     @Test func weeksRunMondayToSundayWithNoGaps() {
         let weeks = schedule.weeks
-        // 2026 (Oct 26–Dec 27) plus all 52 weeks of 2027.
-        #expect(weeks.count == 9 + 52)
+        // All 52 weeks of 2026 (from Dec 29, 2025) and all 52 weeks of 2027.
+        #expect(weeks.count == 52 + 52)
         for week in weeks {
             #expect(calendar.component(.weekday, from: week.start) == 2, "\(week.id) should start on a Monday")
         }
@@ -58,7 +58,7 @@ struct ReadingScheduleTests {
 
     @Test func fallsBackWhenTodayIsOutsideTheSchedule() {
         // Before the schedule starts: the first week coming up.
-        #expect(schedule.currentWeek(on: date(2026, 1, 1))?.id == "2026-10-26")
+        #expect(schedule.currentWeek(on: date(2025, 6, 1))?.id == "2025-12-29")
         // After it ends: the last week.
         #expect(schedule.currentWeek(on: date(2028, 3, 1))?.id == "2027-12-20")
     }

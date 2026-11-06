@@ -241,6 +241,74 @@ struct LedgerRowLabel: View {
     }
 }
 
+/// One choice in a list, marked with a check when it's the one picked.
+struct ChoiceRow: View {
+    let title: String
+    var detail: String? = nil
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(.versedRow)
+                        .foregroundStyle(.brand)
+                    if let detail {
+                        Text(detail)
+                            .font(.versedDetail)
+                            .foregroundStyle(.secondaryText)
+                    }
+                }
+                .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
+                Image(systemName: "checkmark")
+                    .font(.system(size: 13, weight: .regular))
+                    .foregroundStyle(.brand)
+                    .opacity(isSelected ? 1 : 0)
+                    .accessibilityHidden(true)
+            }
+            .ledgerRowPadding()
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.ledgerRow)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+/// A few short choices side by side, with the one picked as a solid navy block.
+/// Stacked at the largest text sizes, so a label never breaks in the middle.
+struct BlockPicker<Option: Hashable & Identifiable>: View {
+    let options: [Option]
+    @Binding var selection: Option
+    let label: (Option) -> String
+
+    @Environment(\.dynamicTypeSize) private var typeSize
+
+    var body: some View {
+        let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 4)) : AnyLayout(HStackLayout(spacing: 4))
+        layout {
+            ForEach(options) { option in
+                let isSelected = selection == option
+                Button {
+                    selection = option
+                } label: {
+                    Text(label(option))
+                        .font(.versedDetail)
+                        .foregroundStyle(isSelected ? Color("ProminentButtonLabel") : .brand)
+                        .frame(maxWidth: .infinity, minHeight: 44)
+                        .background(isSelected ? Color("ProminentButton") : .clear, in: Hardcover.corner)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+            }
+        }
+        .padding(.vertical, 6)
+    }
+}
+
 /// The dotted line that leads the eye across a table of contents.
 private struct LeaderDots: View {
     var body: some View {

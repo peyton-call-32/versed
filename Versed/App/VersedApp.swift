@@ -5,7 +5,7 @@ import UIKit
 @main
 struct VersedApp: App {
     /// Everything the app stores on the phone.
-    static let storedModels: [any PersistentModel.Type] = [SavedVerse.self, ReadingPosition.self, ReadingDay.self]
+    static let storedModels: [any PersistentModel.Type] = [SavedVerse.self, ReadingPosition.self, ReadingDay.self, ReadingPlan.self]
 
     /// UI tests launch with this argument so each run starts fresh and never touches real data.
     nonisolated static let isUITesting = ProcessInfo.processInfo.arguments.contains("-ui-testing")

@@ -3,15 +3,25 @@ import SwiftUI
 /// Every chapter number in one book.
 struct ChapterGridView: View {
     let book: Book
+    /// Starts a plan for this book, or opens the one already going.
+    let startPlan: () -> Void
 
     var body: some View {
         ScrollView {
-            ChapterGrid(chapters: Array(1...book.chapterCount)) { chapter in
-                NavigationLink(value: BrowseView.Route.reading(ChapterID(bookID: book.id, chapter: chapter))) {
-                    ChapterCellLabel(chapter: chapter)
+            VStack(spacing: 22) {
+                Ledger {
+                    Button(action: startPlan) {
+                        LedgerRowLabel(title: "Make a Plan for This Book")
+                    }
+                    .buttonStyle(.ledgerRow)
                 }
-                .buttonStyle(.ledgerRow)
-                .accessibilityLabel(book.reference(chapter: chapter))
+                ChapterGrid(chapters: Array(1...book.chapterCount)) { chapter in
+                    NavigationLink(value: BrowseView.Route.reading(ChapterID(bookID: book.id, chapter: chapter))) {
+                        ChapterCellLabel(chapter: chapter)
+                    }
+                    .buttonStyle(.ledgerRow)
+                    .accessibilityLabel(book.reference(chapter: chapter))
+                }
             }
             .versedPage()
         }

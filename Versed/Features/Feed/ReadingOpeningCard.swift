@@ -1,10 +1,10 @@
 import SwiftUI
 
-/// The first page of a week's reading: a small label with the dates, each book with its
-/// tappable chapter sections, and a line at the foot saying to swipe up. The link to the week's lesson waits on `WeekEndCard`.
-struct WeekIntroCard: View {
-    let week: ReadingWeek
-    /// Whether the reader is partway through the week, so swiping up continues rather than starts.
+/// The first page of a reading: a small label saying when it's for, each book with its tappable
+/// chapter sections, and a line at the foot saying to swipe up. A week's lesson link waits on `ReadingClosingCard`.
+struct ReadingOpeningCard: View {
+    let reading: ReadingPortion
+    /// Whether the reader is partway through the reading, so swiping up continues rather than starts.
     var isResuming = false
     /// Called when the reader taps a chapter section, with the chapter it starts on.
     var onSelectSection: (ChapterID) -> Void = { _ in }
@@ -12,16 +12,7 @@ struct WeekIntroCard: View {
     @Environment(\.screenInsets) private var screenInsets
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var isThisWeek: Bool {
-        week.contains(VersedApp.today)
-    }
-
-    /// "This Week · Nov 2–8" for the current week, or just "Nov 9–15" for any other week.
-    private var label: String {
-        isThisWeek ? "This Week · \(week.dateRangeText())" : week.dateRangeText()
-    }
-
-    private var books: [BookReading] { week.readingByBook }
+    private var books: [BookReading] { reading.readingByBook }
 
     private var swipeGoal: String {
         isResuming ? "continue reading" : "start reading"
@@ -35,14 +26,13 @@ struct WeekIntroCard: View {
     var body: some View {
         ShrinkToFit {
             VStack(spacing: 20) {
-                SmallCapsLabel(label)
-                    // VoiceOver reads "This Week, Daniel 1–7, Nov 9–15" as one heading
-                    // ("Week Of, …" for other weeks), in normal case rather than capitals.
+                SmallCapsLabel(reading.heading)
+                    // VoiceOver reads "This Week, Daniel 1–7, Nov 9–15" as one heading,
+                    // in normal case rather than capitals.
                     .accessibilityElement(children: .ignore)
-                    .accessibilityLabel("\(isThisWeek ? "This Week" : "Week Of"), \(week.label), \(week.dateRangeText())")
+                    .accessibilityLabel(reading.spokenHeading)
                     .accessibilityAddTraits(.isHeader)
-                reading
-
+                bookList
             }
         }
         .multilineTextAlignment(.center)
@@ -70,9 +60,9 @@ struct WeekIntroCard: View {
     }
 
     /// One book sits right above its chapters. Several books sit close together as one
-    /// group, so they read as one week's reading.
+    /// group, so they read as one reading.
     @ViewBuilder
-    private var reading: some View {
+    private var bookList: some View {
         if books.count == 1 {
             book(at: 0)
         } else {
@@ -124,7 +114,7 @@ struct WeekIntroCard: View {
     /// Underlined words that each jump to where their section starts.
     private func sectionRow(of index: Int) -> some View {
         HStack(spacing: 18) {
-            ForEach(Array(week.sectionsByBook[index].enumerated()), id: \.offset) { _, section in
+            ForEach(Array(reading.sectionsByBook[index].enumerated()), id: \.offset) { _, section in
                 Button(section.title) {
                     onSelectSection(section.start)
                 }
@@ -141,5 +131,5 @@ struct WeekIntroCard: View {
 
 #Preview {
     let schedule = try! ReadingSchedule.loadBundled()
-    WeekIntroCard(week: schedule.weeks[1])
+    ReadingOpeningCard(reading: ReadingPortion(week: schedule.weeks[1]))
 }

@@ -22,6 +22,7 @@ struct BrowseCoverTests {
     /// The cover must keep saying the Church didn't make the app. Changing this is a deliberate decision.
     @Test func weeklyCoverSaysTheAppIsIndependent() {
         #expect(WeeklyCover.title == "Come, Follow Me")
+        #expect(WeeklyCover.spokenTitle(course: "Old Testament 2026") == "Come, Follow Me—For Home and Church: Old Testament 2026")
         #expect(WeeklyCover.notice == "Versed is an independent app, not made or endorsed by The Church of Jesus Christ of Latter-day Saints.")
     }
 
