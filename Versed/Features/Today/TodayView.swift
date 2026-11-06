@@ -39,6 +39,9 @@ struct TodayView: View {
         }
     }
 
+    /// Opening a plan moves the whole page, so it settles without the bounce buttons have.
+    private static let openPlanAnimation = Animation.spring(duration: 0.38, bounce: 0)
+
     private var engine: PlanEngine { PlanEngine(library: library, schedule: schedule) }
     private var orderedPlans: [ReadingPlan] { plans.sorted(by: ReadingPlan.comesFirst) }
 
@@ -103,7 +106,11 @@ struct TodayView: View {
     private var header: some View {
         VStack(alignment: .leading, spacing: 34) {
             HStack(alignment: .top) {
-                VersedMark().padding(.top, 19)
+                VersedMark()
+                    .padding(.top, 19)
+                    // Gone before a pushed page's back arrow slides across it.
+                    .opacity(path.isEmpty ? 1 : 0)
+                    .animation(.easeOut(duration: 0.16), value: path.isEmpty)
                 Spacer(minLength: 0)
                 StreakRibbon()
             }
@@ -125,7 +132,7 @@ struct TodayView: View {
                     chapterWord: engine.chapterWord(of: plan.state),
                     isOpen: isOpen,
                     onToggle: {
-                        withAnimation(reduceMotion ? nil : .versed) {
+                        withAnimation(reduceMotion ? nil : Self.openPlanAnimation) {
                             openPlanID = isOpen ? nil : plan.id
                         }
                     },
@@ -282,8 +289,9 @@ private struct PlanSection: View {
     }
 
     private var spokenValue: String {
-        if status.isFinished { return "Finished" }
-        return [status.reading?.label, status.doneText ?? time?.text].compactMap(\.self).joined(separator: ", ")
+        [status.periodText, status.reading?.label ?? "You finished this plan.", status.doneText ?? time?.text]
+            .compactMap(\.self)
+            .joined(separator: ", ")
     }
 
     private var openContent: some View {

@@ -384,7 +384,7 @@ extension View {
     /// The shared margins of a screen's contents.
     func versedPage() -> some View {
         padding(.horizontal, Hardcover.margin)
-            .padding(.top, 8)
+            .padding(.top, 14)
             .padding(.bottom, 28)
     }
 

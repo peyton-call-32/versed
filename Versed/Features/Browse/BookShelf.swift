@@ -72,8 +72,6 @@ struct BookShelf: View {
             .frame(maxHeight: .infinity, alignment: .bottom)
             .animation(reduceMotion ? nil : .versed, value: volumes.map(\.id))
         }
-        // Lets a pressed book rise without being cut off, and keeps a rising book inside the page.
-        .clipped()
     }
 
     /// Books keep their proportions but narrow together when all of them plus the gap wouldn't fit.
@@ -159,6 +157,7 @@ struct ShelfEditorView: View {
     let volumes: [Volume]
     @Binding var stored: String
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.dynamicTypeSize) private var typeSize
 
     var body: some View {
         NavigationStack {
@@ -183,15 +182,24 @@ struct ShelfEditorView: View {
                 DoneToolbarItem { dismiss() }
             }
         }
+        // Just tall enough for all five books, so the shelf stays in view above as it changes.
+        .presentationDetents([typeSize.isAccessibilitySize ? .large : .height(460)])
+        .presentationBackground(Color.appBackground)
+        .presentationDragIndicator(.hidden)
     }
 
     private func row(for volume: Volume) -> some View {
         let isOnShelf = Shelf.volumeIDs(from: stored).contains(volume.id)
-        return HStack {
+        // Stacked at the largest text sizes, so a long name never breaks in the middle of a word.
+        let layout = typeSize.isAccessibilitySize
+            ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4))
+            : AnyLayout(HStackLayout())
+        return layout {
             Text(volume.title)
                 .font(.versedRow)
                 .foregroundStyle(.brand)
-            Spacer(minLength: 8)
+                .fixedSize(horizontal: false, vertical: true)
+            if !typeSize.isAccessibilitySize { Spacer(minLength: 8) }
             if isOnShelf {
                 Button("Remove") { stored = Shelf.toggling(volume.id, in: stored) }
                     .buttonStyle(.plainWord)
@@ -202,6 +210,7 @@ struct ShelfEditorView: View {
                     .accessibilityLabel("Add \(volume.title)")
             }
         }
+        .padding(.vertical, typeSize.isAccessibilitySize ? 10 : 0)
         .frame(minHeight: 60)
     }
 }

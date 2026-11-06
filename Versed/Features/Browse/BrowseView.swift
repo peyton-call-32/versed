@@ -65,8 +65,10 @@ struct BrowseView: View {
                 )
                 .padding(.horizontal, Hardcover.margin)
                 .padding(.top, 16)
+                // Edged with a fine line so it still reads as a shelf on the navy page in dark mode.
                 Rectangle()
                     .fill(.cover)
+                    .overlay(Rectangle().strokeBorder(Color.hairline, lineWidth: 0.5))
                     .frame(height: 7)
                     .padding(.horizontal, Hardcover.margin - 8)
                     .accessibilityHidden(true)
@@ -146,9 +148,6 @@ struct BrowseView: View {
         switch sheet {
         case .shelf:
             ShelfEditorView(volumes: library.volumes, stored: $storedShelf)
-                .presentationDetents([.height(460)])
-                .presentationBackground(Color.appBackground)
-                .presentationDragIndicator(.hidden)
         case .search:
             BrowseSearchView(library: library) { result in
                 pickedResult = result

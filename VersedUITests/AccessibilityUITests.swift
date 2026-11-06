@@ -31,8 +31,16 @@ final class AccessibilityUITests: XCTestCase {
             app.buttons["Plan details, Come, Follow Me"].tap()
             XCTAssertTrue(app.navigationBars["Come, Follow Me"].waitForExistence(timeout: 5))
             try audit("plan details, \(appearance)")
+            let schedule = app.scrollViews.buttons["Reading Schedule"]
+            for _ in 1...3 where !schedule.isHittable { app.swipeUp() }
+            schedule.tap()
+            XCTAssertTrue(app.navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
+            try audit("Reading Schedule, \(appearance)")
             app.navigationBars.buttons.firstMatch.tap()
-            app.buttons["Plan Come, Follow Me"].tap()
+            sleep(1)
+            app.navigationBars.buttons.firstMatch.tap()
+            sleep(1)
+            app.openPlan("Come, Follow Me")
             XCTAssertTrue(app.staticTexts["Swipe up to start reading"].waitForExistence(timeout: 10))
             try audit("reading intro, \(appearance)", except: Self.shrinkToFitIssues)
             app.swipeUp()
@@ -46,34 +54,27 @@ final class AccessibilityUITests: XCTestCase {
             app.buttons["Done"].tap()
 
             app.tab("Browse").tap()
-            XCTAssertTrue(app.buttons["weekly-reading"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["Spine Old Testament"].waitForExistence(timeout: 5))
             sleep(1)
             try audit("Browse, \(appearance)")
 
-            // Setting up a plan, from the cover.
-            app.buttons["weekly-reading"].tap()
-            XCTAssertTrue(app.buttons["Join This Week"].waitForExistence(timeout: 5))
-            try audit("plan setup, \(appearance)")
-            app.buttons["Cancel"].tap()
-            app.showVolumeCover("Old Testament")
-            let readBook = app.buttons["Old Testament"]
-            let isCentered = NSPredicate { _, _ in abs(readBook.frame.midX - self.app.frame.midX) < 2 }
-            wait(for: [expectation(for: isCentered, evaluatedWith: nil)], timeout: 5)
-            try audit("Browse covers, \(appearance)")
-            app.swipeDown()
+            app.buttons["Your Shelf"].tap()
+            XCTAssertTrue(app.buttons["Add Book of Mormon"].waitForExistence(timeout: 5))
+            try audit("Your Shelf, \(appearance)")
+            app.buttons["Done"].tap()
             sleep(1)
 
-            app.scrollViews.buttons["Reading Schedule"].tap()
-            XCTAssertTrue(app.navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
-            try audit("Reading Schedule, \(appearance)")
-            app.navigationBars.buttons.firstMatch.tap()
+            app.buttons["Find a Book"].tap()
+            XCTAssertTrue(app.textFields["Search scriptures"].waitForExistence(timeout: 5))
+            try audit("Find, \(appearance)")
+            app.buttons["Cancel"].tap()
+            sleep(1)
 
             app.tab("Saved").tap()
             try audit("Saved, \(appearance)")
 
             app.openSettings()
             try audit("Settings, \(appearance)")
-            app.buttons["Done"].tap()
         }
 
         // Put the default back so the simulator is left as it was.
@@ -81,18 +82,6 @@ final class AccessibilityUITests: XCTestCase {
     }
 
     /// At the largest text size, the calendar can still be read and closed.
-    func testWeeklyCoverFitsAtTheLargestTextSize() throws {
-        app.terminate()
-        launch(extraArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
-        app.tab("Browse").tap()
-        let cover = app.buttons["weekly-reading"]
-        XCTAssertTrue(cover.waitForExistence(timeout: 5))
-        sleep(1)
-        attachScreenshot(named: "largest-text-weekly-cover")
-        let notice = cover.staticTexts.element(boundBy: 2)
-        XCTAssertLessThan(notice.frame.maxY, cover.frame.maxY)
-    }
-
     func testStreakCalendarAtTheLargestTextSize() {
         launch(extraArguments: ["-UIPreferredContentSizeCategoryName", "UICTContentSizeCategoryAccessibilityXXXL"])
         XCTAssertTrue(app.buttons["Streak"].waitForExistence(timeout: 10))
@@ -155,13 +144,6 @@ final class AccessibilityUITests: XCTestCase {
 
         app.tab("Browse").tap()
         attachScreenshot(named: "largest-text-browse")
-        let schedule = app.scrollViews.buttons["Reading Schedule"]
-        for _ in 1...3 where !schedule.isHittable { app.swipeUp() }
-        schedule.tap()
-        XCTAssertTrue(app.navigationBars["Reading Schedule"].waitForExistence(timeout: 5))
-        attachScreenshot(named: "largest-text-reading-schedule")
-        app.navigationBars.buttons.firstMatch.tap()
-
         app.openSettings()
         app.swipeUp()
         app.swipeUp()
@@ -315,8 +297,7 @@ final class AccessibilityUITests: XCTestCase {
         }
     }
 
-    /// The weekly cover's smaller lines and notice stop growing on purpose so the title stays largest.
-    /// `testWeeklyCoverFitsAtTheLargestTextSize` checks the cover at the largest size instead.
+    /// The notice stops growing on purpose, on the screens that carry it.
     private static func isWeeklyCoverText(_ label: String) -> Bool {
         label == "For Home and Church" || label.hasSuffix(" 2026") || label.hasSuffix(" 2027")
             || label.hasPrefix("Versed is an independent app")
@@ -325,7 +306,7 @@ final class AccessibilityUITests: XCTestCase {
     /// Plenty readable: the plan's name in navy ink on the page or cream on the cover, section labels and rows beside a cover's soft shadow,
     /// which the audit counts against them, and a scheduled reading the audit flags at random.
     private static func isReadingListText(_ label: String) -> Bool {
-        ["STUDY PLANS", "SCRIPTURES", "Make Your Own Plan", "Reading Schedule", "Come, Follow Me"].contains(label)
+        ["Reading Schedule", "Come, Follow Me"].contains(label)
             || label.contains(/^[1-3 A-Za-z]+ \d+[–;]/)
     }
 
