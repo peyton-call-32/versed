@@ -54,7 +54,7 @@ struct ReadingScheduleView: View {
 
 /// One week: its dates in a column on the left and its chapters beside them.
 /// At the largest text sizes, the chapters move under the dates.
-private struct WeekRow: View {
+struct WeekRow: View {
     let week: ReadingWeek
     let isThisWeek: Bool
     let action: () -> Void

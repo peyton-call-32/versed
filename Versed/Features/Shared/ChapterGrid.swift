@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Chapter numbers set in ruled rows, used by Browse and by the Go To sheet.
+/// Chapter numbers set in ruled rows, used by the Library and by the Go To sheet.
 /// Grows with the reader's text size so big numbers still fit.
 struct ChapterGrid<Cell: View>: View {
     let chapters: [Int]

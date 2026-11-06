@@ -20,14 +20,14 @@ extension XCUIApplication {
         coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
     }
 
-    /// Brings a volume's cover to the middle of Browse, so its books show underneath.
+    /// Brings a book's cover to the middle of the Library, so what's inside shows underneath.
     func openVolume(_ title: String) {
         let cover = showVolumeCover(title)
         cover.tap()
         sleep(1)
     }
 
-    /// Swipes through Browse's covers until a volume's cover is on screen.
+    /// Swipes through the Library's covers until a book's cover is on screen.
     @discardableResult
     func showVolumeCover(_ title: String) -> XCUIElement {
         let cover = buttons["Cover \(title)"]

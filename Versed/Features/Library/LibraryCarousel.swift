@@ -1,14 +1,13 @@
 import SwiftUI
 
-/// The five volumes as covers facing the reader. Swiping, or tapping a neighbor, brings a volume
-/// to the middle, and Browse lists its books underneath.
-struct VolumeCarousel: View {
-    /// The volume in the middle is saved on the phone, so Browse reopens on it.
-    static let storageKey = "browse.volume"
-    static let startingVolume = "ot"
+/// The books in the reader's library as covers facing them. Swiping, or tapping a neighbor, brings
+/// a book to the middle, and the Library tab lists what's inside it underneath.
+struct LibraryCarousel: View {
+    /// The book in the middle is saved on the phone, so the Library reopens on it.
+    static let storageKey = "library.openBook"
 
-    let volumes: [Volume]
-    @Binding var selection: Volume.ID
+    let books: [LibraryBook]
+    @Binding var selection: String
 
     @ScaledMetric(relativeTo: .title) private var scaledWidth = 150.0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -26,8 +25,8 @@ struct VolumeCarousel: View {
             GeometryReader { space in
                 ScrollView(.horizontal) {
                     HStack(spacing: Self.spacing) {
-                        ForEach(volumes) { volume in
-                            cover(for: volume, pageCenter: space.size.width / 2)
+                        ForEach(books) { book in
+                            cover(for: book, pageCenter: space.size.width / 2)
                         }
                     }
                     .scrollTargetLayout()
@@ -38,27 +37,27 @@ struct VolumeCarousel: View {
                 .scrollIndicators(.hidden)
             }
             .frame(height: coverHeight)
-            .accessibilityIdentifier("Volume Covers")
+            .accessibilityIdentifier("Library Covers")
             pageMarks
         }
         .sensoryFeedback(.selection, trigger: selection)
     }
 
     /// iOS clears the scroll position while a swipe is between covers, so the last one stays selected.
-    private var scrollSelection: Binding<Volume.ID?> {
+    private var scrollSelection: Binding<String?> {
         Binding(
             get: { selection },
             set: { if let id = $0 { selection = id } }
         )
     }
 
-    private func cover(for volume: Volume, pageCenter: CGFloat) -> some View {
-        let isSelected = volume.id == selection
+    private func cover(for book: LibraryBook, pageCenter: CGFloat) -> some View {
+        let isSelected = book.id == selection
         return Button {
             guard !isSelected else { return }
-            withAnimation(reduceMotion ? nil : .versed) { selection = volume.id }
+            withAnimation(reduceMotion ? nil : .versed) { selection = book.id }
         } label: {
-            VolumeCover(title: volume.title)
+            BookCover(book: book)
                 .frame(width: coverWidth, height: coverHeight)
         }
         .buttonStyle(CoverButtonStyle())
@@ -69,17 +68,17 @@ struct VolumeCarousel: View {
             let progress = min(distance / (coverWidth + Self.spacing), 1)
             return content.scaleEffect(1 - (1 - Self.neighborScale) * progress)
         }
-        .accessibilityLabel(volume.title)
-        .accessibilityHint(isSelected ? "" : "Shows its books.")
+        .accessibilityLabel(book.fullName)
+        .accessibilityHint(isSelected ? "" : "Shows what's inside.")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
-        .accessibilityIdentifier("Cover \(volume.title)")
+        .accessibilityIdentifier("Cover \(book.title)")
     }
 
-    /// A short line for each volume, with the open one in solid ink.
+    /// A short line for each book, with the open one in solid ink.
     private var pageMarks: some View {
         HStack(spacing: 6) {
-            ForEach(volumes) { volume in
-                let isSelected = volume.id == selection
+            ForEach(books) { book in
+                let isSelected = book.id == selection
                 Rectangle()
                     .fill(isSelected ? Color.brand : Color.secondaryText)
                     .frame(width: 18, height: isSelected ? 2 : 1)
@@ -90,23 +89,32 @@ struct VolumeCarousel: View {
     }
 }
 
-/// One volume's front cover: navy, with a stamped double frame and its title.
-private struct VolumeCover: View {
-    let title: String
+/// One book's front cover: navy, with a stamped double frame and its title.
+private struct BookCover: View {
+    let book: LibraryBook
 
     var body: some View {
         ZStack {
             CoverFrame().padding(7)
             VStack(spacing: 12) {
                 Ornament(color: .onCover, lineLength: 18)
-                Text(title)
-                    .font(.versedTitle(size: 30, relativeTo: .title))
+                // A second line under the title leaves less room, so the title steps down to keep to two lines.
+                Text(book.title)
+                    .font(.versedTitle(size: book.subtitle == nil ? 30 : 27, relativeTo: .title))
                     .foregroundStyle(.onCover)
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
                     .minimumScaleFactor(0.6)
+                if let subtitle = book.subtitle {
+                    Text(subtitle)
+                        .font(.versedNote)
+                        .foregroundStyle(.onCover)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.7)
+                }
             }
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 13)
             .padding(.vertical, 20)
         }
         .background(Color.cover, in: Hardcover.corner)
@@ -183,7 +191,7 @@ struct VolumeContents: View {
         VStack(alignment: .leading, spacing: 8) {
             SmallCapsLabel("\(book.chapterCount) \(book.chapterWord)s")
             ChapterGrid(chapters: Array(1...book.chapterCount)) { chapter in
-                NavigationLink(value: BrowseView.Route.reading(ChapterID(bookID: book.id, chapter: chapter))) {
+                NavigationLink(value: LibraryView.Route.reading(ChapterID(bookID: book.id, chapter: chapter))) {
                     ChapterCellLabel(chapter: chapter)
                 }
                 .buttonStyle(.ledgerRow)
@@ -193,7 +201,7 @@ struct VolumeContents: View {
     }
 
     /// A book with one chapter (like Enos) opens straight to its reading.
-    private func route(for book: Book) -> BrowseView.Route {
+    private func route(for book: Book) -> LibraryView.Route {
         book.chapterCount == 1
             ? .reading(ChapterID(bookID: book.id, chapter: 1))
             : .book(book.id)
@@ -222,5 +230,37 @@ private struct BookRow: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(book.name)
         .accessibilityValue("\(book.chapterCount)")
+    }
+}
+
+/// A year of the weekly schedule: this week first when it's in that year, then every week,
+/// each opening its reading with no plan needed.
+struct CourseContents: View {
+    let schedule: ReadingSchedule
+    let course: String
+    let openWeek: (ReadingWeek.ID) -> Void
+
+    private var weeks: [ReadingWeek] { schedule.weeks.filter { $0.course == course } }
+
+    var body: some View {
+        let weeks = weeks
+        VStack(alignment: .leading, spacing: 22) {
+            if let thisWeek = schedule.currentWeek(), thisWeek.course == course {
+                VStack(alignment: .leading, spacing: 8) {
+                    SmallCapsLabel("This Week")
+                    WeekRow(week: thisWeek, isThisWeek: true) { openWeek(thisWeek.id) }
+                }
+            }
+            LedgerSection(title: "\(weeks.count) Weeks") {
+                ForEach(weeks) { week in
+                    if week.id != weeks.first?.id { LedgerRule() }
+                    WeekRow(week: week, isThisWeek: false) { openWeek(week.id) }
+                }
+            }
+            Text(WeeklyPlanName.notice)
+                .font(.versedNote)
+                .foregroundStyle(.secondaryText)
+                .fixedSize(horizontal: false, vertical: true)
+        }
     }
 }

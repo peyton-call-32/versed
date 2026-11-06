@@ -111,8 +111,15 @@ final class DesignAuditUITests: XCTestCase {
         shoot("20-setup-book-date")
         app.buttons["Cancel"].tap()
         sleep(1)
-        app.tab("Browse").tap()
-        shoot("20-browse")
+        app.tab("Library").tap()
+        shoot("20-library")
+        app.buttons["Your Library"].tap()
+        shoot("20-your-library")
+        app.buttons["Remove Pearl of Great Price"].tap()
+        shoot("20-your-library-removed")
+        app.buttons["Add Pearl of Great Price"].tap()
+        app.buttons["Done"].tap()
+        sleep(1)
         app.buttons["Find a Book"].tap()
         shoot("20-find")
         app.textFields["Search scriptures"].typeText("Alma 32")
@@ -134,8 +141,8 @@ final class DesignAuditUITests: XCTestCase {
         shoot("25-browse-verse")
         app.revealControls()
         shoot("26-browse-verse-revealed")
-        app.tab("Browse").tap()
-        app.tab("Browse").tap()
+        app.tab("Library").tap()
+        app.tab("Library").tap()
         shoot("27-browse-continue")
     }
 
@@ -197,9 +204,9 @@ final class DesignAuditUITests: XCTestCase {
         step("plan-details-back") { app.navigationBars.buttons.firstMatch.tap() }
         step("ribbon") { app.buttons["Streak"].tap() }
         step("ribbon-close") { app.buttons["Done"].tap() }
-        step("tab-browse") { app.tab("Browse").tap() }
-        step("cover-next") { app.buttons["Cover New Testament"].tap() }
-        step("book-open") { app.buttons["Matthew"].tap() }
+        step("tab-browse") { app.tab("Library").tap() }
+        step("cover-next") { app.buttons["Cover Old Testament"].tap() }
+        step("book-open") { app.buttons["Genesis"].tap() }
         step("book-back") { app.navigationBars.buttons.firstMatch.tap() }
         step("tab-saved") { app.tab("Saved").tap() }
         step("tab-settings") { app.tab("Settings").tap() }

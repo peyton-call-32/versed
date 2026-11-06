@@ -31,7 +31,7 @@ struct VersedApp: App {
         }
     }
 
-    /// Screen titles like "Browse" and "Saved" use the same typeface as the book names, in navy ink.
+    /// Screen titles like "Library" and "Saved" use the same typeface as the book names, in navy ink.
     /// A full appearance is set for each bar state, so iOS doesn't swap in its own title font
     /// when a bar changes state, such as after coming back from another screen.
     private static func useVersedScreenTitles() {

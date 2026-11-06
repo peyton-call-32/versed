@@ -38,7 +38,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.buttons["1-day reading streak"].waitForExistence(timeout: 5))
 
         // Browse to Alma 32 and read to verse 2.
-        app.tab("Browse").tap()
+        app.tab("Library").tap()
         app.openVolume("Book of Mormon")
         app.buttons["Alma"].tap()
         app.buttons["Alma 32"].tap()
@@ -49,8 +49,8 @@ final class VersedUITests: XCTestCase {
 
         // Back on the Browse list, Continue Reading points to where we stopped.
         app.revealControls()
-        app.tab("Browse").tap()
-        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 5))
+        app.tab("Library").tap()
+        XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 5))
         let continueReading = app.buttons["Continue Reading"]
         XCTAssertTrue(continueReading.waitForExistence(timeout: 5))
         XCTAssertEqual(continueReading.value as? String, "Alma 32:2")
@@ -90,7 +90,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Jeremiah 31:4"].waitForExistence(timeout: 5))
         onScreen(app.buttons.matching(identifier: "Save verse")).tap()
 
-        app.tab("Browse").tap()
+        app.tab("Library").tap()
         XCTAssertTrue(app.buttons["Cover Old Testament"].waitForExistence(timeout: 5))
         sleep(2)
         saveScreenshot(named: "3-browse")
@@ -194,24 +194,58 @@ final class VersedUITests: XCTestCase {
         XCTAssertLessThan(book.frame.minY, weekly.frame.minY)
     }
 
-    func testSwipingThroughTheCoversChangesTheBooks() {
-        app.tab("Browse").tap()
+    func testTheLibraryShowsOnlyTheBooksTheReaderKeeps() {
+        app.tab("Library").tap()
 
-        // Every volume is there from the start, opening on the Old Testament.
-        for title in ["Old Testament", "New Testament", "Book of Mormon", "Doctrine and Covenants", "Pearl of Great Price"] {
-            XCTAssertTrue(app.buttons["Cover \(title)"].waitForExistence(timeout: 5))
-        }
-        XCTAssertTrue(app.buttons["Genesis"].exists)
+        // A new reader has every book, opening on this year's weekly schedule.
+        XCTAssertTrue(app.buttons["Cover Come, Follow Me"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Cover Pearl of Great Price"].exists)
         XCTAssertFalse(app.buttons["Continue Reading"].exists)
 
-        // The next cover brings its books.
-        app.buttons["Cover New Testament"].tap()
-        XCTAssertTrue(app.buttons["Matthew"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["Genesis"].exists)
+        // Another cover brings what's inside it.
+        app.openVolume("Old Testament")
+        XCTAssertTrue(app.buttons["Genesis"].waitForExistence(timeout: 5))
 
         // A single book lists its sections right there.
         app.openVolume("Doctrine and Covenants")
         XCTAssertTrue(app.buttons["D&C 1"].waitForExistence(timeout: 5))
+
+        // Removing books takes their covers away, even the one on show, and adding one brings it back.
+        app.buttons["Your Library"].tap()
+        app.buttons["Remove Doctrine and Covenants"].tap()
+        app.buttons["Remove Old Testament"].tap()
+        app.buttons["Done"].tap()
+        XCTAssertFalse(app.buttons["Cover Doctrine and Covenants"].waitForExistence(timeout: 2))
+        XCTAssertFalse(app.buttons["Cover Old Testament"].exists)
+
+        app.buttons["Your Library"].tap()
+        app.buttons["Add Old Testament"].tap()
+        app.buttons["Done"].tap()
+        XCTAssertTrue(app.buttons["Cover Old Testament"].waitForExistence(timeout: 5))
+    }
+
+    func testAReaderCanEmptyTheirLibraryAndStartAgain() {
+        app.tab("Library").tap()
+        app.buttons["Your Library"].tap()
+        for name in ["Come, Follow Me Old Testament 2026", "Old Testament", "New Testament", "Book of Mormon", "Doctrine and Covenants", "Pearl of Great Price"] {
+            app.buttons["Remove \(name)"].tap()
+        }
+        app.buttons["Done"].tap()
+
+        let add = app.buttons["Add a Book"]
+        XCTAssertTrue(add.waitForExistence(timeout: 5))
+        add.tap()
+        app.buttons["Add Book of Mormon"].tap()
+        app.buttons["Done"].tap()
+        XCTAssertTrue(app.buttons["1 Nephi"].waitForExistence(timeout: 5))
+    }
+
+    func testTheWeeklyCoverOpensThisWeekWithNoPlan() {
+        app.tab("Library").tap()
+        let thisWeek = app.buttons.matching(NSPredicate(format: "label BEGINSWITH %@", "This week, Oct 26 – Nov 1")).firstMatch
+        XCTAssertTrue(thisWeek.waitForExistence(timeout: 5))
+        thisWeek.tap()
+        XCTAssertFalse(app.navigationBars["Library"].waitForExistence(timeout: 2))
     }
 
     func testSettingsScrollsAllTheWayClearOfTheTabBar() {
@@ -224,7 +258,7 @@ final class VersedUITests: XCTestCase {
     }
 
     func testFindingAChapter() {
-        app.tab("Browse").tap()
+        app.tab("Library").tap()
         app.buttons["Find a Book"].tap()
         let field = app.textFields["Search scriptures"]
         XCTAssertTrue(field.waitForExistence(timeout: 5))
@@ -326,7 +360,7 @@ final class VersedUITests: XCTestCase {
     }
 
     func testABookOffersAPlanWithoutRequiringOne() {
-        app.tab("Browse").tap()
+        app.tab("Library").tap()
         app.openVolume("Book of Mormon")
         let volumePlan = app.buttons["Make a Plan for All 15 Books"]
         for _ in 1...5 where !(volumePlan.exists && volumePlan.isHittable) { app.swipeUp() }
@@ -398,17 +432,17 @@ final class VersedUITests: XCTestCase {
         app.tab("Today").tap()
         XCTAssertTrue(app.staticTexts["Today date"].waitForExistence(timeout: 5))
 
-        app.tab("Browse").tap()
+        app.tab("Library").tap()
         app.openVolume("Book of Mormon")
         app.buttons["Alma"].tap()
         XCTAssertTrue(app.buttons["Alma 32"].waitForExistence(timeout: 5))
-        app.tab("Browse").tap()
-        XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 5))
+        app.tab("Library").tap()
+        XCTAssertTrue(app.navigationBars["Library"].waitForExistence(timeout: 5))
     }
 
     /// Psalms is the longest book, so this also checks that opening near its end works.
     func testBrowseChapterMenuReachesEarlierChapters() {
-        app.tab("Browse").tap()
+        app.tab("Library").tap()
         app.openVolume("Old Testament")
         let psalms = app.buttons["Psalms"]
         for _ in 1...5 where !(psalms.exists && psalms.isHittable) { app.swipeUp() }

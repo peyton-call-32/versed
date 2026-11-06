@@ -21,7 +21,7 @@ final class ReadingPosition {
 enum ReadingFeed: Hashable, Sendable {
     /// One week of the reading schedule.
     case week(ReadingWeek.ID)
-    /// Reading from the Browse or Saved tab.
+    /// Reading from the Library or Saved tab.
     case browse
     /// One study plan, by its `ReadingPlan.id`.
     case plan(String)

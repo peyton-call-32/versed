@@ -4,7 +4,7 @@ import SwiftUI
 /// Reads a whole book in the feed, opening at the chosen chapter. The chapter menu moves to any
 /// other chapter in the book.
 ///
-/// The page on screen is remembered so the Browse tab can offer to continue from it.
+/// The page on screen is remembered so the Library tab can offer to continue from it.
 struct ChapterReadingView: View {
     let library: ScriptureLibrary
     let book: Book

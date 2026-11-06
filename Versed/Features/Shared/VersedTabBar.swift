@@ -3,7 +3,7 @@ import SwiftUI
 /// The app's four main screens.
 enum AppTab: String, CaseIterable, Identifiable {
     case today = "Today"
-    case browse = "Browse"
+    case library = "Library"
     case saved = "Saved"
     case settings = "Settings"
 
@@ -13,7 +13,7 @@ enum AppTab: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .today: "calendar"
-        case .browse: "book"
+        case .library: "book"
         case .saved: "heart"
         case .settings: "gearshape"
         }

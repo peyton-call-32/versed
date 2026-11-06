@@ -1,39 +1,43 @@
 import SwiftData
 import SwiftUI
 
-/// Any book and chapter, with no plan needed: the five volumes as covers to swipe through, the
-/// books of the one on show, and a way back to the last page read here or from Saved.
-struct BrowseView: View {
+/// Any book and chapter, with no plan needed: the books the reader keeps in their library as covers
+/// to swipe through, what's inside the one on show, and a way back to the last page read here or from Saved.
+struct LibraryView: View {
     let library: ScriptureLibrary
     let schedule: ReadingSchedule
     /// Shows Today, opening a plan that was just started or already going.
     let showToday: (String) -> Void
-    /// The screens open on top of Browse. Emptying it goes back to the covers.
+    /// The screens open on top of the Library. Emptying it goes back to the covers.
     @Binding var path: [Route]
 
     @Query private var positions: [ReadingPosition]
-    @AppStorage(VolumeCarousel.storageKey) private var selectedVolumeID = VolumeCarousel.startingVolume
-    /// The one sheet open over Browse. iOS can close a sheet when a neighboring one updates, so they share this.
+    @AppStorage(Library.storageKey) private var storedBooks = Library.starting
+    @AppStorage(LibraryCarousel.storageKey) private var openBookID = ""
+    /// The one sheet open over the Library. iOS can close a sheet when a neighboring one updates, so they share this.
     @State private var sheet: Sheet?
     /// A search result, opened once the search sheet has closed.
     @State private var pickedResult: ScriptureSearchResult?
     @Environment(\.modelContext) private var modelContext
 
     private enum Sheet: Identifiable {
+        case library
         case search
         case setup(PlanSource)
 
         var id: String {
             switch self {
+            case .library: "library"
             case .search: "search"
             case .setup(let source): "setup:\(source.key)"
             }
         }
     }
 
-    /// The screens the browse tab can open.
+    /// The screens the Library tab can open.
     enum Route: Hashable {
         case book(Book.ID)
+        case week(ReadingWeek.ID)
         case reading(ChapterID)
         /// Reopens the feed on a saved page.
         case resume(FeedItem.ID)
@@ -47,34 +51,27 @@ struct BrowseView: View {
                 VStack(spacing: 0) {
                     continueRow
                         .padding(.horizontal, Hardcover.margin)
-                    VolumeCarousel(volumes: library.volumes, selection: $selectedVolumeID)
-                        .padding(.top, 10)
-                    if let volume = library.volume(id: selectedVolumeID) ?? library.volumes.first {
-                        VolumeContents(
-                            volume: volume,
-                            startVolumePlan: { startOrOpenPlan(for: .volume(volume.id)) },
-                            startBookPlan: { startOrOpenPlan(for: .book($0.id)) }
-                        )
-                        .padding(.horizontal, Hardcover.margin)
-                        .padding(.top, 16)
-                        .padding(.bottom, 28)
+                    if books.isEmpty {
+                        emptyLibrary
+                    } else {
+                        LibraryCarousel(books: books, selection: openBook)
+                            .padding(.top, 10)
+                        contents
+                            .padding(.horizontal, Hardcover.margin)
+                            .padding(.top, 16)
+                            .padding(.bottom, 28)
                     }
                 }
             }
             .versedScreen()
-            .navigationTitle("Browse")
+            .navigationTitle("Library")
             .navigationDestination(for: Route.self, destination: destination)
             .toolbar {
                 PlainToolbarItem(placement: .topBarTrailing) {
-                    Button { sheet = .search } label: {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 18, weight: .light))
-                            .foregroundStyle(.brand)
-                            .frame(width: 44, height: 44)
-                            .contentShape(Rectangle())
+                    HStack(spacing: 0) {
+                        toolbarButton("plus", label: "Your Library") { sheet = .library }
+                        toolbarButton("magnifyingglass", label: "Find a Book") { sheet = .search }
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Find a Book")
                     .padding(.trailing, Hardcover.margin - 16)
                 }
             }
@@ -88,6 +85,64 @@ struct BrowseView: View {
         }) { sheet in
             sheetContent(sheet)
         }
+    }
+
+    private var books: [LibraryBook] {
+        let ids = Set(Library.bookIDs(from: storedBooks))
+        return Library.allBooks(in: library).filter { ids.contains($0.id) }
+    }
+
+    /// The book on show. If it's been removed, the first one takes its place.
+    private var openBook: Binding<String> {
+        Binding(
+            get: {
+                let books = books
+                return books.contains { $0.id == openBookID } ? openBookID : books.first?.id ?? ""
+            },
+            set: { openBookID = $0 }
+        )
+    }
+
+    /// What's inside the book on show.
+    @ViewBuilder
+    private var contents: some View {
+        if let book = books.first(where: { $0.id == openBook.wrappedValue }) {
+            switch book.kind {
+            case .volume(let volume):
+                VolumeContents(
+                    volume: volume,
+                    startVolumePlan: { startOrOpenPlan(for: .volume(volume.id)) },
+                    startBookPlan: { startOrOpenPlan(for: .book($0.id)) }
+                )
+            case .weeklyCourse(let course):
+                CourseContents(schedule: schedule, course: course) { path.append(.week($0)) }
+            }
+        }
+    }
+
+    private var emptyLibrary: some View {
+        VStack(alignment: .leading, spacing: 18) {
+            Text("Your library is empty.")
+                .font(.versedTitle(size: 30, relativeTo: .title2))
+                .foregroundStyle(.brand)
+            Button("Add a Book") { sheet = .library }
+                .buttonStyle(.primary)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, Hardcover.margin)
+        .padding(.top, 24)
+    }
+
+    private func toolbarButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 18, weight: .light))
+                .foregroundStyle(.brand)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 
     /// The last page read here, in one small line above the covers. Nothing shows until there is one.
@@ -114,8 +169,10 @@ struct BrowseView: View {
     @ViewBuilder
     private func sheetContent(_ sheet: Sheet) -> some View {
         switch sheet {
+        case .library:
+            LibraryEditorView(books: Library.allBooks(in: library), stored: $storedBooks)
         case .search:
-            BrowseSearchView(library: library) { result in
+            LibrarySearchView(library: library) { result in
                 pickedResult = result
                 self.sheet = nil
             }
@@ -153,6 +210,8 @@ struct BrowseView: View {
             if let book = library.book(id: id) {
                 ChapterGridView(book: book) { startOrOpenPlan(for: .book(id)) }
             }
+        case .week(let id):
+            WeekReadingView(library: library, schedule: schedule, weekID: id)
         case .reading(let chapterID):
             if let book = library.book(id: chapterID.bookID) {
                 ChapterReadingView(library: library, book: book, startChapter: chapterID.chapter)
@@ -183,7 +242,7 @@ struct BrowseView: View {
 }
 
 #Preview {
-    BrowseView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled(), showToday: { _ in }, path: .constant([]))
+    LibraryView(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled(), showToday: { _ in }, path: .constant([]))
         .environment(ReadingChrome())
         .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }

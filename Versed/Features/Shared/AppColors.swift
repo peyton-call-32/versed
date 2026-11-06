@@ -3,7 +3,7 @@ import SwiftUI
 // Versed's look in one place: "Hardcover". Every screen is set like a page of a fine bound book:
 // navy ink on warm paper (cream on deep navy in dark mode), one family of serif type, thin ruled
 // lines instead of cards, and nearly square corners. Nothing floats, glows, or fades.
-// Chapter openings and the Browse book covers are solid navy with cream type in both modes.
+// Chapter openings and the Library's book covers are solid navy with cream type in both modes.
 // Every color is in the asset catalog with a light and a dark version.
 
 extension ShapeStyle where Self == Color {
@@ -22,7 +22,7 @@ extension ShapeStyle where Self == Color {
     /// The faint shadow under a book cover, the one thing in the app with real weight.
     static var cardShadow: Color { Color("CardShadow") }
 
-    /// The navy of a book cover: chapter openings and Browse's covers, in light and dark mode.
+    /// The navy of a book cover: chapter openings, the Library's covers, and Today's open plan, in light and dark mode.
     static var cover: Color { Color("Cover") }
 
     /// The cream type and lines printed on a cover.
@@ -469,12 +469,43 @@ struct SecondaryButtonStyle: ButtonStyle {
     }
 }
 
+/// The main button on a navy block: solid cream with navy words, in light and dark mode.
+struct CoverPrimaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.versedRow)
+            .foregroundStyle(.cover)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 28)
+            .background(Color.onCover, in: Hardcover.corner)
+            .opacity(configuration.isPressed ? 0.85 : 1)
+            .pressEffect(configuration.isPressed)
+    }
+}
+
+/// A quieter button on a navy block: cream words in a thin cream outline.
+struct CoverSecondaryButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(.versedRow)
+            .foregroundStyle(.onCover)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 28)
+            .overlay(Hardcover.corner.strokeBorder(Color.onCover.opacity(0.6)))
+            .contentShape(Hardcover.corner)
+            .opacity(configuration.isPressed ? 0.6 : 1)
+            .pressEffect(configuration.isPressed)
+    }
+}
+
 /// Words alone, for the small actions at the edge of a screen. Keeps a comfortable tap size.
 struct PlainWordButtonStyle: ButtonStyle {
+    var ink: Color = .brand
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.versedDetail)
-            .foregroundStyle(.brand)
+            .foregroundStyle(ink)
             .frame(minWidth: 44, minHeight: 44)
             .contentShape(Rectangle())
             .opacity(configuration.isPressed ? 0.45 : 1)

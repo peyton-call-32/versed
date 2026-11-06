@@ -16,7 +16,7 @@ struct ChapterGridView: View {
                     .buttonStyle(.ledgerRow)
                 }
                 ChapterGrid(chapters: Array(1...book.chapterCount)) { chapter in
-                    NavigationLink(value: BrowseView.Route.reading(ChapterID(bookID: book.id, chapter: chapter))) {
+                    NavigationLink(value: LibraryView.Route.reading(ChapterID(bookID: book.id, chapter: chapter))) {
                         ChapterCellLabel(chapter: chapter)
                     }
                     .buttonStyle(.ledgerRow)

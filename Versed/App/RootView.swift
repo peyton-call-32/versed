@@ -8,7 +8,7 @@ struct RootView: View {
     @AppStorage(IntroView.hasSeenKey) private var hasSeenIntro = false
     @State private var selectedTab = AppTab.today
     @State private var todayPath: [TodayView.Route] = []
-    @State private var browsePath: [BrowseView.Route] = []
+    @State private var libraryPath: [LibraryView.Route] = []
     @State private var savedPath: [VerseID] = []
     @State private var settingsPath: [SettingsView.Route] = []
     @State private var chrome = ReadingChrome()
@@ -37,7 +37,7 @@ struct RootView: View {
     private func goToStart(of tab: AppTab) {
         switch tab {
         case .today: todayPath = []
-        case .browse: browsePath = []
+        case .library: libraryPath = []
         case .saved: savedPath = []
         case .settings: settingsPath = []
         }
@@ -51,8 +51,8 @@ struct RootView: View {
                     tab(.today) {
                         TodayView(library: content.library, schedule: content.schedule, path: $todayPath)
                     }
-                    tab(.browse) {
-                        BrowseView(library: content.library, schedule: content.schedule, showToday: openPlan, path: $browsePath)
+                    tab(.library) {
+                        LibraryView(library: content.library, schedule: content.schedule, showToday: openPlan, path: $libraryPath)
                     }
                     tab(.saved) {
                         SavedVersesView(library: content.library, path: $savedPath)
@@ -111,8 +111,9 @@ struct RootView: View {
         store.adoptEarlierWeeklyReading()
         guard VersedApp.isUITesting else { return }
         let arguments = ProcessInfo.processInfo.arguments
-        // Browse's open volume is saved outside the test's own storage, so each run starts it fresh.
-        UserDefaults.standard.removeObject(forKey: VolumeCarousel.storageKey)
+        // The library is saved outside the test's own storage, so each run starts it fresh.
+        UserDefaults.standard.removeObject(forKey: Library.storageKey)
+        UserDefaults.standard.removeObject(forKey: LibraryCarousel.storageKey)
         if arguments.contains("-seed-weekly-plan") {
             store.start(source: .weeklySchedule(course: nil), pace: .week, finish: nil)
         }

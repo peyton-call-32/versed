@@ -63,13 +63,14 @@ struct TodayView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 0) {
                     header
+                        .padding(.horizontal, Hardcover.margin)
                     if plans.isEmpty {
                         emptyState
+                            .padding(.horizontal, Hardcover.margin)
                     } else {
                         planList
                     }
                 }
-                .padding(.horizontal, Hardcover.margin)
                 .padding(.bottom, 24)
             }
             .scrollBounceBehavior(.basedOnSize)
@@ -124,9 +125,13 @@ struct TodayView: View {
     private var planList: some View {
         let engine = engine
         return VStack(alignment: .leading, spacing: 0) {
-            Rule().padding(.top, 74)
-            ForEach(orderedPlans) { plan in
+            Color.clear.frame(height: 74)
+            ForEach(Array(orderedPlans.enumerated()), id: \.element.id) { index, plan in
                 let isOpen = openPlanID == plan.id
+                // A plain line between closed plans. The open plan's navy block needs none.
+                if !isOpen, index == 0 || orderedPlans[index - 1].id != openPlanID {
+                    Rule().padding(.horizontal, Hardcover.margin)
+                }
                 PlanSection(
                     title: engine.title(of: plan.state.source),
                     status: engine.status(of: plan.state),
@@ -141,7 +146,9 @@ struct TodayView: View {
                     onRead: { path.append(.reading(plan.id)) },
                     onDetails: { path.append(.details(plan.id)) }
                 )
-                Rule()
+            }
+            if orderedPlans.last?.id != openPlanID {
+                Rule().padding(.horizontal, Hardcover.margin)
             }
             Button {
                 sheet = .picker
@@ -153,6 +160,7 @@ struct TodayView: View {
                     .contentShape(Rectangle())
             }
             .buttonStyle(.ledgerRow)
+            .padding(.horizontal, Hardcover.margin)
             .accessibilityLabel("Add a Plan")
         }
     }
@@ -236,7 +244,8 @@ struct TodayView: View {
 }
 
 /// One plan: its name, which opens and closes it, and when open, the reading set large with
-/// how long it takes and the way in.
+/// how long it takes and the way in. An open plan is a solid navy block across the page, so it's
+/// plain which plan is which.
 private struct PlanSection: View {
     let title: String
     let status: PlanStatus
@@ -248,24 +257,26 @@ private struct PlanSection: View {
     let onDetails: () -> Void
 
     private var isDone: Bool { status.doneText != nil || status.isFinished }
+    private var ink: Color { isOpen ? .onCover : .brand }
+    private var quietInk: Color { isOpen ? .onCover : .secondaryText }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Button(action: onToggle) {
                 HStack(spacing: 12) {
                     (Text(title) + Text(isDone ? "  " : "") + checkmark)
-                        .font(.versedTitle(size: 34, relativeTo: .title))
-                        .foregroundStyle(.brand)
+                        .font(.versedTitle(size: 38, relativeTo: .title))
+                        .foregroundStyle(ink)
                         .multilineTextAlignment(.leading)
                         .fixedSize(horizontal: false, vertical: true)
                     Spacer(minLength: 0)
                     Image(systemName: "chevron.forward")
                         .font(.system(size: 14, weight: .light))
-                        .foregroundStyle(.secondaryText)
+                        .foregroundStyle(quietInk)
                         .rotationEffect(.degrees(isOpen ? 90 : 0))
                 }
-                .padding(.vertical, 14)
-                .frame(maxWidth: .infinity, minHeight: 72, alignment: .leading)
+                .padding(.vertical, 16)
+                .frame(maxWidth: .infinity, minHeight: 80, alignment: .leading)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.ledgerRow)
@@ -282,6 +293,8 @@ private struct PlanSection: View {
             .allowsHitTesting(isOpen)
             .accessibilityHidden(!isOpen)
         }
+        .padding(.horizontal, Hardcover.margin)
+        .background(isOpen ? Color.cover : .clear)
     }
 
     private var checkmark: Text {
@@ -299,26 +312,26 @@ private struct PlanSection: View {
     private var openContent: some View {
         VStack(alignment: .leading, spacing: 0) {
             if let reading = status.reading {
-                ReadingTitle(reading: reading, chapterWord: chapterWord)
+                ReadingTitle(reading: reading, chapterWord: chapterWord, ink: ink)
             } else {
                 Text("You finished this plan.")
                     .font(.versedTitle(size: 30, relativeTo: .title2))
-                    .foregroundStyle(.brand)
+                    .foregroundStyle(ink)
             }
             HStack(alignment: .firstTextBaseline) {
                 Text(status.isFinished ? status.periodText : (isDone ? "Read today" : time?.text ?? ""))
                     .font(.versedVerse(size: 16, relativeTo: .subheadline))
-                    .foregroundStyle(.secondaryText)
+                    .foregroundStyle(quietInk)
                 Spacer(minLength: 12)
                 Button("Details", action: onDetails)
-                    .buttonStyle(.plainWord)
+                    .buttonStyle(PlainWordButtonStyle(ink: ink))
                     .accessibilityLabel("Plan details, \(title)")
             }
             .padding(.top, 2)
             if !status.isFinished {
                 readButton.padding(.top, 8)
             }
-            Color.clear.frame(height: 22)
+            Color.clear.frame(height: 24)
         }
     }
 
@@ -328,13 +341,13 @@ private struct PlanSection: View {
             Button(action: onRead) {
                 Text(status.readAhead == nil ? "Read Again" : "Read Ahead").frame(maxWidth: .infinity)
             }
-            .buttonStyle(.secondary)
+            .buttonStyle(CoverSecondaryButtonStyle())
             .accessibilityIdentifier("Read \(title)")
         } else {
             Button(action: onRead) {
                 Text(time?.hasStarted == true ? "Continue Reading" : "Start Reading").frame(maxWidth: .infinity)
             }
-            .buttonStyle(.primary)
+            .buttonStyle(CoverPrimaryButtonStyle())
             .accessibilityIdentifier("Read \(title)")
         }
     }
@@ -344,6 +357,7 @@ private struct PlanSection: View {
 private struct ReadingTitle: View {
     let reading: ReadingPortion
     let chapterWord: String
+    let ink: Color
 
     var body: some View {
         let books = reading.readingByBook
@@ -352,13 +366,13 @@ private struct ReadingTitle: View {
                 VStack(alignment: .leading, spacing: 0) {
                     Text(book.name)
                         .font(.versedTitle(size: nameSize(book, count: books.count), relativeTo: .largeTitle))
-                        .foregroundStyle(.brand)
+                        .foregroundStyle(ink)
                         .lineLimit(2)
                         .minimumScaleFactor(0.7)
                     if let chapters = chapterText(book) {
                         Text(chapters)
-                            .font(.versedNumber(size: books.count > 1 ? 22 : 27, relativeTo: .title2))
-                            .foregroundStyle(.brand)
+                            .font(.versedNumber(size: books.count > 1 ? 24 : 28, relativeTo: .title2))
+                            .foregroundStyle(ink)
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
@@ -371,9 +385,9 @@ private struct ReadingTitle: View {
     /// As big as fits: short names fill the page, longer ones and groups of books step down.
     private func nameSize(_ book: BookReading, count: Int) -> CGFloat {
         switch count {
-        case 1: book.name.count <= 11 ? 72 : 44
-        case 2: 42
-        default: 32
+        case 1: book.name.count <= 11 ? 72 : 48
+        case 2: 46
+        default: 34
         }
     }
 
