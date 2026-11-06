@@ -218,3 +218,22 @@ private struct StreakStat: View {
 #Preview {
     StreakCalendarView(readDays: ["2026-11-01", "2026-11-02", "2026-11-03", "2026-11-04"])
 }
+
+/// A plain flame, drawn as one clean line so it stays crisp at the small sizes it's used.
+struct FlameMark: Shape {
+    func path(in rect: CGRect) -> Path {
+        func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
+            CGPoint(x: rect.minX + rect.width * x, y: rect.minY + rect.height * y)
+        }
+        var path = Path()
+        path.move(to: point(0.56, 0))
+        path.addCurve(to: point(0.96, 0.66), control1: point(0.62, 0.24), control2: point(0.96, 0.38))
+        path.addCurve(to: point(0.5, 1), control1: point(0.96, 0.87), control2: point(0.75, 1))
+        path.addCurve(to: point(0.04, 0.64), control1: point(0.25, 1), control2: point(0.04, 0.86))
+        path.addCurve(to: point(0.2, 0.28), control1: point(0.04, 0.49), control2: point(0.12, 0.39))
+        path.addCurve(to: point(0.36, 0.5), control1: point(0.21, 0.39), control2: point(0.28, 0.47))
+        path.addCurve(to: point(0.56, 0), control1: point(0.33, 0.3), control2: point(0.4, 0.13))
+        path.closeSubpath()
+        return path
+    }
+}

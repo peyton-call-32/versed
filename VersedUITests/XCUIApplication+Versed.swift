@@ -20,46 +20,51 @@ extension XCUIApplication {
         coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
     }
 
-    /// Brings a book cover on Browse to the middle and opens it. The first tap on a cover at
-    /// the side only brings it forward, so swipe until it's in the middle, then tap.
+    /// Opens a volume from its spine on Browse, putting it on the shelf first if it isn't there.
     func openVolume(_ title: String) {
-        let cover = showVolumeCover(title)
-        for _ in 1...6 where abs(cover.frame.midX - frame.midX) > 5 {
-            let moveLeft = cover.frame.midX > frame.midX
-            let carousel = coordinate(withNormalizedOffset: .zero).withOffset(CGVector(dx: frame.midX, dy: cover.frame.midY))
-            let target = carousel.withOffset(CGVector(dx: moveLeft ? -260 : 260, dy: 0))
-            carousel.press(forDuration: 0.05, thenDragTo: target)
-            sleep(1)
-        }
-        cover.tap()
+        let spine = showVolumeCover(title)
+        spine.tap()
     }
 
-    /// Scrolls Browse down to the book covers.
+    /// Finds a volume's spine on Browse, adding it to the shelf if it's missing.
     @discardableResult
     func showVolumeCover(_ title: String) -> XCUIElement {
-        let cover = buttons[title]
-        XCTAssertTrue(cover.waitForExistence(timeout: 5))
-        let bar = descendants(matching: .any).matching(identifier: "Tab bar").firstMatch
-        for _ in 1...3 where cover.frame.maxY > bar.frame.minY {
-            swipeUp()
-            sleep(1)
+        let spine = buttons["Spine \(title)"]
+        if !spine.waitForExistence(timeout: 3) {
+            buttons["Your Shelf"].tap()
+            let add = buttons["Add \(title)"]
+            XCTAssertTrue(add.waitForExistence(timeout: 5))
+            add.tap()
+            buttons["Done"].tap()
         }
-        return cover
+        XCTAssertTrue(spine.waitForExistence(timeout: 5))
+        return spine
     }
 
-    /// Opens the weekly plan from its row on Today.
+    /// Opens a plan on Today, if it isn't already, and goes into its reading.
+    func openPlan(_ title: String) {
+        let read = buttons["Read \(title)"]
+        if !(read.waitForExistence(timeout: 2) && read.isHittable) {
+            let row = buttons["Plan \(title)"]
+            XCTAssertTrue(row.waitForExistence(timeout: 10))
+            row.tap()
+            sleep(1)
+        }
+        read.tap()
+    }
+
+    /// Opens the weekly plan's reading from Today.
     func openWeeklyPlan() {
         tab("Today").tap()
-        let row = buttons["Plan Come, Follow Me"]
-        XCTAssertTrue(row.waitForExistence(timeout: 10))
-        row.tap()
+        openPlan("Come, Follow Me")
     }
 
     /// Goes back to Today's list of plans.
     func goToToday() {
         tab("Today").tap()
-        if !navigationBars["Today"].waitForExistence(timeout: 1) { tab("Today").tap() }
-        XCTAssertTrue(navigationBars["Today"].waitForExistence(timeout: 5))
+        let date = staticTexts["Today date"]
+        if !date.waitForExistence(timeout: 1) { tab("Today").tap() }
+        XCTAssertTrue(date.waitForExistence(timeout: 5))
     }
 
     /// The top edge of the floating tab bar, for checking nothing slides under it.
@@ -67,17 +72,21 @@ extension XCUIApplication {
         descendants(matching: .any).matching(identifier: "Tab bar").firstMatch.frame.minY
     }
 
-    /// Opens Settings from the gear at the top of Browse.
+    /// Opens the Settings tab.
     func openSettings() {
-        tab("Browse").tap()
-        buttons["Settings"].tap()
+        tab("Settings").tap()
         XCTAssertTrue(navigationBars["Settings"].waitForExistence(timeout: 5))
     }
 
-    /// Opens a week from Browse > Reading Schedule, by its row's VoiceOver label ("Nov 9–15, Daniel 1–7").
+    /// Opens a week from the weekly plan's Reading Schedule, by its row's VoiceOver label ("Nov 9–15, Daniel 1–7").
     func openWeekFromSchedule(_ rowLabel: String) {
-        tab("Browse").tap()
-        if !navigationBars["Browse"].waitForExistence(timeout: 1) { tab("Browse").tap() }
+        tab("Today").tap()
+        let details = buttons["Plan details, Come, Follow Me"]
+        if !(details.waitForExistence(timeout: 2) && details.isHittable) {
+            buttons["Plan Come, Follow Me"].tap()
+            sleep(1)
+        }
+        details.tap()
         let schedule = scrollViews.buttons["Reading Schedule"]
         XCTAssertTrue(schedule.waitForExistence(timeout: 5))
         for _ in 1...3 where !schedule.isHittable { swipeUp() }

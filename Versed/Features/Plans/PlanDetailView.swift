@@ -65,7 +65,7 @@ struct PlanDetailView: View {
                 .buttonStyle(.secondary)
 
                 if state.source.isWeeklySchedule {
-                    Text(WeeklyCover.notice)
+                    Text(WeeklyPlanName.notice)
                         .font(.versedNote)
                         .foregroundStyle(.secondaryText)
                         .frame(maxWidth: .infinity, alignment: .leading)

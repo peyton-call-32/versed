@@ -95,7 +95,7 @@ struct PlanSetupView: View {
                     }
                     startButton
                     if source.isWeeklySchedule {
-                        Text(WeeklyCover.notice)
+                        Text(WeeklyPlanName.notice)
                             .font(.versedNote)
                             .foregroundStyle(.secondaryText)
                             .frame(maxWidth: .infinity, alignment: .leading)

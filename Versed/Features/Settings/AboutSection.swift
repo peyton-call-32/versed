@@ -7,7 +7,7 @@ struct AboutSection: View {
     static let contactEmail = "peytoncall32@icloud.com"
 
     /// A plain description of the Come, Follow Me plan. Also shown on the last page of the first-time
-    /// intro. The other places the app uses the name are the cover on Browse (`WeeklyCover`) and the
+    /// intro. The other places the app uses the name are the weekly plan (`WeeklyPlanName`) and the
     /// plan's own title, which come with the cover's short notice.
     static let independenceNotice = "The Come, Follow Me plan follows the Church’s published reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."
 

@@ -1,52 +1,40 @@
 import SwiftData
 import SwiftUI
 
-/// Study plans at the top: the weekly schedule's cover, and a way to make a plan for any book.
-/// Below them: the five volumes as swipeable covers, opening on the last volume read, to pick any
-/// book and chapter, and a "Continue Reading" row that returns to the last page read here or from Saved.
+/// Any book and chapter, with no plan needed: the reader's own shelf of volumes, and a way back
+/// to the last page read here or from Saved.
 struct BrowseView: View {
     let library: ScriptureLibrary
     let schedule: ReadingSchedule
-    /// Shows Today, where a plan that was just opened or started is waiting.
+    /// Shows Today, opening a plan that was just started or already going.
     let showToday: (String) -> Void
-    /// The screens open on top of the main list. Emptying it goes back to the list.
+    /// The screens open on top of the shelf. Emptying it goes back to the shelf.
     @Binding var path: [Route]
 
     @Query private var positions: [ReadingPosition]
+    @AppStorage(Shelf.storageKey) private var storedShelf = Shelf.starting
     /// The one sheet open over Browse. iOS can close a sheet when a neighboring one updates, so they share this.
     @State private var sheet: Sheet?
-    /// A choice from the plan picker, set up once the picker has closed.
-    @State private var pickedSource: PlanSource?
-    /// The cover in the middle of the carousel.
-    @State private var selectedVolume: Volume.ID?
-    /// Where the covers should move once they're back on screen. Covers that are out of sight
-    /// can't scroll, and moving the selection then would leave it out of step with what's shown.
-    @State private var pendingCover: Volume.ID?
-    @State private var isOnScreen = false
-    /// Rebuilds the covers while they're out of sight, so they start on a new book in place.
-    /// Moving them on screen would also scroll the whole page down to them.
-    @State private var carouselVersion = 0
+    /// A search result, opened once the search sheet has closed.
+    @State private var pickedResult: ScriptureSearchResult?
     @Environment(\.modelContext) private var modelContext
-    @Environment(\.dynamicTypeSize) private var typeSize
 
     private enum Sheet: Identifiable {
-        case settings
+        case shelf
+        case search
         case setup(PlanSource)
-        case planPicker
 
         var id: String {
             switch self {
-            case .settings: "settings"
+            case .shelf: "shelf"
+            case .search: "search"
             case .setup(let source): "setup:\(source.key)"
-            case .planPicker: "picker"
             }
         }
     }
 
     /// The screens the browse tab can open.
     enum Route: Hashable {
-        case schedule
-        case week(ReadingWeek.ID)
         case volume(Volume.ID)
         case book(Book.ID)
         case reading(ChapterID)
@@ -54,157 +42,123 @@ struct BrowseView: View {
         case resume(FeedItem.ID)
     }
 
+    private var engine: PlanEngine { PlanEngine(library: library, schedule: schedule) }
+
+    private var shelfVolumes: [Volume] {
+        Shelf.volumeIDs(from: storedShelf).compactMap(library.volume(id:))
+    }
+
     var body: some View {
         NavigationStack(path: $path) {
-            ScrollView {
-                VStack(spacing: 26) {
-                    studyPlans
-                    scriptures
+            VStack(spacing: 0) {
+                if shelfVolumes.isEmpty {
+                    Text("Your shelf is empty. Add a book to start.")
+                        .font(.versedDetail)
+                        .foregroundStyle(.secondaryText)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, Hardcover.margin)
                 }
-                .padding(.top, 10)
-                .padding(.bottom, 24)
+                BookShelf(
+                    volumes: shelfVolumes,
+                    onOpen: { path.append(route(for: $0)) },
+                    onAdd: { sheet = .shelf }
+                )
+                .padding(.horizontal, Hardcover.margin)
+                .padding(.top, 16)
+                Rectangle()
+                    .fill(.cover)
+                    .frame(height: 7)
+                    .padding(.horizontal, Hardcover.margin - 8)
+                    .accessibilityHidden(true)
+                continueRow
             }
-            .scrollBounceBehavior(.basedOnSize)
-            .versedScreen()
-            .onAppear {
-                if selectedVolume == nil {
-                    selectedVolume = library.lastReadVolumeID(from: positions) ?? library.middleVolumeID
-                }
-                if let pendingCover {
-                    selectedVolume = pendingCover
-                    carouselVersion += 1
-                    self.pendingCover = nil
-                }
-                isOnScreen = true
-            }
-            .onDisappear {
-                isOnScreen = false
-            }
-            // Reading somewhere else moves the covers to that book, ready for coming back here.
-            .onChange(of: library.lastReadVolumeID(from: positions)) { _, volumeID in
-                guard let volumeID else { return }
-                if isOnScreen {
-                    selectedVolume = volumeID
-                } else {
-                    pendingCover = volumeID
-                }
-            }
+            // Only scrolling screens get pushed clear of the tab bar for them, so this page leaves its own room.
+            .padding(.bottom, VersedTabBar.height)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.appBackground)
+            .hidesScrollEdgeEffects()
             .navigationTitle("Browse")
             .navigationDestination(for: Route.self, destination: destination)
             .toolbar {
                 PlainToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        sheet = .settings
-                    } label: {
-                        Image(systemName: "gearshape")
-                            .font(.system(size: 18, weight: .light))
-                            .foregroundStyle(.brand)
-                            .padding(.trailing, Hardcover.margin - 16)
-                            .frame(width: 44, height: 44, alignment: .trailing)
-                            .contentShape(Rectangle())
+                    HStack(spacing: 0) {
+                        toolbarButton("plus", label: "Your Shelf") { sheet = .shelf }
+                        toolbarButton("magnifyingglass", label: "Find a Book") { sheet = .search }
                     }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Settings")
+                    .padding(.trailing, Hardcover.margin - 16)
                 }
             }
         }
         // On the stack itself, so it can't disturb a sheet opened from a screen pushed on top.
         .sheet(item: $sheet, onDismiss: {
-            if let pickedSource {
-                sheet = .setup(pickedSource)
-                self.pickedSource = nil
+            if let pickedResult {
+                open(pickedResult)
+                self.pickedResult = nil
             }
         }) { sheet in
             sheetContent(sheet)
-                .versedSheet()
         }
     }
 
-    private var engine: PlanEngine { PlanEngine(library: library, schedule: schedule) }
-
-    /// The weekly schedule's cover and the plan-making row, with the schedule itself beneath.
-    private var studyPlans: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Study Plans")
-            if let course = schedule.currentWeek()?.course {
-                Button {
-                    sheet = .setup(.weeklySchedule(course: nil))
-                } label: {
-                    WeeklyCover(course: course, height: typeSize.isAccessibilitySize ? 380 : 290)
-                }
-                .buttonStyle(CoverButtonStyle())
-                .padding(.horizontal, Hardcover.margin)
-                .accessibilityLabel(WeeklyCover.spokenTitle(course: course))
-                .accessibilityValue(WeeklyCover.notice)
-                .accessibilityHint("Sets up this plan.")
-                .accessibilityIdentifier(WeeklyCover.id)
-            }
-            Ledger {
-                Button {
-                    sheet = .planPicker
-                } label: {
-                    LedgerRowLabel(title: "Make Your Own Plan")
-                }
-                .buttonStyle(.ledgerRow)
-                LedgerRule()
-                NavigationLink(value: Route.schedule) {
-                    LedgerRowLabel(title: "Reading Schedule")
-                }
-                .buttonStyle(.ledgerRow)
-            }
-            .padding(.horizontal, Hardcover.margin)
-            .padding(.top, 8)
+    private func toolbarButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.system(size: 18, weight: .light))
+                .foregroundStyle(.brand)
+                .frame(width: 44, height: 44)
+                .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 
-    /// The five volumes, and a way back to the last page read among them.
-    private var scriptures: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            sectionLabel("Scriptures")
-            // Right under the heading, so it's in view without scrolling.
-            if let itemID = lastBrowsePosition, let reference = reference(for: itemID) {
-                Ledger {
-                    NavigationLink(value: Route.resume(itemID)) {
-                        LedgerRowLabel(title: "Continue Reading", detail: reference)
+    /// The last page read here, under the shelf. Nothing shows until there is one.
+    @ViewBuilder
+    private var continueRow: some View {
+        if let itemID = lastBrowsePosition, let reference = reference(for: itemID) {
+            NavigationLink(value: Route.resume(itemID)) {
+                HStack {
+                    VStack(alignment: .leading, spacing: 1) {
+                        SmallCapsLabel("Continue")
+                        Text(reference)
+                            .font(.versedTitle(size: 24, relativeTo: .title3))
+                            .foregroundStyle(.brand)
                     }
-                    .buttonStyle(.ledgerRow)
+                    Spacer(minLength: 8)
+                    LedgerRowArrow()
                 }
-                .padding(.horizontal, Hardcover.margin)
-                .padding(.bottom, 8)
+                .frame(minHeight: 72)
+                .contentShape(Rectangle())
             }
-            // Waits for its first cover to be chosen, so it starts there without any scrolling.
-            if selectedVolume != nil {
-                VolumeCarousel(
-                    volumes: library.volumes,
-                    selection: $selectedVolume,
-                    coverHeight: 320,
-                    subtitle: subtitle(for:),
-                    onOpen: { path.append(route(for: $0)) }
-                )
-                .id(carouselVersion)
-            }
+            .buttonStyle(.ledgerRow)
+            .padding(.horizontal, Hardcover.margin)
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel("Continue Reading")
+            .accessibilityValue(reference)
+            .accessibilityAddTraits(.isButton)
+        } else {
+            Color.clear.frame(height: 24)
         }
     }
 
     @ViewBuilder
     private func sheetContent(_ sheet: Sheet) -> some View {
         switch sheet {
-        case .settings:
-            SettingsView()
-        case .setup(let source):
-            PlanSetupView(engine: engine, source: source, onOpenPlan: showToday)
-        case .planPicker:
-            PlanPickerView(engine: engine) { source in
-                pickedSource = source
+        case .shelf:
+            ShelfEditorView(volumes: library.volumes, stored: $storedShelf)
+                .presentationDetents([.height(460)])
+                .presentationBackground(Color.appBackground)
+                .presentationDragIndicator(.hidden)
+        case .search:
+            BrowseSearchView(library: library) { result in
+                pickedResult = result
                 self.sheet = nil
             }
+            .versedSheet()
+        case .setup(let source):
+            PlanSetupView(engine: engine, source: source, onOpenPlan: showToday)
+                .versedSheet()
         }
-    }
-
-    private func sectionLabel(_ title: String) -> some View {
-        SmallCapsLabel(title)
-            .accessibilityAddTraits(.isHeader)
-            .padding(.horizontal, Hardcover.margin)
     }
 
     /// Opens the plan for a book or volume if there is one, or sets one up.
@@ -216,13 +170,20 @@ struct BrowseView: View {
         }
     }
 
+    private func open(_ result: ScriptureSearchResult) {
+        guard let book = library.book(id: result.bookID) else { return }
+        if let chapter = result.chapter {
+            path = [.reading(ChapterID(bookID: book.id, chapter: chapter))]
+        } else if book.chapterCount == 1 {
+            path = [.reading(ChapterID(bookID: book.id, chapter: 1))]
+        } else {
+            path = [.book(book.id)]
+        }
+    }
+
     @ViewBuilder
     private func destination(for route: Route) -> some View {
         switch route {
-        case .schedule:
-            ReadingScheduleView(schedule: schedule) { path.append(.week($0)) }
-        case .week(let id):
-            WeekReadingView(library: library, schedule: schedule, weekID: id)
         case .volume(let id):
             if let volume = library.volume(id: id) {
                 BookListView(volume: volume) { startOrOpenPlan(for: .volume(id)) }
@@ -264,14 +225,6 @@ struct BrowseView: View {
             return .book(book.id)
         }
         return .volume(volume.id)
-    }
-
-    /// "39 books" or "138 sections".
-    private func subtitle(for volume: Volume) -> String {
-        if volume.books.count == 1, let book = volume.books.first {
-            return "\(book.chapterCount) \((book.chapterLabel ?? "Chapter").lowercased())s"
-        }
-        return "\(volume.books.count) books"
     }
 }
 

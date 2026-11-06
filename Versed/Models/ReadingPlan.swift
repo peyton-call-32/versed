@@ -86,6 +86,8 @@ final class ReadingPlan {
     var periodStart: Int
     var trackedWeekID: String?
     var createdAt: Date
+    /// Where the reader moved this plan to on Today. Plans never moved follow in the order they were started.
+    var sortOrder: Int?
 
     init(state: PlanState, createdAt: Date = .now) {
         id = state.id
@@ -98,6 +100,16 @@ final class ReadingPlan {
         periodStart = state.periodStart
         trackedWeekID = state.trackedWeekID
         self.createdAt = createdAt
+    }
+
+    /// The order plans appear in on Today.
+    static func comesFirst(_ first: ReadingPlan, _ second: ReadingPlan) -> Bool {
+        switch (first.sortOrder, second.sortOrder) {
+        case let (one?, two?) where one != two: one < two
+        case (_?, nil): true
+        case (nil, _?): false
+        default: first.createdAt < second.createdAt
+        }
     }
 
     var state: PlanState {

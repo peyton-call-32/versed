@@ -27,6 +27,19 @@ struct UpcomingReading: Hashable, Sendable {
     let label: String
 }
 
+/// How long what's left of a reading should take.
+struct PlanReadingTime: Hashable, Sendable {
+    let minutes: Int
+    /// Whether any of this reading has been read yet.
+    let hasStarted: Bool
+
+    /// "About 8 minutes", or "15 minutes left" partway through.
+    var text: String {
+        let amount = minutes == 1 ? "1 minute" : "\(minutes) minutes"
+        return hasStarted ? "\(amount) left" : "About \(amount)"
+    }
+}
+
 /// What a plan's setup screen says about the choices made so far.
 struct PlanPreview: Hashable, Sendable {
     /// "About 3 chapters a day."
@@ -46,7 +59,7 @@ struct PlanEngine: Sendable {
 
     func title(of source: PlanSource) -> String {
         switch source {
-        case .weeklySchedule: WeeklyCover.title
+        case .weeklySchedule: WeeklyPlanName.title
         case .volume(let id): library.volume(id: id)?.title ?? ""
         case .book(let id): library.book(id: id)?.name ?? ""
         }
@@ -149,6 +162,25 @@ struct PlanEngine: Sendable {
         case .weeklySchedule(let course?): return ownPaceUpcoming(state, course: course, limit: limit)
         case .volume, .book: return deadlineUpcoming(state, limit: limit, today: today)
         }
+    }
+
+    // MARK: - How long a reading takes
+
+    /// A verse takes about six seconds to read and swipe past.
+    private static let secondsPerVerse = 6
+
+    /// How long the rest of this period's reading should take, or `nil` once the plan is finished.
+    func readingTime(of state: PlanState, today: Date = VersedApp.today) -> PlanReadingTime? {
+        let state = rolledForward(state, today: today)
+        guard let reading = status(of: state, today: today).reading else { return nil }
+        let read = min(max(state.unitsRead - reading.firstUnit, 0), reading.passages.count)
+        let verses = reading.passages.dropFirst(read).reduce(0) { $0 + weight(of: $1) }
+        return PlanReadingTime(minutes: max(Int((Double(verses * Self.secondsPerVerse) / 60).rounded(.up)), 1), hasStarted: read > 0)
+    }
+
+    /// "Chapter", or "Section" for the Doctrine and Covenants.
+    func chapterWord(of state: PlanState, today: Date = VersedApp.today) -> String {
+        status(of: state, today: today).reading?.passages.first.flatMap { library.book(id: $0.bookID)?.chapterWord } ?? "Chapter"
     }
 
     // MARK: - Chapters

@@ -10,9 +10,16 @@ struct PlanPickerView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
+                VStack(alignment: .leading, spacing: 14) {
                 Ledger {
+                    Button {
+                        onPick(.weeklySchedule(course: nil))
+                    } label: {
+                        LedgerRowLabel(title: WeeklyPlanName.title, detail: "Weekly schedule")
+                    }
+                    .buttonStyle(.ledgerRow)
                     ForEach(engine.library.volumes) { volume in
-                        if volume.id != engine.library.volumes.first?.id { LedgerRule() }
+                        LedgerRule()
                         if volume.books.count == 1 {
                             pickRow(title: volume.title, source: .volume(volume.id))
                         } else {
@@ -26,6 +33,10 @@ struct PlanPickerView: View {
                             .accessibilityIdentifier("Pick \(volume.title)")
                         }
                     }
+                }
+                Text(WeeklyPlanName.notice)
+                    .font(.versedNote)
+                    .foregroundStyle(.secondaryText)
                 }
                 .versedPage()
             }

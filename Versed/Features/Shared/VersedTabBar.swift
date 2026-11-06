@@ -1,10 +1,11 @@
 import SwiftUI
 
-/// The app's three main screens.
+/// The app's four main screens.
 enum AppTab: String, CaseIterable, Identifiable {
     case today = "Today"
     case browse = "Browse"
     case saved = "Saved"
+    case settings = "Settings"
 
     var id: Self { self }
 
@@ -14,6 +15,7 @@ enum AppTab: String, CaseIterable, Identifiable {
         case .today: "calendar"
         case .browse: "book"
         case .saved: "heart"
+        case .settings: "gearshape"
         }
     }
 }
@@ -45,7 +47,7 @@ struct VersedTabBar: View {
                     button(for: tab)
                 }
             }
-            .padding(.horizontal, 28)
+            .padding(.horizontal, 8)
             .frame(minHeight: Self.height)
         }
         .animation(reduceMotion ? nil : .versed, value: selection)

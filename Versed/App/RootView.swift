@@ -1,3 +1,4 @@
+import SwiftData
 import SwiftUI
 
 /// The app's top-level screen: loads the scriptures and schedule, then shows the tabs.
@@ -9,6 +10,7 @@ struct RootView: View {
     @State private var todayPath: [TodayView.Route] = []
     @State private var browsePath: [BrowseView.Route] = []
     @State private var savedPath: [VerseID] = []
+    @State private var settingsPath: [SettingsView.Route] = []
     @State private var chrome = ReadingChrome()
     /// The phone's own edges. Hiding the status bar can shrink them on some iPhones, so this keeps the largest.
     @State private var screenInsets = ScreenInsets(top: 0, bottom: 0)
@@ -25,9 +27,9 @@ struct RootView: View {
         Binding { content != nil && !hasSeenIntro } set: { hasSeenIntro = !$0 }
     }
 
-    /// Goes to Today's list of plans.
-    private func showToday() {
-        todayPath = []
+    /// Opens a plan's reading on Today.
+    private func openPlan(_ id: String) {
+        todayPath = [.reading(id)]
         selectedTab = .today
     }
 
@@ -37,6 +39,7 @@ struct RootView: View {
         case .today: todayPath = []
         case .browse: browsePath = []
         case .saved: savedPath = []
+        case .settings: settingsPath = []
         }
     }
 
@@ -46,13 +49,16 @@ struct RootView: View {
                 // iOS's tab container keeps each screen's place; our own bar replaces its bar.
                 TabView(selection: $selectedTab) {
                     tab(.today) {
-                        TodayView(library: content.library, schedule: content.schedule, openBrowse: { selectedTab = .browse }, path: $todayPath)
+                        TodayView(library: content.library, schedule: content.schedule, path: $todayPath)
                     }
                     tab(.browse) {
-                        BrowseView(library: content.library, schedule: content.schedule, showToday: { _ in showToday() }, path: $browsePath)
+                        BrowseView(library: content.library, schedule: content.schedule, showToday: openPlan, path: $browsePath)
                     }
                     tab(.saved) {
                         SavedVersesView(library: content.library, path: $savedPath)
+                    }
+                    tab(.settings) {
+                        SettingsView(engine: PlanEngine(library: content.library, schedule: content.schedule), path: $settingsPath)
                     }
                 }
                 .overlay(alignment: .bottom) {
@@ -105,6 +111,8 @@ struct RootView: View {
         store.adoptEarlierWeeklyReading()
         guard VersedApp.isUITesting else { return }
         let arguments = ProcessInfo.processInfo.arguments
+        // The shelf is saved outside the test's own storage, so each run starts it fresh.
+        UserDefaults.standard.removeObject(forKey: Shelf.storageKey)
         if arguments.contains("-seed-weekly-plan") {
             store.start(source: .weeklySchedule(course: nil), pace: .week, finish: nil)
         }
@@ -112,6 +120,24 @@ struct RootView: View {
             let finish = Calendar.current.date(byAdding: .day, value: 56, to: VersedApp.today)
             store.start(source: .volume("bofm"), pace: .day, finish: finish)
         }
+        // Finishes today's reading for the plans started above, so tests can reach the "done" states.
+        if arguments.contains("-seed-done-first") || arguments.contains("-seed-done-all") {
+            let plans = ((try? modelContext.fetch(FetchDescriptor<ReadingPlan>())) ?? []).sorted(by: ReadingPlan.comesFirst)
+            for plan in arguments.contains("-seed-done-all") ? plans : Array(plans.prefix(1)) {
+                guard let reading = engine.status(of: plan.state).reading else { continue }
+                var state = plan.state
+                state.unitsRead = reading.firstUnit + reading.passages.count
+                plan.state = state
+            }
+        }
+        if arguments.contains("-seed-streak") {
+            for offset in 1...4 {
+                if let day = Calendar.current.date(byAdding: .day, value: -offset, to: .now) {
+                    modelContext.insert(ReadingDay(day: ReadingDay.key(for: day)))
+                }
+            }
+        }
+        try? modelContext.save()
     }
 
     /// One main screen. Lists stop at the bar instead of running under it.

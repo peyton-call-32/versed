@@ -25,7 +25,7 @@ final class DesignAuditUITests: XCTestCase {
         if let size = ProcessInfo.processInfo.environment["VERSED_AUDIT_TEXT_SIZE"] {
             textSize = ["-UIPreferredContentSizeCategoryName", size]
         }
-        app.launchArguments = ["-ui-testing", "-today", "2026-10-28", "-appearance", appearance, "-seed-weekly-plan", "-seed-book-plan"] + textSize + extra
+        app.launchArguments = ["-ui-testing", "-today", "2026-10-28", "-appearance", appearance, "-seed-weekly-plan", "-seed-book-plan", "-seed-streak"] + textSize + extra
         app.launch()
     }
 
@@ -53,13 +53,14 @@ final class DesignAuditUITests: XCTestCase {
     func test2Week() {
         launch()
         shoot("09-today")
+        app.buttons["Plan Book of Mormon"].tap()
+        shoot("09-today-second-open")
+        app.buttons["Plan Book of Mormon"].tap()
+        shoot("09-today-all-closed")
+        app.buttons["Plan Book of Mormon"].tap()
+        sleep(1)
         app.buttons["Plan details, Book of Mormon"].tap()
         shoot("09-plan-details")
-        app.terminate()
-
-        launch()
-        app.buttons["Plan Book of Mormon"].tap()
-        shoot("09-plan-open")
         app.terminate()
 
         launch()
@@ -88,17 +89,19 @@ final class DesignAuditUITests: XCTestCase {
         shoot("30-saved")
     }
 
+    func test2bDoneStates() {
+        launch(["-seed-done-first"])
+        shoot("09-today-one-done")
+        app.terminate()
+        launch(["-seed-done-all"])
+        shoot("09-today-all-done")
+        app.buttons["Plan Come, Follow Me"].tap()
+        shoot("09-today-read-ahead")
+    }
+
     func test3Browse() {
         launch()
-        app.tab("Browse").tap()
-        shoot("20-browse")
-        app.buttons["weekly-reading"].tap()
-        shoot("20-setup-weekly")
-        app.buttons["Start from the Beginning"].tap()
-        shoot("20-setup-beginning")
-        app.buttons["Cancel"].tap()
-        sleep(1)
-        app.buttons["Make Your Own Plan"].tap()
+        app.buttons["Add a Plan"].tap()
         shoot("20-picker")
         app.buttons["Pick Old Testament"].tap()
         shoot("20-picker-books")
@@ -108,16 +111,22 @@ final class DesignAuditUITests: XCTestCase {
         shoot("20-setup-book-date")
         app.buttons["Cancel"].tap()
         sleep(1)
-        app.showVolumeCover("Book of Mormon")
-        shoot("20-browse-scriptures")
-        app.swipeDown()
-        sleep(1)
-        app.scrollViews.buttons["Reading Schedule"].tap()
-        shoot("21-schedule")
-        app.terminate()
-
-        launch()
         app.tab("Browse").tap()
+        shoot("20-browse")
+        app.buttons["Your Shelf"].tap()
+        shoot("20-your-shelf")
+        app.buttons["Add Book of Mormon"].tap()
+        app.buttons["Add Doctrine and Covenants"].tap()
+        app.buttons["Add Pearl of Great Price"].tap()
+        shoot("20-your-shelf-full")
+        app.buttons["Done"].tap()
+        shoot("20-browse-full")
+        app.buttons["Find a Book"].tap()
+        shoot("20-find")
+        app.textFields["Search scriptures"].typeText("Alma 32")
+        shoot("20-find-results")
+        app.buttons["Cancel"].tap()
+        sleep(1)
         app.openVolume("Book of Mormon")
         shoot("22-books")
         app.buttons["Alma"].tap()
@@ -131,6 +140,9 @@ final class DesignAuditUITests: XCTestCase {
         shoot("25-browse-verse")
         app.revealControls()
         shoot("26-browse-verse-revealed")
+        app.tab("Browse").tap()
+        app.tab("Browse").tap()
+        shoot("27-browse-continue")
     }
 
     func test4SavedEmptyAndSettings() {
@@ -139,6 +151,10 @@ final class DesignAuditUITests: XCTestCase {
         shoot("31-saved-empty")
         app.openSettings()
         shoot("40-settings")
+        app.buttons["Reorder Plans"].tap()
+        shoot("40-reorder")
+        app.navigationBars.buttons.firstMatch.tap()
+        sleep(1)
         app.swipeUp()
         shoot("41-settings-bottom")
     }
@@ -178,15 +194,24 @@ final class DesignAuditUITests: XCTestCase {
         step("reveal-2") { app.revealControls() }
         step("go-to-open") { app.buttons["Chapter menu"].tap() }
         step("go-to-close") { app.buttons["Done"].tap() }
+        step("tab-today-return") { app.goToToday() }
+        step("plan-open-second") { app.buttons["Plan Book of Mormon"].tap() }
+        step("plan-close") { app.buttons["Plan Book of Mormon"].tap() }
+        step("plan-open-first") { app.buttons["Plan Come, Follow Me"].tap() }
+        step("plan-details") { app.buttons["Plan details, Come, Follow Me"].tap() }
+        step("plan-details-back") { app.navigationBars.buttons.firstMatch.tap() }
+        step("ribbon") { app.buttons["Streak"].tap() }
+        step("ribbon-close") { app.buttons["Done"].tap() }
         step("tab-browse") { app.tab("Browse").tap() }
-        step("cover-swipe") { app.coordinate(withNormalizedOffset: CGVector(dx: 0.8, dy: 0.35)).press(forDuration: 0.05, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.2, dy: 0.35))) }
-        step("cover-open") { app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.35)).tap() }
-        step("cover-back") { app.navigationBars.buttons.firstMatch.tap() }
+        step("shelf-sheet") { app.buttons["Your Shelf"].tap() }
+        step("shelf-add") { app.buttons["Add Book of Mormon"].tap() }
+        step("shelf-remove") { app.buttons["Remove New Testament"].tap() }
+        step("shelf-close") { app.buttons["Done"].tap() }
+        step("spine-open") { app.buttons["Spine Book of Mormon"].tap() }
+        step("spine-back") { app.navigationBars.buttons.firstMatch.tap() }
         step("tab-saved") { app.tab("Saved").tap() }
+        step("tab-settings") { app.tab("Settings").tap() }
         step("tab-today") { app.tab("Today").tap() }
-        step("settings-tab") { app.tab("Browse").tap() }
-        step("settings-open") { app.buttons["Settings"].tap() }
-        step("settings-close") { app.buttons["Done"].tap() }
         sleep(2)
         try? log.write(to: outputFolder.appendingPathComponent("\(appearance)-motion.log"), atomically: true, encoding: .utf8)
     }

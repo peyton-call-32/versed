@@ -123,7 +123,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Week"].isSelected)
         attachScreenshot(named: "plan-setup-weekly")
         app.buttons["Start Plan"].tap()
-        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Today date"].waitForExistence(timeout: 5))
         let row = app.buttons["Plan Come, Follow Me"]
         XCTAssertTrue(row.waitForExistence(timeout: 5))
         XCTAssertTrue((row.value as? String ?? "").contains("Jeremiah 31–33"))
@@ -235,7 +235,7 @@ final class VersedUITests: XCTestCase {
         for _ in 1...3 where !remove.isHittable { app.swipeUp() }
         remove.tap()
         app.sheets.buttons["Remove Plan"].firstMatch.tap()
-        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Today date"].waitForExistence(timeout: 5))
         XCTAssertFalse(row.waitForExistence(timeout: 1))
         XCTAssertTrue(app.buttons["Plan Come, Follow Me"].exists)
     }
@@ -309,7 +309,7 @@ final class VersedUITests: XCTestCase {
         for _ in 1...4 { app.swipeUp() }
         XCTAssertTrue(app.staticTexts["Jeremiah 31:3"].waitForExistence(timeout: 5))
         app.tab("Today").tap()
-        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.staticTexts["Today date"].waitForExistence(timeout: 5))
 
         app.tab("Browse").tap()
         app.openVolume("Book of Mormon")
@@ -571,7 +571,7 @@ final class VersedUITests: XCTestCase {
 
         app.terminate()
         app.launch()
-        XCTAssertTrue(app.navigationBars["Today"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Today date"].waitForExistence(timeout: 10))
         attachScreenshot(named: "appearance-after-relaunch")
 
         // Put the default back so the simulator is left as it was.

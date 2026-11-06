@@ -1,23 +1,42 @@
+import SwiftData
 import SwiftUI
 import UIKit
 
-/// App settings, opened from the gear button on the Browse tab.
+/// App settings, the last tab.
 struct SettingsView: View {
+    let engine: PlanEngine
+    @Binding var path: [Route]
+
+    /// The screens this tab can open.
+    enum Route: Hashable {
+        case reorderPlans
+    }
+
+    @Query private var plans: [ReadingPlan]
     @AppStorage(Appearance.storageKey) private var appearance: Appearance = .matchPhone
     @AppStorage(DailyReminder.isOnKey) private var reminderIsOn = false
     @AppStorage(DailyReminder.minuteOfDayKey) private var reminderMinuteOfDay = DailyReminder.defaultMinuteOfDay
     /// Shown when the reader wants the reminder but iOS notifications are off for Versed.
     @State private var notificationsBlocked = false
     @State private var showsIntro = false
-    @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
 
     private let scheduler = DailyReminderScheduler()
 
     var body: some View {
-        NavigationStack {
+        NavigationStack(path: $path) {
             ScrollView {
                 VStack(spacing: 22) {
+                    // Only once there's more than one plan to put in order.
+                    if plans.count > 1 {
+                        LedgerSection(title: "Plans") {
+                            NavigationLink(value: Route.reorderPlans) {
+                                LedgerRowLabel(title: "Reorder Plans")
+                            }
+                            .buttonStyle(.ledgerRow)
+                        }
+                    }
+
                     LedgerSection(title: "Appearance") {
                         appearancePicker
                     }
@@ -40,8 +59,10 @@ struct SettingsView: View {
             .versedScreen()
             .tint(Color.brand)
             .navigationTitle("Settings")
-            .toolbar {
-                DoneToolbarItem { dismiss() }
+            .navigationDestination(for: Route.self) { route in
+                switch route {
+                case .reorderPlans: ReorderPlansView(engine: engine)
+                }
             }
             .fullScreenCover(isPresented: $showsIntro) {
                 IntroView { showsIntro = false }
@@ -128,5 +149,6 @@ struct SettingsView: View {
 }
 
 #Preview {
-    SettingsView()
+    SettingsView(engine: PlanEngine(library: try! ScriptureLibrary.loadBundled(), schedule: try! ReadingSchedule.loadBundled()), path: .constant([]))
+        .modelContainer(for: VersedApp.storedModels, inMemory: true)
 }
