@@ -111,8 +111,8 @@ struct RootView: View {
         store.adoptEarlierWeeklyReading()
         guard VersedApp.isUITesting else { return }
         let arguments = ProcessInfo.processInfo.arguments
-        // The shelf is saved outside the test's own storage, so each run starts it fresh.
-        UserDefaults.standard.removeObject(forKey: Shelf.storageKey)
+        // Browse's open volume is saved outside the test's own storage, so each run starts it fresh.
+        UserDefaults.standard.removeObject(forKey: VolumeCarousel.storageKey)
         if arguments.contains("-seed-weekly-plan") {
             store.start(source: .weeklySchedule(course: nil), pace: .week, finish: nil)
         }

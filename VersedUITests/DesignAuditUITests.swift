@@ -113,20 +113,14 @@ final class DesignAuditUITests: XCTestCase {
         sleep(1)
         app.tab("Browse").tap()
         shoot("20-browse")
-        app.buttons["Your Shelf"].tap()
-        shoot("20-your-shelf")
-        app.buttons["Add Book of Mormon"].tap()
-        app.buttons["Add Doctrine and Covenants"].tap()
-        app.buttons["Add Pearl of Great Price"].tap()
-        shoot("20-your-shelf-full")
-        app.buttons["Done"].tap()
-        shoot("20-browse-full")
         app.buttons["Find a Book"].tap()
         shoot("20-find")
         app.textFields["Search scriptures"].typeText("Alma 32")
         shoot("20-find-results")
         app.buttons["Cancel"].tap()
         sleep(1)
+        app.openVolume("Doctrine and Covenants")
+        shoot("21-sections")
         app.openVolume("Book of Mormon")
         shoot("22-books")
         app.buttons["Alma"].tap()
@@ -203,12 +197,9 @@ final class DesignAuditUITests: XCTestCase {
         step("ribbon") { app.buttons["Streak"].tap() }
         step("ribbon-close") { app.buttons["Done"].tap() }
         step("tab-browse") { app.tab("Browse").tap() }
-        step("shelf-sheet") { app.buttons["Your Shelf"].tap() }
-        step("shelf-add") { app.buttons["Add Book of Mormon"].tap() }
-        step("shelf-remove") { app.buttons["Remove New Testament"].tap() }
-        step("shelf-close") { app.buttons["Done"].tap() }
-        step("spine-open") { app.buttons["Spine Book of Mormon"].tap() }
-        step("spine-back") { app.navigationBars.buttons.firstMatch.tap() }
+        step("cover-next") { app.buttons["Cover New Testament"].tap() }
+        step("book-open") { app.buttons["Matthew"].tap() }
+        step("book-back") { app.navigationBars.buttons.firstMatch.tap() }
         step("tab-saved") { app.tab("Saved").tap() }
         step("tab-settings") { app.tab("Settings").tap() }
         step("tab-today") { app.tab("Today").tap() }

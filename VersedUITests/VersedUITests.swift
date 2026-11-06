@@ -91,7 +91,7 @@ final class VersedUITests: XCTestCase {
         onScreen(app.buttons.matching(identifier: "Save verse")).tap()
 
         app.tab("Browse").tap()
-        XCTAssertTrue(app.buttons["Spine Old Testament"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Cover Old Testament"].waitForExistence(timeout: 5))
         sleep(2)
         saveScreenshot(named: "3-browse")
 
@@ -194,21 +194,24 @@ final class VersedUITests: XCTestCase {
         XCTAssertLessThan(book.frame.minY, weekly.frame.minY)
     }
 
-    func testAddingAndRemovingBooksOnTheShelf() {
+    func testSwipingThroughTheCoversChangesTheBooks() {
         app.tab("Browse").tap()
 
-        // New readers start with the two testaments.
-        XCTAssertTrue(app.buttons["Spine Old Testament"].waitForExistence(timeout: 5))
-        XCTAssertTrue(app.buttons["Spine New Testament"].exists)
-        XCTAssertFalse(app.buttons["Spine Book of Mormon"].exists)
+        // Every volume is there from the start, opening on the Old Testament.
+        for title in ["Old Testament", "New Testament", "Book of Mormon", "Doctrine and Covenants", "Pearl of Great Price"] {
+            XCTAssertTrue(app.buttons["Cover \(title)"].waitForExistence(timeout: 5))
+        }
+        XCTAssertTrue(app.buttons["Genesis"].exists)
         XCTAssertFalse(app.buttons["Continue Reading"].exists)
 
-        app.buttons["Your Shelf"].tap()
-        app.buttons["Add Book of Mormon"].tap()
-        app.buttons["Remove New Testament"].tap()
-        app.buttons["Done"].tap()
-        XCTAssertTrue(app.buttons["Spine Book of Mormon"].waitForExistence(timeout: 5))
-        XCTAssertFalse(app.buttons["Spine New Testament"].waitForExistence(timeout: 1))
+        // The next cover brings its books.
+        app.buttons["Cover New Testament"].tap()
+        XCTAssertTrue(app.buttons["Matthew"].waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons["Genesis"].exists)
+
+        // A single book lists its sections right there.
+        app.openVolume("Doctrine and Covenants")
+        XCTAssertTrue(app.buttons["D&C 1"].waitForExistence(timeout: 5))
     }
 
     func testFindingAChapter() {
@@ -316,7 +319,9 @@ final class VersedUITests: XCTestCase {
     func testABookOffersAPlanWithoutRequiringOne() {
         app.tab("Browse").tap()
         app.openVolume("Book of Mormon")
-        XCTAssertTrue(app.buttons["Make a Plan for All 15 Books"].waitForExistence(timeout: 5))
+        let volumePlan = app.buttons["Make a Plan for All 15 Books"]
+        for _ in 1...5 where !(volumePlan.exists && volumePlan.isHittable) { app.swipeUp() }
+        XCTAssertTrue(volumePlan.isHittable)
         app.buttons["Alma"].tap()
         XCTAssertTrue(app.buttons["Make a Plan for This Book"].waitForExistence(timeout: 5))
 
@@ -386,7 +391,8 @@ final class VersedUITests: XCTestCase {
 
         app.tab("Browse").tap()
         app.openVolume("Book of Mormon")
-        XCTAssertFalse(app.navigationBars["Browse"].exists)
+        app.buttons["Alma"].tap()
+        XCTAssertTrue(app.buttons["Alma 32"].waitForExistence(timeout: 5))
         app.tab("Browse").tap()
         XCTAssertTrue(app.navigationBars["Browse"].waitForExistence(timeout: 5))
     }

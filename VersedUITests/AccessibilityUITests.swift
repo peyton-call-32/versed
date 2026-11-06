@@ -54,16 +54,9 @@ final class AccessibilityUITests: XCTestCase {
             app.buttons["Done"].tap()
 
             app.tab("Browse").tap()
-            XCTAssertTrue(app.buttons["Spine Old Testament"].waitForExistence(timeout: 5))
+            XCTAssertTrue(app.buttons["Cover Old Testament"].waitForExistence(timeout: 5))
             sleep(1)
             try audit("Browse, \(appearance)")
-
-            app.buttons["Your Shelf"].tap()
-            XCTAssertTrue(app.buttons["Add Book of Mormon"].waitForExistence(timeout: 5))
-            sleep(1)
-            try audit("Your Shelf, \(appearance)")
-            app.buttons["Done"].tap()
-            sleep(1)
 
             app.buttons["Find a Book"].tap()
             XCTAssertTrue(app.textFields["Search scriptures"].waitForExistence(timeout: 5))
@@ -291,22 +284,21 @@ final class AccessibilityUITests: XCTestCase {
                 || Self.isReadingListText(element.label)
         case .dynamicType:
             return ["Today", "Browse", "Saved", "Settings", "Skip", "Next", "Done", "Cancel"].contains(element.label)
-                || Self.isSpineText(element.label)
+                || Self.isCoverText(element.label)
                 || Self.isWeeklyCoverText(element.label)
         case .textClipped:
             return ["DAILY REMINDER", "peytoncall32@icloud.com", "JEREMIAH", "LAMENTATIONS", "Back to Week's Start", "Read at Your Own Pace"].contains(element.label)
                 || Self.isWeeklyCoverText(element.label) || element.label == "Come, Follow Me"
-                || Self.isSpineText(element.label) || element.label.isEmpty
+                || Self.isCoverText(element.label) || element.label.isEmpty
         default:
             return false
         }
     }
 
-    /// Titles on the shelf's spines are turned sideways and sized to their spine, so they stop growing on
-    /// purpose. The audit also reads them as clipped because of the turn. VoiceOver reads them whole, and
-    /// the same names appear at full size in Your Shelf and at the top of each book's page.
-    private static func isSpineText(_ label: String) -> Bool {
-        ["Old Testament", "New Testament", "Book of Mormon", "Doctrine and Covenants", "Pearl of Great Price", "Add a Book"].contains(label)
+    /// Titles on Browse's covers are sized to their cover, so they stop growing on purpose, and neighboring
+    /// covers run off the edge of the screen. VoiceOver reads them whole.
+    private static func isCoverText(_ label: String) -> Bool {
+        ["Old Testament", "New Testament", "Book of Mormon", "Doctrine and Covenants", "Pearl of Great Price"].contains(label)
     }
 
     /// The notice stops growing on purpose, on the screens that carry it.

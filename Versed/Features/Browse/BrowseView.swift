@@ -1,18 +1,18 @@
 import SwiftData
 import SwiftUI
 
-/// Any book and chapter, with no plan needed: the reader's own shelf of volumes, and a way back
-/// to the last page read here or from Saved.
+/// Any book and chapter, with no plan needed: the five volumes as covers to swipe through, the
+/// books of the one on show, and a way back to the last page read here or from Saved.
 struct BrowseView: View {
     let library: ScriptureLibrary
     let schedule: ReadingSchedule
     /// Shows Today, opening a plan that was just started or already going.
     let showToday: (String) -> Void
-    /// The screens open on top of the shelf. Emptying it goes back to the shelf.
+    /// The screens open on top of Browse. Emptying it goes back to the covers.
     @Binding var path: [Route]
 
     @Query private var positions: [ReadingPosition]
-    @AppStorage(Shelf.storageKey) private var storedShelf = Shelf.starting
+    @AppStorage(VolumeCarousel.storageKey) private var selectedVolumeID = VolumeCarousel.startingVolume
     /// The one sheet open over Browse. iOS can close a sheet when a neighboring one updates, so they share this.
     @State private var sheet: Sheet?
     /// A search result, opened once the search sheet has closed.
@@ -20,13 +20,11 @@ struct BrowseView: View {
     @Environment(\.modelContext) private var modelContext
 
     private enum Sheet: Identifiable {
-        case shelf
         case search
         case setup(PlanSource)
 
         var id: String {
             switch self {
-            case .shelf: "shelf"
             case .search: "search"
             case .setup(let source): "setup:\(source.key)"
             }
@@ -35,7 +33,6 @@ struct BrowseView: View {
 
     /// The screens the browse tab can open.
     enum Route: Hashable {
-        case volume(Volume.ID)
         case book(Book.ID)
         case reading(ChapterID)
         /// Reopens the feed on a saved page.
@@ -44,49 +41,40 @@ struct BrowseView: View {
 
     private var engine: PlanEngine { PlanEngine(library: library, schedule: schedule) }
 
-    private var shelfVolumes: [Volume] {
-        Shelf.volumeIDs(from: storedShelf).compactMap(library.volume(id:))
-    }
-
     var body: some View {
         NavigationStack(path: $path) {
-            VStack(spacing: 0) {
-                if shelfVolumes.isEmpty {
-                    Text("Your shelf is empty. Add a book to start.")
-                        .font(.versedDetail)
-                        .foregroundStyle(.secondaryText)
-                        .frame(maxWidth: .infinity, alignment: .leading)
+            ScrollView {
+                VStack(spacing: 0) {
+                    continueRow
                         .padding(.horizontal, Hardcover.margin)
+                    VolumeCarousel(volumes: library.volumes, selection: $selectedVolumeID)
+                        .padding(.top, 10)
+                    if let volume = library.volume(id: selectedVolumeID) ?? library.volumes.first {
+                        VolumeContents(
+                            volume: volume,
+                            startVolumePlan: { startOrOpenPlan(for: .volume(volume.id)) },
+                            startBookPlan: { startOrOpenPlan(for: .book($0.id)) }
+                        )
+                        .padding(.horizontal, Hardcover.margin)
+                        .padding(.top, 16)
+                        .padding(.bottom, 28)
+                    }
                 }
-                BookShelf(
-                    volumes: shelfVolumes,
-                    onOpen: { path.append(route(for: $0)) },
-                    onAdd: { sheet = .shelf }
-                )
-                .padding(.horizontal, Hardcover.margin)
-                .padding(.top, 16)
-                // Edged with a fine line so it still reads as a shelf on the navy page in dark mode.
-                Rectangle()
-                    .fill(.cover)
-                    .overlay(Rectangle().strokeBorder(Color.hairline, lineWidth: 0.5))
-                    .frame(height: 7)
-                    .padding(.horizontal, Hardcover.margin - 8)
-                    .accessibilityHidden(true)
-                continueRow
             }
-            // Only scrolling screens get pushed clear of the tab bar for them, so this page leaves its own room.
-            .padding(.bottom, VersedTabBar.height)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.appBackground)
-            .hidesScrollEdgeEffects()
+            .versedScreen()
             .navigationTitle("Browse")
             .navigationDestination(for: Route.self, destination: destination)
             .toolbar {
                 PlainToolbarItem(placement: .topBarTrailing) {
-                    HStack(spacing: 0) {
-                        toolbarButton("plus", label: "Your Shelf") { sheet = .shelf }
-                        toolbarButton("magnifyingglass", label: "Find a Book") { sheet = .search }
+                    Button { sheet = .search } label: {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 18, weight: .light))
+                            .foregroundStyle(.brand)
+                            .frame(width: 44, height: 44)
+                            .contentShape(Rectangle())
                     }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Find a Book")
                     .padding(.trailing, Hardcover.margin - 16)
                 }
             }
@@ -102,52 +90,30 @@ struct BrowseView: View {
         }
     }
 
-    private func toolbarButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 18, weight: .light))
-                .foregroundStyle(.brand)
-                .frame(width: 44, height: 44)
-                .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
-    }
-
-    /// The last page read here, under the shelf. Nothing shows until there is one.
+    /// The last page read here, in one small line above the covers. Nothing shows until there is one.
     @ViewBuilder
     private var continueRow: some View {
         if let itemID = lastBrowsePosition, let reference = reference(for: itemID) {
             NavigationLink(value: Route.resume(itemID)) {
                 HStack {
-                    VStack(alignment: .leading, spacing: 1) {
-                        SmallCapsLabel("Continue")
-                        Text(reference)
-                            .font(.versedTitle(size: 24, relativeTo: .title3))
-                            .foregroundStyle(.brand)
-                    }
+                    SmallCapsLabel("Continue: \(reference)")
                     Spacer(minLength: 8)
                     LedgerRowArrow()
                 }
-                .frame(minHeight: 72)
+                .frame(minHeight: 44)
                 .contentShape(Rectangle())
             }
             .buttonStyle(.ledgerRow)
-            .padding(.horizontal, Hardcover.margin)
             .accessibilityElement(children: .ignore)
             .accessibilityLabel("Continue Reading")
             .accessibilityValue(reference)
             .accessibilityAddTraits(.isButton)
-        } else {
-            Color.clear.frame(height: 24)
         }
     }
 
     @ViewBuilder
     private func sheetContent(_ sheet: Sheet) -> some View {
         switch sheet {
-        case .shelf:
-            ShelfEditorView(volumes: library.volumes, stored: $storedShelf)
         case .search:
             BrowseSearchView(library: library) { result in
                 pickedResult = result
@@ -183,10 +149,6 @@ struct BrowseView: View {
     @ViewBuilder
     private func destination(for route: Route) -> some View {
         switch route {
-        case .volume(let id):
-            if let volume = library.volume(id: id) {
-                BookListView(volume: volume) { startOrOpenPlan(for: .volume(id)) }
-            }
         case .book(let id):
             if let book = library.book(id: id) {
                 ChapterGridView(book: book) { startOrOpenPlan(for: .book(id)) }
@@ -218,13 +180,6 @@ struct BrowseView: View {
         return book.reference(chapter: chapterID.chapter)
     }
 
-    /// A volume with a single book (the Doctrine and Covenants) skips straight to its chapters.
-    private func route(for volume: Volume) -> Route {
-        if volume.books.count == 1, let book = volume.books.first {
-            return .book(book.id)
-        }
-        return .volume(volume.id)
-    }
 }
 
 #Preview {

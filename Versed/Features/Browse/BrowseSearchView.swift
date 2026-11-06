@@ -33,7 +33,7 @@ extension ScriptureLibrary {
     }
 }
 
-/// Finds any book or chapter by typing it, including volumes not on the shelf.
+/// Finds any book or chapter by typing it.
 struct BrowseSearchView: View {
     let library: ScriptureLibrary
     let onOpen: (ScriptureSearchResult) -> Void

@@ -1,40 +1,6 @@
 import SwiftData
 import SwiftUI
 
-/// The Versed "V" from the app's icon, set in the page's ink. Decoration only: VoiceOver skips it.
-struct VersedMark: View {
-    var body: some View {
-        MarkShape()
-            .fill(.brand)
-            .frame(width: 30, height: 29)
-            .accessibilityHidden(true)
-    }
-
-    private struct MarkShape: Shape {
-        func path(in rect: CGRect) -> Path {
-            // Traced from the icon, in the icon's own 1024-point drawing.
-            func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
-                CGPoint(x: rect.minX + (x - 250) / 522 * rect.width, y: rect.minY + (y - 262) / 500 * rect.height)
-            }
-            var path = Path()
-            path.move(to: point(255, 265))
-            path.addLine(to: point(528, 265))
-            path.addCurve(to: point(505, 365), control1: point(490, 272), control2: point(484, 295))
-            path.addLine(to: point(595, 668))
-            path.addLine(to: point(684, 350))
-            path.addCurve(to: point(652, 265), control1: point(697, 305), control2: point(692, 275))
-            path.addLine(to: point(767, 265))
-            path.addCurve(to: point(695, 360), control1: point(730, 275), control2: point(715, 300))
-            path.addLine(to: point(567, 759))
-            path.addLine(to: point(450, 759))
-            path.addLine(to: point(320, 360))
-            path.addCurve(to: point(255, 265), control1: point(300, 300), control2: point(290, 275))
-            path.closeSubpath()
-            return path
-        }
-    }
-}
-
 /// A ribbon bookmark hanging from the top of the page, holding how many days in a row the reader
 /// has read. It opens the calendar of days read, so it stays even with no streak going.
 struct StreakRibbon: View {

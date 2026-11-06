@@ -20,25 +20,29 @@ extension XCUIApplication {
         coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5)).tap()
     }
 
-    /// Opens a volume from its spine on Browse, putting it on the shelf first if it isn't there.
+    /// Brings a volume's cover to the middle of Browse, so its books show underneath.
     func openVolume(_ title: String) {
-        let spine = showVolumeCover(title)
-        spine.tap()
+        let cover = showVolumeCover(title)
+        cover.tap()
+        sleep(1)
     }
 
-    /// Finds a volume's spine on Browse, adding it to the shelf if it's missing.
+    /// Swipes through Browse's covers until a volume's cover is on screen.
     @discardableResult
     func showVolumeCover(_ title: String) -> XCUIElement {
-        let spine = buttons["Spine \(title)"]
-        if !spine.waitForExistence(timeout: 3) {
-            buttons["Your Shelf"].tap()
-            let add = buttons["Add \(title)"]
-            XCTAssertTrue(add.waitForExistence(timeout: 5))
-            add.tap()
-            buttons["Done"].tap()
+        let cover = buttons["Cover \(title)"]
+        XCTAssertTrue(cover.waitForExistence(timeout: 5))
+        let window = windows.firstMatch.frame
+        for _ in 1...6 {
+            let middle = cover.frame.midX
+            if middle > window.minX, middle < window.maxX { break }
+            let height = cover.frame.midY / window.height
+            let (start, end) = middle > window.maxX ? (0.8, 0.2) : (0.2, 0.8)
+            coordinate(withNormalizedOffset: CGVector(dx: start, dy: height))
+                .press(forDuration: 0.05, thenDragTo: coordinate(withNormalizedOffset: CGVector(dx: end, dy: height)))
+            sleep(1)
         }
-        XCTAssertTrue(spine.waitForExistence(timeout: 5))
-        return spine
+        return cover
     }
 
     /// Opens a plan on Today, if it isn't already, and goes into its reading.

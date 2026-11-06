@@ -16,6 +16,8 @@ struct TodayView: View {
     @State private var sheet: Sheet?
     /// A choice from the plan picker, set up once the picker has closed.
     @State private var pickedSource: PlanSource?
+    /// Grows with the reader's text size, and stops where the other tabs' titles stop.
+    @ScaledMetric(relativeTo: .largeTitle) private var titleSize = 40.0
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
@@ -102,27 +104,27 @@ struct TodayView: View {
         openPlanID = nextUpID
     }
 
-    /// The V, the ribbon, and the date, which holds the first line of the page.
+    /// The title and date on the left, set level with the other tabs' titles, and the ribbon on the right.
     private var header: some View {
-        VStack(alignment: .leading, spacing: 34) {
-            HStack(alignment: .top) {
-                VersedMark()
-                    .padding(.top, 19)
-                    // Gone before a pushed page's back arrow slides across it.
-                    .opacity(path.isEmpty ? 1 : 0)
-                    .animation(.easeOut(duration: 0.16), value: path.isEmpty)
-                Spacer(minLength: 0)
-                StreakRibbon()
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Today")
+                    .font(.custom(Font.Bundled.title, fixedSize: min(titleSize, 46)))
+                    .foregroundStyle(.brand)
+                    .accessibilityAddTraits(.isHeader)
+                SmallCapsLabel(VersedApp.today.formatted(.dateTime.weekday(.wide).month(.wide).day()))
+                    .accessibilityIdentifier("Today date")
             }
-            SmallCapsLabel(VersedApp.today.formatted(.dateTime.weekday(.wide).month(.wide).day()))
-                .accessibilityIdentifier("Today date")
+            .padding(.top, 55)
+            Spacer(minLength: 0)
+            StreakRibbon()
         }
     }
 
     private var planList: some View {
         let engine = engine
         return VStack(alignment: .leading, spacing: 0) {
-            Rule().padding(.top, 8)
+            Rule().padding(.top, 74)
             ForEach(orderedPlans) { plan in
                 let isOpen = openPlanID == plan.id
                 PlanSection(
@@ -162,7 +164,7 @@ struct TodayView: View {
                 .foregroundStyle(.brand)
                 .fixedSize(horizontal: false, vertical: true)
                 .accessibilityAddTraits(.isHeader)
-                .padding(.top, 6)
+                .padding(.top, 60)
             Ledger {
                 Button {
                     sheet = .setup(.weeklySchedule(course: nil))
