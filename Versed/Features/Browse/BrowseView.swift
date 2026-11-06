@@ -13,19 +13,35 @@ struct BrowseView: View {
     @Binding var path: [Route]
 
     @Query private var positions: [ReadingPosition]
-    @State private var showsSettings = false
+    /// The one sheet open over Browse. iOS can close a sheet when a neighboring one updates, so they share this.
+    @State private var sheet: Sheet?
+    /// A choice from the plan picker, set up once the picker has closed.
+    @State private var pickedSource: PlanSource?
     /// The cover in the middle of the carousel.
     @State private var selectedVolume: Volume.ID?
     /// Where the covers should move once they're back on screen. Covers that are out of sight
     /// can't scroll, and moving the selection then would leave it out of step with what's shown.
     @State private var pendingCover: Volume.ID?
     @State private var isOnScreen = false
-    @State private var setupSource: PlanSource?
-    @State private var showsPlanPicker = false
-    /// A choice from the picker, set up once the picker has closed.
-    @State private var pickedSource: PlanSource?
+    /// Rebuilds the covers while they're out of sight, so they start on a new book in place.
+    /// Moving them on screen would also scroll the whole page down to them.
+    @State private var carouselVersion = 0
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dynamicTypeSize) private var typeSize
+
+    private enum Sheet: Identifiable {
+        case settings
+        case setup(PlanSource)
+        case planPicker
+
+        var id: String {
+            switch self {
+            case .settings: "settings"
+            case .setup(let source): "setup:\(source.key)"
+            case .planPicker: "picker"
+            }
+        }
+    }
 
     /// The screens the browse tab can open.
     enum Route: Hashable {
@@ -56,6 +72,7 @@ struct BrowseView: View {
                 }
                 if let pendingCover {
                     selectedVolume = pendingCover
+                    carouselVersion += 1
                     self.pendingCover = nil
                 }
                 isOnScreen = true
@@ -77,7 +94,7 @@ struct BrowseView: View {
             .toolbar {
                 PlainToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        showsSettings = true
+                        sheet = .settings
                     } label: {
                         Image(systemName: "gearshape")
                             .font(.system(size: 18, weight: .light))
@@ -90,24 +107,16 @@ struct BrowseView: View {
                     .accessibilityLabel("Settings")
                 }
             }
-            .sheet(isPresented: $showsSettings) {
-                SettingsView()
-                    .versedSheet()
+        }
+        // On the stack itself, so it can't disturb a sheet opened from a screen pushed on top.
+        .sheet(item: $sheet, onDismiss: {
+            if let pickedSource {
+                sheet = .setup(pickedSource)
+                self.pickedSource = nil
             }
-            .sheet(item: $setupSource) { source in
-                PlanSetupView(engine: engine, source: source, onOpenPlan: showToday)
-                    .versedSheet()
-            }
-            .sheet(isPresented: $showsPlanPicker, onDismiss: {
-                setupSource = pickedSource
-                pickedSource = nil
-            }) {
-                PlanPickerView(engine: engine) { source in
-                    pickedSource = source
-                    showsPlanPicker = false
-                }
+        }) { sheet in
+            sheetContent(sheet)
                 .versedSheet()
-            }
         }
     }
 
@@ -119,7 +128,7 @@ struct BrowseView: View {
             sectionLabel("Study Plans")
             if let course = schedule.currentWeek()?.course {
                 Button {
-                    setupSource = .weeklySchedule(course: nil)
+                    sheet = .setup(.weeklySchedule(course: nil))
                 } label: {
                     WeeklyCover(course: course, height: typeSize.isAccessibilitySize ? 380 : 290)
                 }
@@ -132,7 +141,7 @@ struct BrowseView: View {
             }
             Ledger {
                 Button {
-                    showsPlanPicker = true
+                    sheet = .planPicker
                 } label: {
                     LedgerRowLabel(title: "Make Your Own Plan")
                 }
@@ -152,13 +161,7 @@ struct BrowseView: View {
     private var scriptures: some View {
         VStack(alignment: .leading, spacing: 10) {
             sectionLabel("Scriptures")
-            VolumeCarousel(
-                volumes: library.volumes,
-                selection: $selectedVolume,
-                coverHeight: 320,
-                subtitle: subtitle(for:),
-                onOpen: { path.append(route(for: $0)) }
-            )
+            // Right under the heading, so it's in view without scrolling.
             if let itemID = lastBrowsePosition, let reference = reference(for: itemID) {
                 Ledger {
                     NavigationLink(value: Route.resume(itemID)) {
@@ -167,7 +170,33 @@ struct BrowseView: View {
                     .buttonStyle(.ledgerRow)
                 }
                 .padding(.horizontal, Hardcover.margin)
-                .padding(.top, 8)
+                .padding(.bottom, 8)
+            }
+            // Waits for its first cover to be chosen, so it starts there without any scrolling.
+            if selectedVolume != nil {
+                VolumeCarousel(
+                    volumes: library.volumes,
+                    selection: $selectedVolume,
+                    coverHeight: 320,
+                    subtitle: subtitle(for:),
+                    onOpen: { path.append(route(for: $0)) }
+                )
+                .id(carouselVersion)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func sheetContent(_ sheet: Sheet) -> some View {
+        switch sheet {
+        case .settings:
+            SettingsView()
+        case .setup(let source):
+            PlanSetupView(engine: engine, source: source, onOpenPlan: showToday)
+        case .planPicker:
+            PlanPickerView(engine: engine) { source in
+                pickedSource = source
+                self.sheet = nil
             }
         }
     }
@@ -183,7 +212,7 @@ struct BrowseView: View {
         if let plan = ReadingPlanStore(context: modelContext, engine: engine).plan(for: source) {
             showToday(plan.id)
         } else {
-            setupSource = source
+            sheet = .setup(source)
         }
     }
 

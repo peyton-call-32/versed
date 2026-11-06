@@ -88,8 +88,11 @@ struct PlanSetupView: View {
                     } else {
                         lengthChoice
                     }
-                    paceChoice
-                    preview
+                    // A plan that's already going keeps its own pace, changed from its details.
+                    if store.plan(for: chosenSource) == nil {
+                        paceChoice
+                        preview
+                    }
                     startButton
                     if source.isWeeklySchedule {
                         Text(WeeklyCover.notice)
@@ -143,10 +146,7 @@ struct PlanSetupView: View {
             }
             if length == .byDate {
                 LedgerRule()
-                DatePicker("Finish By", selection: $finishDate, in: today..., displayedComponents: .date)
-                    .font(.versedRow)
-                    .foregroundStyle(.brand)
-                    .padding(.vertical, 6)
+                DateRow(title: "Finish By", date: $finishDate, earliest: today)
             }
         }
     }

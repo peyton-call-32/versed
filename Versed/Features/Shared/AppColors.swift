@@ -273,7 +273,39 @@ struct ChoiceRow: View {
             .contentShape(Rectangle())
         }
         .buttonStyle(.ledgerRow)
+        // VoiceOver and UI tests read the title as its label and the detail as its value.
+        .accessibilityLabel(title)
+        .accessibilityValue(detail ?? "")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+}
+
+/// A date in a ruled row, set in the page's own type. Tapping it opens a calendar beneath it.
+struct DateRow: View {
+    let title: String
+    @Binding var date: Date
+    let earliest: Date
+
+    @State private var isOpen = false
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Button {
+                isOpen.toggle()
+            } label: {
+                LedgerRowLabel(
+                    title: title,
+                    detail: date.formatted(.dateTime.month(.abbreviated).day().year()),
+                    symbol: isOpen ? "chevron.up" : "chevron.down"
+                )
+            }
+            .buttonStyle(.ledgerRow)
+            if isOpen {
+                DatePicker(title, selection: $date, in: earliest..., displayedComponents: .date)
+                    .datePickerStyle(.graphical)
+                    .labelsHidden()
+            }
+        }
     }
 }
 

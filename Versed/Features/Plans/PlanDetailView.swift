@@ -44,10 +44,7 @@ struct PlanDetailView: View {
 
                 if state.finishDay != nil, !status.isFinished {
                     LedgerSection(title: "Finish", footer: "Change the date anytime. The reading left spreads across the days left.") {
-                        DatePicker("Finish By", selection: finishBinding, in: VersedApp.today..., displayedComponents: .date)
-                            .font(.versedRow)
-                            .foregroundStyle(.brand)
-                            .padding(.vertical, 6)
+                        DateRow(title: "Finish By", date: finishBinding, earliest: VersedApp.today)
                     }
                 }
 

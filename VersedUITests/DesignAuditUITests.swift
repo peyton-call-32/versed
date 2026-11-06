@@ -100,7 +100,7 @@ final class DesignAuditUITests: XCTestCase {
         sleep(1)
         app.buttons["Make Your Own Plan"].tap()
         shoot("20-picker")
-        app.buttons["Old Testament"].tap()
+        app.buttons["Pick Old Testament"].tap()
         shoot("20-picker-books")
         app.buttons["Genesis"].tap()
         shoot("20-setup-book")

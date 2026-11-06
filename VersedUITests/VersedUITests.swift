@@ -110,6 +110,10 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(cover.waitForExistence(timeout: 5))
         XCTAssertEqual(cover.label, "Come, Follow Me—For Home and Church: Old Testament 2026")
         XCTAssertLessThan(cover.frame.maxY, app.buttons["Book of Mormon"].frame.minY)
+        // It opens at the top of the page, without jumping down to the books.
+        sleep(2)
+        XCTAssertTrue(app.staticTexts["STUDY PLANS"].isHittable || app.staticTexts["Study Plans"].isHittable)
+        XCTAssertGreaterThan(cover.frame.minY, app.navigationBars["Browse"].frame.maxY)
         attachScreenshot(named: "browse-weekly-cover")
 
         // It joins this week by default, reading by week, and lands on Today.
@@ -152,7 +156,7 @@ final class VersedUITests: XCTestCase {
 
         // Pick a book from the picker. Obadiah is one short chapter.
         app.buttons["Make Your Own Plan"].tap()
-        app.buttons["Old Testament"].tap()
+        app.buttons["Pick Old Testament"].tap()
         let book = app.buttons["Obadiah"]
         for _ in 1...5 where !(book.exists && book.isHittable) { app.swipeUp() }
         book.tap()
@@ -332,7 +336,11 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Chapter menu"].waitForExistence(timeout: 3))
         app.buttons["Chapter menu"].tap()
         let firstPsalm = app.buttons["Psalms 1"]
-        for _ in 1...10 where !(firstPsalm.exists && firstPsalm.isHittable) { app.swipeDown() }
+        // Waits for each swipe to settle: one more swipe at the top would close the sheet.
+        for _ in 1...10 where !(firstPsalm.exists && firstPsalm.isHittable) {
+            app.swipeDown()
+            sleep(1)
+        }
         firstPsalm.tap()
         XCTAssertTrue(chapterHeading("Psalms, Chapter 1").waitForExistence(timeout: 10))
     }

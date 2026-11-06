@@ -17,11 +17,14 @@ Read a little every day. Swipe up for the next verse, save the ones you love, an
 
 Versed shows scripture one verse per screen. Swipe up for the next verse, like scrolling a feed, but with something worth reading.
 
-It's made for Latter-day Saints who want to read a little every day. Versed opens straight to this week's reading from the weekly home-study schedule, so there's nothing to look up.
+It's made for Latter-day Saints who want to read a little every day. Follow the weekly home-study schedule, or pick any book and how long to take, and Versed breaks it into days or weeks. Today shows what's next in each plan, so there's nothing to look up.
 
 READ
 • One verse per screen, with a title card at the start of each chapter
-• Opens to this week's reading, or pick any other week from the menu
+• Make a study plan for any book or volume: pick a time frame or finish date, and read by day or by week
+• Follow more than one plan at once, each keeping its own place
+• Missed a day? The reading left spreads across the days left, with no guilt
+• Join the weekly schedule this week, or start from the beginning at your own pace
 • See the full reading schedule, with each week's dates and chapters
 • Browse every book and chapter of the Old Testament, New Testament, Book of Mormon, Doctrine and Covenants, and Pearl of Great Price
 • Open each week's lesson in Gospel Library with one tap
@@ -48,12 +51,12 @@ Versed is an independent app. It is not affiliated with, made, approved, or endo
 
 LDS,Book of Mormon,Bible,Doctrine and Covenants,Pearl of Great Price,KJV,devotional,study,gospel
 
-Left out on purpose: "Come Follow Me" and the Church's name, which are the Church's trademarks. Apple can reject keywords that use other people's trademarks. The listing never uses "Come, Follow Me" as a name; inside the app it appears only on the Browse cover and in one descriptive line (see the trademark rule in CLAUDE.md).
+Left out on purpose: "Come Follow Me" and the Church's name, which are the Church's trademarks. Apple can reject keywords that use other people's trademarks. The listing never uses "Come, Follow Me" as a name; inside the app it appears only as described in the trademark rule in CLAUDE.md.
 
 ## What's New [4,000 max]
 *Apple doesn't show this for a first version. Use it for 1.0.1 and later.*
 
-First release: read scripture one verse at a time, with this week's reading ready when you open the app.
+First release: read scripture one verse at a time, with study plans for the weekly schedule or any book.
 
 ## Other fields
 - **Primary category:** Reference
@@ -66,12 +69,12 @@ First release: read scripture one verse at a time, with this week's reading read
 - **Age rating:** 4+ (answer "None" or "No" to every question)
 
 ## Notes for the App Review team
-Versed is an independent app. It is not affiliated with, made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints. It has no account or login, and works offline. To see the main features: swipe up on This Week to read, double-tap a verse to save it, then open the Saved tab. The gear on the Browse tab opens Settings. "Open This Week's Lesson", on the card after each week's last verse, links to the matching public lesson page on churchofjesuschrist.org. The scripture text is public domain (github.com/bcbooks/scriptures-json).
+Versed is an independent app. It is not affiliated with, made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints. It has no account or login, and works offline. To see the main features: on the Browse tab, tap the top cover and Start Plan, tap the plan on the Today tab, swipe up to read, double-tap a verse to save it, then open the Saved tab. The gear on the Browse tab opens Settings. "Open This Week's Lesson", on the card after each week's last verse, links to the matching public lesson page on churchofjesuschrist.org. The scripture text is public domain (github.com/bcbooks/scriptures-json).
 
 ## Screenshots
 In `screenshots/`, 1320 × 2868 (the 6.9-inch iPhone size Apple requires; it shrinks them for smaller iPhones). Upload in this order:
 1. `1-verse.png`: a verse, with the heart to save it
-2. `2-this-week.png`: this week's intro card
+2. `2-today.png`: Today, with two study plans
 3. `3-browse.png`: Browse
 4. `4-saved.png`: the Saved tab
 

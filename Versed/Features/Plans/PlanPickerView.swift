@@ -22,6 +22,8 @@ struct PlanPickerView: View {
                                 LedgerRowLabel(title: volume.title)
                             }
                             .buttonStyle(.ledgerRow)
+                            // Tells this row apart from the cover of the same name behind the sheet.
+                            .accessibilityIdentifier("Pick \(volume.title)")
                         }
                     }
                 }

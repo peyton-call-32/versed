@@ -2,7 +2,7 @@
 
 An iPhone app for reading scripture one verse at a time. Swipe up for the next verse, like a short-video feed.
 
-Built for Latter-day Saints who want to read a little every day. It opens straight to this week's reading from the weekly home-study schedule.
+Built for Latter-day Saints who want to read a little every day. Follow the weekly home-study schedule, or pick any book and how long to take, and Versed breaks it into days or weeks.
 
 <p>
   <img src="docs/screenshots/1-this-week.png" width="240" alt="This week's reading, one verse per screen">
@@ -12,9 +12,12 @@ Built for Latter-day Saints who want to read a little every day. It opens straig
 
 ## Features
 - One verse per screen, with a title card at the start of each chapter
-- Opens to this week's reading; pick any other week from a menu
-- This Week and the full Reading Schedule at the top of Browse, with each week's dates and chapters
-- Browse any book and chapter of the standard works
+- Today lists every study plan with what to read next; run as many at once as you like
+- Make a plan for any book or volume: pick a time frame or finish date, and read by day or by week
+- Chapters are shared out by length and always end at the end of a chapter, and missed days spread across the days left
+- Follow the weekly schedule: join this week, or start from the beginning at your own pace
+- The full Reading Schedule, with each week's dates and chapters
+- Browse any book and chapter of the standard works, with no plan needed
 - Save verses with a double-tap or the heart button
 - Picks up where you left off
 - Daily reading streak, with a calendar of the days read
@@ -36,8 +39,8 @@ Open `Versed.xcodeproj` in Xcode, pick an iPhone simulator, and press Run (⌘R)
 After changing `project.yml`, run `xcodegen` to rebuild the project.
 
 Run the tests with ⌘U. There are two kinds:
-- **Unit tests** (`VersedTests`) check the pieces on their own: loading scripture, the weekly schedule and its lesson links, saved verses, reading position, the streak, the reminder time, and the About section.
-- **UI tests** (`VersedUITests`) drive the app like a reader: swipe through this week's reading, save a verse, browse to a chapter, resume with Continue Reading, check the Saved tab, switch between light and dark mode, turn the daily reminder on and off, go through the first-time intro, and check the About section. `AccessibilityUITests` runs Apple's accessibility audit on every screen in light and dark mode, and checks that pages still fit at the largest text size. They launch the app with `-ui-testing`, so reading data starts fresh and real data is never touched.
+- **Unit tests** (`VersedTests`) check the pieces on their own: loading scripture, the weekly schedule and its lesson links, how plans are paced, saved verses, reading position, the streak, the reminder time, and the About section.
+- **UI tests** (`VersedUITests`) drive the app like a reader: start, change, and finish a plan, swipe through a reading, save a verse, browse to a chapter, resume with Continue Reading, check the Saved tab, switch between light and dark mode, turn the daily reminder on and off, go through the first-time intro, and check the About section. `AccessibilityUITests` runs Apple's accessibility audit on every screen in light and dark mode, and checks that pages still fit at the largest text size. They launch the app with `-ui-testing`, so reading data starts fresh and real data is never touched.
 
 The UI test also takes the screenshots above. To refresh them:
 

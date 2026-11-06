@@ -11,10 +11,30 @@ struct VolumeCarousel: View {
     let subtitle: (Volume) -> String
     let onOpen: (Volume) -> Void
 
+    /// Where the row starts, so the chosen cover is in the middle from the first frame.
+    /// Moving there afterward would also scroll the whole page down to the covers.
+    private let startingAnchor: UnitPoint
+
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverIsOn
     @State private var hasAppeared = false
     @State private var openCount = 0
+
+    init(
+        volumes: [Volume],
+        selection: Binding<Volume.ID?>,
+        coverHeight: CGFloat,
+        subtitle: @escaping (Volume) -> String,
+        onOpen: @escaping (Volume) -> Void
+    ) {
+        self.volumes = volumes
+        _selection = selection
+        self.coverHeight = coverHeight
+        self.subtitle = subtitle
+        self.onOpen = onOpen
+        let index = volumes.firstIndex { $0.id == selection.wrappedValue } ?? 0
+        startingAnchor = UnitPoint(x: Double(index) / Double(max(volumes.count - 1, 1)), y: 0.5)
+    }
 
     /// How much of each neighbor shows, and the gap before it.
     private static let edge: CGFloat = 30
@@ -32,6 +52,7 @@ struct VolumeCarousel: View {
             }
             .contentMargins(.horizontal, Self.edge + Self.gap, for: .scrollContent)
             .scrollTargetBehavior(.viewAligned)
+            .defaultScrollAnchor(startingAnchor)
             .scrollPosition(id: $selection, anchor: .center)
             .scrollIndicators(.hidden)
             // Leaves the covers' shadows whole instead of cutting them off at the top and bottom.

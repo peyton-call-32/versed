@@ -31,6 +31,7 @@ struct FeedView: View {
     @State private var coverHeight: CGFloat = 0
     /// Tells this feed apart from others when reporting to `chrome`.
     @State private var feedID = UUID()
+    @State private var hasOpened = false
 
     /// - Parameters:
     ///   - itemID: The page to open on, or `nil` for the first page. Ignored if it isn't in `items`.
@@ -70,6 +71,12 @@ struct FeedView: View {
         .scrollTargetBehavior(.paging)
         .scrollPosition(id: $currentItemID)
         .onAppear {
+            // A newly opened reading starts with its controls aside. Coming back to one from
+            // another tab leaves them as `reveal()` set them.
+            if !hasOpened {
+                hasOpened = true
+                chrome.hideRevealedControls()
+            }
             if let itemID = currentItemID ?? items.first?.id { onPageChange(itemID) }
             reportVisiblePage()
         }
