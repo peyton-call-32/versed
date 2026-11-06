@@ -214,6 +214,15 @@ final class VersedUITests: XCTestCase {
         XCTAssertTrue(app.buttons["D&C 1"].waitForExistence(timeout: 5))
     }
 
+    func testSettingsScrollsAllTheWayClearOfTheTabBar() {
+        app.openSettings()
+        let lastLine = app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH %@", "Scripture text is in the public domain")).firstMatch
+        for _ in 1...4 { app.swipeUp() }
+        XCTAssertTrue(lastLine.waitForExistence(timeout: 5))
+        sleep(1)
+        XCTAssertLessThanOrEqual(lastLine.frame.maxY, app.descendants(matching: .any).matching(identifier: "Tab bar").firstMatch.frame.minY)
+    }
+
     func testFindingAChapter() {
         app.tab("Browse").tap()
         app.buttons["Find a Book"].tap()
@@ -672,7 +681,7 @@ final class VersedUITests: XCTestCase {
         XCTAssertFalse(app.buttons["Time Picker"].waitForExistence(timeout: 2))
     }
 
-    static let independenceNotice = "The Come, Follow Me plan follows the Church’s published reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."
+    static let independenceNotice = "The Come, Follow Me plan follows the published reading schedule of The Church of Jesus Christ of Latter-day Saints. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."
 
     /// The week intro card's heading, which VoiceOver reads as one line: "This Week, Daniel 1–7, Nov 9–15".
     /// A chapter's title card, which VoiceOver reads as one heading: "Alma, Chapter 32".

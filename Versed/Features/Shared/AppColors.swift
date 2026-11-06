@@ -391,7 +391,8 @@ extension View {
     /// The shared look of a scrolling screen: plain paper, with none of the blur and fade strips
     /// that newer iOS versions draw at the edges of a scrolling screen.
     func versedScreen() -> some View {
-        background(Color.appBackground)
+        modifier(TabBarClearance())
+            .background(Color.appBackground)
             .hidesScrollEdgeEffects()
     }
 
@@ -406,7 +407,8 @@ extension View {
 
     /// Every sheet in the app is the same: full height, on plain paper.
     func versedSheet() -> some View {
-        presentationDetents([.large])
+        environment(\.tabBarClearance, 0)
+            .presentationDetents([.large])
             .presentationBackground(Color.appBackground)
             .presentationDragIndicator(.hidden)
     }
@@ -513,4 +515,18 @@ extension ButtonStyle where Self == PlainWordButtonStyle {
 
 extension ButtonStyle where Self == UnderlinedLinkButtonStyle {
     static var underlinedLink: UnderlinedLinkButtonStyle { UnderlinedLinkButtonStyle() }
+}
+
+extension EnvironmentValues {
+    /// How much room the tab bar takes at the foot of a main screen. Nothing in a sheet needs it.
+    @Entry var tabBarClearance: CGFloat = 0
+}
+
+/// Lets a scrolling screen scroll its last row clear of the tab bar, which sits on top of the page.
+private struct TabBarClearance: ViewModifier {
+    @Environment(\.tabBarClearance) private var clearance
+
+    func body(content: Content) -> some View {
+        content.contentMargins(.bottom, clearance, for: .scrollContent)
+    }
 }

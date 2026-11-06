@@ -9,7 +9,7 @@ struct AboutSection: View {
     /// A plain description of the Come, Follow Me plan. Also shown on the last page of the first-time
     /// intro. The other places the app uses the name are the weekly plan (`WeeklyPlanName`) and the
     /// plan's own title, which come with the cover's short notice.
-    static let independenceNotice = "The Come, Follow Me plan follows the Church’s published reading schedule. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."
+    static let independenceNotice = "The Come, Follow Me plan follows the published reading schedule of The Church of Jesus Christ of Latter-day Saints. Versed is an independent app and is not made, approved, or endorsed by The Church of Jesus Christ of Latter-day Saints."
 
     /// "1.0 (1)": the version people see in the App Store, then the build number.
     static func versionText(bundle: Bundle = .main) -> String {

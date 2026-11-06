@@ -149,7 +149,8 @@ final class DesignAuditUITests: XCTestCase {
         shoot("40-reorder")
         app.navigationBars.buttons.firstMatch.tap()
         sleep(1)
-        app.swipeUp()
+        for _ in 1...4 { app.swipeUp() }
+        sleep(1)
         shoot("41-settings-bottom")
     }
 

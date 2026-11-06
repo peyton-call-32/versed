@@ -146,6 +146,7 @@ struct RootView: View {
             .safeAreaInset(edge: .bottom, spacing: 0) {
                 Color.clear.frame(height: VersedTabBar.height)
             }
+            .environment(\.tabBarClearance, VersedTabBar.height)
             .toolbar(.hidden, for: .tabBar)
             .tag(tab)
     }
