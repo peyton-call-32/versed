@@ -166,6 +166,7 @@ struct ShelfEditorView: View {
                     Text("Removing a book never erases your progress or saved verses.")
                         .font(.versedNote)
                         .foregroundStyle(.secondaryText)
+                        .fixedSize(horizontal: false, vertical: true)
                     Ledger {
                         ForEach(volumes) { volume in
                             if volume.id != volumes.first?.id { LedgerRule() }

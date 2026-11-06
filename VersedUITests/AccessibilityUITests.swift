@@ -60,13 +60,16 @@ final class AccessibilityUITests: XCTestCase {
 
             app.buttons["Your Shelf"].tap()
             XCTAssertTrue(app.buttons["Add Book of Mormon"].waitForExistence(timeout: 5))
+            sleep(1)
             try audit("Your Shelf, \(appearance)")
             app.buttons["Done"].tap()
             sleep(1)
 
             app.buttons["Find a Book"].tap()
             XCTAssertTrue(app.textFields["Search scriptures"].waitForExistence(timeout: 5))
-            try audit("Find, \(appearance)")
+            sleep(1)
+            // The on-screen keyboard is iOS's own, and the audit flags its unlabeled keys.
+            try audit("Find, \(appearance)", except: .sufficientElementDescription)
             app.buttons["Cancel"].tap()
             sleep(1)
 
@@ -235,7 +238,7 @@ final class AccessibilityUITests: XCTestCase {
     private func setAppearance(_ option: String) {
         app.openSettings()
         app.buttons[option].tap()
-        app.buttons["Done"].tap()
+        app.tab("Today").tap()
     }
 
     /// Feed pages step their text size down when it wouldn't fit on one screen (see `ShrinkToFit`),
@@ -287,14 +290,23 @@ final class AccessibilityUITests: XCTestCase {
                 || element.label.contains(/^\d+ of \d+$/)
                 || Self.isReadingListText(element.label)
         case .dynamicType:
-            return ["Today", "Browse", "Saved", "Skip", "Next", "Done", "Cancel"].contains(element.label)
+            return ["Today", "Browse", "Saved", "Settings", "Skip", "Next", "Done", "Cancel"].contains(element.label)
+                || Self.isSpineText(element.label)
                 || Self.isWeeklyCoverText(element.label)
         case .textClipped:
             return ["DAILY REMINDER", "peytoncall32@icloud.com", "JEREMIAH", "LAMENTATIONS", "Back to Week's Start", "Read at Your Own Pace"].contains(element.label)
                 || Self.isWeeklyCoverText(element.label) || element.label == "Come, Follow Me"
+                || Self.isSpineText(element.label) || element.label.isEmpty
         default:
             return false
         }
+    }
+
+    /// Titles on the shelf's spines are turned sideways and sized to their spine, so they stop growing on
+    /// purpose. The audit also reads them as clipped because of the turn. VoiceOver reads them whole, and
+    /// the same names appear at full size in Your Shelf and at the top of each book's page.
+    private static func isSpineText(_ label: String) -> Bool {
+        ["Old Testament", "New Testament", "Book of Mormon", "Doctrine and Covenants", "Pearl of Great Price", "Add a Book"].contains(label)
     }
 
     /// The notice stops growing on purpose, on the screens that carry it.

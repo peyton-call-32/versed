@@ -44,12 +44,14 @@ extension XCUIApplication {
     /// Opens a plan on Today, if it isn't already, and goes into its reading.
     func openPlan(_ title: String) {
         let read = buttons["Read \(title)"]
-        if !(read.waitForExistence(timeout: 2) && read.isHittable) {
+        if !read.waitForExistence(timeout: 2) {
             let row = buttons["Plan \(title)"]
             XCTAssertTrue(row.waitForExistence(timeout: 10))
             row.tap()
             sleep(1)
         }
+        // At the largest text sizes the button is further down the page.
+        for _ in 1...4 where !read.isHittable { swipeUp() }
         read.tap()
     }
 
