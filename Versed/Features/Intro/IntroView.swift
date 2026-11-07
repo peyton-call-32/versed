@@ -15,24 +15,24 @@ struct IntroView: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private struct Page {
-        let symbol: String
+        let glyph: Glyph
         let title: String
         let message: String
     }
 
     private let pages = [
         Page(
-            symbol: "arrow.up",
+            glyph: .arrowUp,
             title: "Swipe Up for the Next Verse",
             message: "Versed shows one verse at a time. Swipe up to keep reading."
         ),
         Page(
-            symbol: "heart",
+            glyph: .heart,
             title: "Double-Tap to Save",
             message: "Double-tap a verse, or tap the heart, to keep it in your Saved tab."
         ),
         Page(
-            symbol: "calendar",
+            glyph: .ribbon,
             title: "Read at Your Own Pace",
             message: "Pick a book or the weekly schedule and how long to take. Versed breaks it into days or weeks, and you can follow more than one."
         ),
@@ -75,7 +75,7 @@ struct IntroView: View {
                 .dynamicTypeSize(...DynamicTypeSize.accessibility2)
             }
         }
-        .background(Color.appBackground)
+        .background { PaperSurface() }
         .tint(Color.brand)
     }
 
@@ -97,11 +97,9 @@ struct IntroView: View {
     /// stay reachable at the largest text sizes.
     private func pageContent(_ page: Page, offersReminder: Bool) -> some View {
         VStack(spacing: 20) {
-            Image(systemName: page.symbol)
-                .font(.system(size: 30, weight: .ultraLight))
+            GlyphView(page.glyph, size: 34, lineWidth: 1)
                 .foregroundStyle(.brand)
                 .frame(height: 44)
-                .accessibilityHidden(true)
 
             Text(page.title)
                 .font(.versedTitle(size: 42, relativeTo: .title))

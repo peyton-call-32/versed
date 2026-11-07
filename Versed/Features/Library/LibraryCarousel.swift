@@ -12,7 +12,9 @@ struct LibraryCarousel: View {
     @ScaledMetric(relativeTo: .title) private var scaledWidth = 150.0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private static let spacing: CGFloat = 14
+    private static let spacing: CGFloat = 16
+    /// Room around the covers for their shadow, which a scrolling row would otherwise cut off.
+    private static let shadowRoom: CGFloat = 22
     private static let neighborScale: CGFloat = 0.9
     /// Covers grow with the reader's text size, but always leave room to see the next one.
     private static let largestWidth: CGFloat = 220
@@ -21,7 +23,7 @@ struct LibraryCarousel: View {
     private var coverHeight: CGFloat { coverWidth * 1.41 }
 
     var body: some View {
-        VStack(spacing: 14) {
+        VStack(spacing: 2) {
             GeometryReader { space in
                 ScrollView(.horizontal) {
                     HStack(spacing: Self.spacing) {
@@ -32,11 +34,12 @@ struct LibraryCarousel: View {
                     .scrollTargetLayout()
                 }
                 .contentMargins(.horizontal, max((space.size.width - coverWidth) / 2, 0), for: .scrollContent)
+                .contentMargins(.vertical, Self.shadowRoom, for: .scrollContent)
                 .scrollPosition(id: scrollSelection, anchor: .center)
                 .scrollTargetBehavior(.viewAligned)
                 .scrollIndicators(.hidden)
             }
-            .frame(height: coverHeight)
+            .frame(height: coverHeight + Self.shadowRoom * 2)
             .accessibilityIdentifier("Library Covers")
             pageMarks
         }
@@ -74,30 +77,37 @@ struct LibraryCarousel: View {
         .accessibilityIdentifier("Cover \(book.title)")
     }
 
-    /// A short line for each book, with the open one in solid ink.
+    /// A short line for each book. The open one is longer and in solid ink, and grows as it's reached.
     private var pageMarks: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 5) {
             ForEach(books) { book in
                 let isSelected = book.id == selection
-                Rectangle()
-                    .fill(isSelected ? Color.brand : Color.secondaryText)
-                    .frame(width: 18, height: isSelected ? 2 : 1)
-                    .frame(height: 2)
+                SwelledRuleShape()
+                    .fill(isSelected ? Color.brand : Color.secondaryText.opacity(0.6))
+                    .frame(width: isSelected ? 26 : 12, height: isSelected ? 2.4 : 1.6)
+                    .frame(height: 3)
             }
         }
+        .animation(reduceMotion ? nil : .versed, value: selection)
         .accessibilityHidden(true)
     }
 }
 
-/// One book's front cover: navy, with a stamped double frame and its title.
+/// One book's front cover, made like the real thing: navy cloth with a groove along the hinge,
+/// a stamped frame, a pressed-in title, and the page block just showing past its edge.
 private struct BookCover: View {
     let book: LibraryBook
 
+    /// Where the hinge's groove runs, in from the spine.
+    private static let hinge: CGFloat = 10
+
     var body: some View {
         ZStack {
-            CoverFrame().padding(7)
-            VStack(spacing: 12) {
-                Ornament(color: .onCover, lineLength: 18)
+            CoverFrame(notch: 7)
+                .padding(.vertical, 9)
+                .padding(.leading, Self.hinge + 7)
+                .padding(.trailing, 9)
+            VStack(spacing: 11) {
                 // A second line under the title leaves less room, so the title steps down to keep to two lines.
                 Text(book.title)
                     .font(.versedTitle(size: book.subtitle == nil ? 30 : 27, relativeTo: .title))
@@ -105,6 +115,8 @@ private struct BookCover: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(3)
                     .minimumScaleFactor(0.6)
+                    .stampedIntoCloth()
+                Ornament(color: .onCover, lineLength: 15)
                 if let subtitle = book.subtitle {
                     Text(subtitle)
                         .font(.versedNote)
@@ -114,12 +126,34 @@ private struct BookCover: View {
                         .minimumScaleFactor(0.7)
                 }
             }
-            .padding(.horizontal, 13)
+            .padding(.leading, Self.hinge + 13)
+            .padding(.trailing, 14)
             .padding(.vertical, 20)
         }
-        .background(Color.cover, in: Hardcover.corner)
+        .background { ClothSurface().clipShape(Hardcover.corner) }
+        .overlay(alignment: .leading) { hingeGroove }
         // Edged with a fine line so the cover still stands out on the navy page in dark mode.
-        .overlay(Hardcover.corner.strokeBorder(Color.hairline, lineWidth: 0.5))
+        .overlay(Hardcover.corner.strokeBorder(Color.onCover.opacity(0.14), lineWidth: 0.5))
+        .background {
+            // The pages, just showing past the cover's lower right edge.
+            Rectangle()
+                .fill(Color.onCover)
+                .overlay { Rectangle().strokeBorder(Color.black.opacity(0.14), lineWidth: 0.5) }
+                .offset(x: 2, y: 2)
+                .padding(.vertical, 2)
+                .padding(.leading, Self.hinge)
+        }
+        .restingShadow()
+    }
+
+    private var hingeGroove: some View {
+        HStack(spacing: 0) {
+            Color.black.opacity(0.1).frame(width: Self.hinge)
+            Color.black.opacity(0.32).frame(width: 1)
+            Color.white.opacity(0.09).frame(width: 0.75)
+        }
+        .clipShape(Hardcover.corner)
+        .allowsHitTesting(false)
     }
 }
 
@@ -142,7 +176,7 @@ struct VolumeContents: View {
     private var singleBook: Book? { volume.books.count == 1 ? volume.books.first : nil }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: Hardcover.sectionSpacing) {
             if let singleBook {
                 sections(of: singleBook)
             } else {
@@ -177,12 +211,12 @@ struct VolumeContents: View {
             .padding(.bottom, 8)
             .accessibilityElement(children: .combine)
             Rule()
+                .padding(.bottom, 4)
             ForEach(volume.books) { book in
                 NavigationLink(value: route(for: book)) {
                     BookRow(book: book)
                 }
                 .buttonStyle(.ledgerRow)
-                Rule()
             }
         }
     }
@@ -194,7 +228,7 @@ struct VolumeContents: View {
                 NavigationLink(value: LibraryView.Route.reading(ChapterID(bookID: book.id, chapter: chapter))) {
                     ChapterCellLabel(chapter: chapter)
                 }
-                .buttonStyle(.ledgerRow)
+                .buttonStyle(ChapterCellButtonStyle())
                 .accessibilityLabel(book.reference(chapter: chapter))
             }
         }
@@ -208,7 +242,7 @@ struct VolumeContents: View {
     }
 }
 
-/// A book's name, with how many chapters it has at the end of the row.
+/// A book's name, with dots leading to how many chapters it has, like a table of contents.
 private struct BookRow: View {
     let book: Book
 
@@ -219,12 +253,13 @@ private struct BookRow: View {
                 .foregroundStyle(.brand)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 0)
+                .layoutPriority(1)
+            LeaderDots().alignmentGuide(.firstTextBaseline) { $0[.bottom] }
             Text("\(book.chapterCount)")
                 .font(.versedNumber(size: 22, relativeTo: .body))
                 .foregroundStyle(.secondaryText)
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 7)
         .frame(maxWidth: .infinity, minHeight: 44, alignment: .leading)
         .contentShape(Rectangle())
         .accessibilityElement(children: .ignore)
@@ -244,7 +279,7 @@ struct CourseContents: View {
 
     var body: some View {
         let weeks = weeks
-        VStack(alignment: .leading, spacing: 22) {
+        VStack(alignment: .leading, spacing: Hardcover.sectionSpacing) {
             if let thisWeek = schedule.currentWeek(), thisWeek.course == course {
                 VStack(alignment: .leading, spacing: 8) {
                     SmallCapsLabel("This Week")
@@ -253,7 +288,6 @@ struct CourseContents: View {
             }
             LedgerSection(title: "\(weeks.count) Weeks") {
                 ForEach(weeks) { week in
-                    if week.id != weeks.first?.id { LedgerRule() }
                     WeekRow(week: week, isThisWeek: false) { openWeek(week.id) }
                 }
             }

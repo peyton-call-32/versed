@@ -26,7 +26,7 @@ struct SettingsView: View {
     var body: some View {
         NavigationStack(path: $path) {
             ScrollView {
-                VStack(spacing: 22) {
+                VStack(spacing: Hardcover.sectionSpacing) {
                     // Only once there's more than one plan to put in order.
                     if plans.count > 1 {
                         LedgerSection(title: "Plans") {
@@ -88,20 +88,17 @@ struct SettingsView: View {
                 : "A gentle note once a day. Nothing leaves your phone."
         ) {
             Toggle("Daily reminder", isOn: reminderSwitch)
+                .toggleStyle(HardcoverToggleStyle())
                 .font(.versedRow)
                 .foregroundStyle(.brand)
                 .ledgerRowPadding()
 
             if reminderIsOn {
-                LedgerRule()
-                DatePicker("Time", selection: reminderTime, displayedComponents: .hourAndMinute)
-                    .font(.versedRow)
-                    .foregroundStyle(.brand)
-                    .padding(.vertical, 6)
+                TimeRow(title: "Time", time: reminderTime)
+                    .transition(.opacity)
             }
 
             if notificationsBlocked {
-                LedgerRule()
                 Button {
                     if let url = URL(string: UIApplication.openNotificationSettingsURLString) {
                         openURL(url)

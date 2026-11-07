@@ -693,12 +693,12 @@ final class VersedUITests: XCTestCase {
         let reminder = app.switches["Daily reminder"]
         // Settings stay on the simulator between runs, so start from off in case a run stopped early.
         if reminder.value as? String == "1" {
-            reminder.switches.firstMatch.tap()
+            reminder.tap()
         }
         XCTAssertEqual(reminder.value as? String, "0")
         XCTAssertFalse(app.buttons["Time Picker"].exists, "The time only shows once the reminder is on.")
 
-        reminder.switches.firstMatch.tap()
+        reminder.tap()
 
         // iOS asks for permission the first time only. Allow it if it asks.
         let allow = XCUIApplication(bundleIdentifier: "com.apple.springboard").alerts.buttons["Allow"]
@@ -711,7 +711,7 @@ final class VersedUITests: XCTestCase {
         attachScreenshot(named: "daily-reminder-on")
 
         // Turn it back off so the simulator is left as it was.
-        reminder.switches.firstMatch.tap()
+        reminder.tap()
         XCTAssertFalse(app.buttons["Time Picker"].waitForExistence(timeout: 2))
     }
 

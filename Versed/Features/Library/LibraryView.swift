@@ -69,8 +69,8 @@ struct LibraryView: View {
             .toolbar {
                 PlainToolbarItem(placement: .topBarTrailing) {
                     HStack(spacing: 0) {
-                        toolbarButton("plus", label: "Your Library") { sheet = .library }
-                        toolbarButton("magnifyingglass", label: "Find a Book") { sheet = .search }
+                        toolbarButton(.plus, label: "Your Library") { sheet = .library }
+                        toolbarButton(.search, label: "Find a Book") { sheet = .search }
                     }
                     .padding(.trailing, Hardcover.margin - 16)
                 }
@@ -133,10 +133,9 @@ struct LibraryView: View {
         .padding(.top, 24)
     }
 
-    private func toolbarButton(_ symbol: String, label: String, action: @escaping () -> Void) -> some View {
+    private func toolbarButton(_ symbol: Glyph, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 18, weight: .light))
+            GlyphView(symbol, size: 19, lineWidth: 1.2)
                 .foregroundStyle(.brand)
                 .frame(width: 44, height: 44)
                 .contentShape(Rectangle())

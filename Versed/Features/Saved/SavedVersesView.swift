@@ -16,15 +16,14 @@ struct SavedVersesView: View {
                 if savedVerses.isEmpty {
                     emptyState
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.appBackground)
+                    .background { PaperSurface() }
                 } else {
                     List(savedVerses) { saved in
                         if let id = saved.verse, let verse = library.verse(id) {
                             row(for: verse)
                                 .listRowInsets(EdgeInsets(top: 0, leading: Hardcover.margin, bottom: 0, trailing: Hardcover.margin))
-                                .listRowSeparatorTint(Color.hairline)
+                                .listRowSeparator(.hidden)
                                 .listRowBackground(Color.clear)
-                                .alignmentGuide(.listRowSeparatorLeading) { $0[.leading] }
                         }
                     }
                     .listStyle(.plain)
@@ -41,12 +40,12 @@ struct SavedVersesView: View {
         }
     }
 
+    private var lastVerseID: VerseID? { savedVerses.last?.verse }
+
     private var emptyState: some View {
         VStack(spacing: 14) {
-            Image(systemName: "heart")
-                .font(.system(size: 34, weight: .ultraLight))
+            GlyphView(.heart, size: 34, lineWidth: 1)
                 .foregroundStyle(.brand)
-                .accessibilityHidden(true)
             Text("No Saved Verses")
                 .font(.versedTitle(size: 30, relativeTo: .title2))
                 .foregroundStyle(.brand)
@@ -70,9 +69,14 @@ struct SavedVersesView: View {
                     .lineLimit(6)
                     .foregroundStyle(.brand)
                 SmallCapsLabel(verse.reference)
+                // A printer's break between one saved verse and the next.
+                if verse.id != lastVerseID {
+                    Ornament(lineLength: 22)
+                        .padding(.top, 22)
+                }
             }
             .multilineTextAlignment(.center)
-            .padding(.vertical, 26)
+            .padding(.top, 26)
             .frame(maxWidth: .infinity)
             .contentShape(Rectangle())
         }

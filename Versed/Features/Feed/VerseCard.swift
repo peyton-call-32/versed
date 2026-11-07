@@ -54,8 +54,7 @@ struct VerseCard: View {
         .onTapGesture(perform: onTap)
         .overlay {
             if let burst {
-                Image(systemName: "heart.fill")
-                    .font(.system(size: 84))
+                GlyphView(.heart, size: 84, fill: 1)
                     .foregroundStyle(.brand)
                     .rotationEffect(.degrees(reduceMotion ? 0 : -8))
                     .position(burst.location)
@@ -81,11 +80,10 @@ struct VerseCard: View {
 
     private var heartButton: some View {
         Button(action: onHeartTap) {
-            Image(systemName: isSaved ? "heart.fill" : "heart")
-                .font(.system(size: 24, weight: .light))
+            GlyphView(.heart, size: 25, lineWidth: 1.2, fill: isSaved ? 1 : 0)
                 .foregroundStyle(.brand)
-                .contentTransition(.symbolEffect(.replace))
-                .symbolEffect(.bounce, value: isSaved)
+                // The ink pours in with a small lift; taking it back just settles.
+                .animation(reduceMotion ? nil : .spring(duration: 0.34, bounce: 0.45), value: isSaved)
                 .frame(width: 48, height: 48)
                 .contentShape(Rectangle())
         }

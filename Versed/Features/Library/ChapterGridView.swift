@@ -8,7 +8,7 @@ struct ChapterGridView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 22) {
+            VStack(spacing: Hardcover.sectionSpacing) {
                 Ledger {
                     Button(action: startPlan) {
                         LedgerRowLabel(title: "Make a Plan for This Book")
@@ -19,7 +19,7 @@ struct ChapterGridView: View {
                     NavigationLink(value: LibraryView.Route.reading(ChapterID(bookID: book.id, chapter: chapter))) {
                         ChapterCellLabel(chapter: chapter)
                     }
-                    .buttonStyle(.ledgerRow)
+                    .buttonStyle(ChapterCellButtonStyle())
                     .accessibilityLabel(book.reference(chapter: chapter))
                 }
             }

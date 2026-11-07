@@ -74,7 +74,6 @@ struct LibraryEditorView: View {
                         .fixedSize(horizontal: false, vertical: true)
                     Ledger {
                         ForEach(books) { book in
-                            if book.id != books.first?.id { LedgerRule() }
                             row(for: book)
                         }
                     }
@@ -95,7 +94,7 @@ struct LibraryEditorView: View {
         .environment(\.tabBarClearance, 0)
         // Tall enough for every book, so the covers stay in view above as they change.
         .presentationDetents([typeSize.isAccessibilitySize ? .large : .height(570)])
-        .presentationBackground(Color.appBackground)
+        .presentationBackground { PaperSurface() }
         .presentationDragIndicator(.hidden)
     }
 

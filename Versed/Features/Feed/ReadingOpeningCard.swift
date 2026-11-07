@@ -44,11 +44,9 @@ struct ReadingOpeningCard: View {
         // The way forward always sits in the same place, just above the tab bar.
         .overlay(alignment: .bottom) {
             HStack(spacing: 8) {
-                Image(systemName: "arrow.up")
-                    .font(.system(size: 11, weight: .regular))
+                GlyphView(.arrowUp, size: 12)
                     .foregroundStyle(.secondaryText)
                     .gentleBob(isActive: true)
-                    .accessibilityHidden(true)
                 SmallCapsLabel("Swipe up to \(swipeGoal)")
                     // With VoiceOver on, moving the page takes three fingers.
                     .accessibilityLabel("Swipe up with three fingers to \(swipeGoal)")

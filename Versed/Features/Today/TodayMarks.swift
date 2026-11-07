@@ -22,20 +22,28 @@ struct StreakRibbon: View {
                     Text("\(streak)")
                         .font(.custom(Font.Bundled.number, fixedSize: streak > 999 ? 28 : 38))
                         .contentTransition(.numericText())
+                        .stampedIntoCloth()
                     Text(streak == 1 ? "day in\na row" : "days in\na row")
                         .font(.custom(Font.Bundled.verse, fixedSize: 12))
                         .lineSpacing(-1)
                         .multilineTextAlignment(.center)
                 } else {
-                    Image(systemName: "diamond")
-                        .font(.system(size: 9, weight: .light))
+                    Rectangle()
+                        .strokeBorder(Color.onCover, lineWidth: 0.75)
+                        .frame(width: 7, height: 7)
+                        .rotationEffect(.degrees(45))
                         .padding(.top, 14)
                 }
             }
             .foregroundStyle(.onCover)
             .padding(.top, 14)
             .frame(width: Self.width, height: Self.height, alignment: .top)
-            .background(Swallowtail().fill(.cover))
+            .background {
+                ZStack {
+                    Swallowtail().fill(.cover).shadow(color: .cardShadow, radius: 4, x: 1, y: 3)
+                    TextureTile(name: TextureTile.cloth, strength: TextureTile.clothStrength).clipShape(Swallowtail())
+                }
+            }
             .contentShape(Swallowtail())
         }
         .buttonStyle(RibbonButtonStyle())

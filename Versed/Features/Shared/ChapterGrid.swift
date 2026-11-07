@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Chapter numbers set in ruled rows, used by the Library and by the Go To sheet.
+/// Chapter numbers set in open rows like a printed index, used by the Library and by the Go To sheet.
 /// Grows with the reader's text size so big numbers still fit.
 struct ChapterGrid<Cell: View>: View {
     let chapters: [Int]
@@ -13,10 +13,8 @@ struct ChapterGrid<Cell: View>: View {
             ForEach(chapters, id: \.self) { chapter in
                 cell(chapter)
                     .frame(minHeight: cellSize)
-                    .overlay(alignment: .bottom) { Rule() }
             }
         }
-        .overlay(alignment: .top) { Rule() }
     }
 }
 

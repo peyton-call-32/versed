@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// The page that opens each chapter, made like a hardcover: solid navy with a thin double frame,
+/// The page that opens each chapter, made like a hardcover: navy cloth with a stamped frame,
 /// "CHAPTER", a large number, a line that draws itself as the page settles, and the book's name.
 ///
 /// The frame stops short of the bands at the top and bottom of the page, so the controls that
@@ -18,7 +18,8 @@ struct ChapterTitleCard: View {
 
     var body: some View {
         ZStack {
-            Color.cover
+            MovingPageShadow()
+            ClothSurface()
             ZStack {
                 CoverFrame()
                 ShrinkToFit {
@@ -30,6 +31,7 @@ struct ChapterTitleCard: View {
                             .lineLimit(1)
                             .minimumScaleFactor(0.3)
                             .foregroundStyle(.onCover)
+                            .stampedIntoCloth()
 
                         Ornament(color: .onCover, lineLength: 44, isDrawn: isCurrent || reduceMotion)
                             .animation(reduceMotion ? nil : .easeOut(duration: 0.7).delay(0.1), value: isCurrent)
@@ -39,6 +41,7 @@ struct ChapterTitleCard: View {
                         Text(title.bookName)
                             .font(.versedTitle(size: 46))
                             .foregroundStyle(.onCover)
+                            .stampedIntoCloth()
                     }
                 }
                 // VoiceOver reads "Alma, Chapter 32" as one heading.
@@ -54,8 +57,7 @@ struct ChapterTitleCard: View {
             .padding(.bottom, screenInsets.bottom + VersedTabBar.height + 12)
         }
         .overlay(alignment: .bottom) {
-            Image(systemName: "chevron.up")
-                .font(.system(size: 17, weight: .light))
+            GlyphView(.chevronUp, size: 17, lineWidth: 1.2)
                 .foregroundStyle(.onCover)
                 .gentleBob(isActive: isCurrent)
                 .frame(height: VersedTabBar.height)
@@ -66,6 +68,19 @@ struct ChapterTitleCard: View {
         }
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
+    }
+}
+
+/// The shadow a chapter opening casts on the pages beside it. It only shows while the page is
+/// moving, so nothing lingers along the edge of the screen once the page beside it has settled.
+private struct MovingPageShadow: View {
+    var body: some View {
+        Color.cover
+            .shadow(color: .black.opacity(0.3), radius: 14)
+            .visualEffect { content, proxy in
+                let moved = abs(proxy.frame(in: .scrollView(axis: .vertical)).minY) / max(proxy.size.height, 1)
+                return content.opacity(min(1, min(moved, 1 - moved) * 10))
+            }
     }
 }
 

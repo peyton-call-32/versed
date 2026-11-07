@@ -231,7 +231,9 @@ final class AccessibilityUITests: XCTestCase {
 
     private func launch(extraArguments: [String] = []) {
         app.terminate()
-        app.launchArguments = VersedUITests.launchArguments + extraArguments
+        // The audit reads any grain behind text as poor contrast, so it checks the colors with
+        // textures off. `TextureContrastTests` covers the textures.
+        app.launchArguments = VersedUITests.launchArguments + ["-plain-surfaces"] + extraArguments
         app.launch()
     }
 
@@ -252,7 +254,8 @@ final class AccessibilityUITests: XCTestCase {
         var problems: [String] = []
         try app.performAccessibilityAudit(for: XCUIAccessibilityAuditType.all.subtracting(skipped)) { issue in
             guard !self.isKnownException(issue) else { return true }
-            problems.append("\(issue.compactDescription): \(issue.element?.label ?? "?")")
+            // An element with no name is found by where it sits on screen.
+            problems.append("\(issue.compactDescription): \(issue.element?.label ?? "?") at \(issue.element?.frame ?? .zero)")
             return true
         }
         XCTAssertTrue(problems.isEmpty, "\(screen):\n" + problems.joined(separator: "\n"))
@@ -271,6 +274,7 @@ final class AccessibilityUITests: XCTestCase {
     ///   bars and the page text keep their room.
     /// - "Clipped" text in Settings that's fully visible in both the normal and the
     ///   "largest-text-settings" screenshots. The audit misreads these two labels.
+    /// - The same for "Daily reminder", the label VoiceOver reads for the switch, fully visible on screen.
     /// - The same for the last intro page's title and the weekly cover's smaller lines, fully visible in
     ///   the "audit-intro last page" and "audit-Browse" screenshots.
     /// - The same for the chapter menu's first row and book names, fully visible in the
@@ -297,7 +301,7 @@ final class AccessibilityUITests: XCTestCase {
                 || Self.isWeeklyCoverText(element.label)
         case .textClipped:
             // "Removing a book..." shows whole in the "audit-Your Library" screenshots, with room to spare.
-            return ["Removing a book keeps your progress and saved verses.", "DAILY REMINDER", "peytoncall32@icloud.com", "JEREMIAH", "LAMENTATIONS", "Back to Week's Start", "Read at Your Own Pace"].contains(element.label)
+            return ["Removing a book keeps your progress and saved verses.", "DAILY REMINDER", "peytoncall32@icloud.com", "JEREMIAH", "LAMENTATIONS", "Back to Week's Start", "Read at Your Own Pace", "Daily reminder"].contains(element.label)
                 || Self.isWeeklyCoverText(element.label) || element.label == "Come, Follow Me"
                 || Self.isCoverText(element.label) || element.label.isEmpty
         default:

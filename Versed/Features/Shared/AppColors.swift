@@ -1,9 +1,10 @@
 import SwiftUI
 
 // Versed's look in one place: "Hardcover". Every screen is set like a page of a fine bound book:
-// navy ink on warm paper (cream on deep navy in dark mode), one family of serif type, thin ruled
-// lines instead of cards, and nearly square corners. Nothing floats, glows, or fades.
-// Chapter openings and the Library's book covers are solid navy with cream type in both modes.
+// navy ink on warm paper (cream on deep navy in dark mode), one family of serif type, and nearly
+// square corners. Rows sit on the page like a table of contents, with a line only at the head of a
+// section. Nothing glows. Only real objects cast a shadow (see Materials.swift).
+// Chapter openings and the Library's book covers are navy bookcloth with cream type in both modes.
 // Every color is in the asset catalog with a light and a dark version.
 
 extension ShapeStyle where Self == Color {
@@ -19,7 +20,7 @@ extension ShapeStyle where Self == Color {
     /// A thin, quiet ruled line.
     static var hairline: Color { Color("Hairline") }
 
-    /// The faint shadow under a book cover, the one thing in the app with real weight.
+    /// The shadow of a real object on the page: a book, the ribbon, the open plan, the tab bar's band.
     static var cardShadow: Color { Color("CardShadow") }
 
     /// The navy of a book cover: chapter openings, the Library's covers, and Today's open plan, in light and dark mode.
@@ -35,6 +36,8 @@ enum Hardcover {
     static let cornerRadius: CGFloat = 3
     /// The left and right margin of every page.
     static let margin: CGFloat = 24
+    /// The open space between two sections of a page.
+    static let sectionSpacing: CGFloat = 36
 
     static var corner: RoundedRectangle { RoundedRectangle(cornerRadius: cornerRadius, style: .continuous) }
 }
@@ -93,29 +96,20 @@ struct SmallCapsLabel: View {
     }
 }
 
-/// A thin line with a small diamond in the middle. Decoration only: VoiceOver skips it.
+/// A printer's swelled rule: the mark between parts of a page. Decoration only: VoiceOver skips it.
 struct Ornament: View {
     var color: Color = .brand
+    /// How far it reaches to each side of the middle.
     var lineLength: CGFloat = 30
-    /// Set to false to pull the lines back into the diamond. Animating it to true draws them outward.
+    /// Set to false to pull it into its middle. Animating it to true draws it outward.
     var isDrawn = true
 
     var body: some View {
-        HStack(spacing: 10) {
-            line(growingFrom: .trailing)
-            Image(systemName: "diamond.fill")
-                .font(.system(size: 6))
-                .foregroundStyle(color.opacity(0.6))
-            line(growingFrom: .leading)
-        }
-        .accessibilityHidden(true)
-    }
-
-    private func line(growingFrom anchor: UnitPoint) -> some View {
-        Rectangle()
-            .frame(width: lineLength, height: 1)
-            .foregroundStyle(color.opacity(0.45))
-            .scaleEffect(x: isDrawn ? 1 : 0, anchor: anchor)
+        SwelledRuleShape()
+            .fill(color)
+            .frame(width: lineLength * 2, height: 2.4)
+            .scaleEffect(x: isDrawn ? 1 : 0.02)
+            .accessibilityHidden(true)
     }
 }
 
@@ -132,55 +126,75 @@ struct Rule: View {
     }
 }
 
-/// Two thin lines, like the frame stamped on a book's cover.
+/// The frame blind-stamped into a book's cover: a panel with its corners cut in, pressed into the cloth.
 struct CoverFrame: View {
+    var notch: CGFloat = 9
+
     var body: some View {
         ZStack {
-            Rectangle().strokeBorder(Color.onCover.opacity(0.55))
-            Rectangle().strokeBorder(Color.onCover.opacity(0.25)).padding(5)
+            NotchedPanel(notch: notch)
+                .stroke(Color.black.opacity(0.34), lineWidth: 1)
+                .offset(y: -0.5)
+            NotchedPanel(notch: notch)
+                .stroke(Color.onCover.opacity(0.62), lineWidth: 0.75)
         }
         .accessibilityHidden(true)
     }
+
+    private struct NotchedPanel: Shape {
+        let notch: CGFloat
+
+        func path(in rect: CGRect) -> Path {
+            var path = Path()
+            path.move(to: CGPoint(x: rect.minX + notch, y: rect.minY))
+            path.addLine(to: CGPoint(x: rect.maxX - notch, y: rect.minY))
+            path.addArc(center: CGPoint(x: rect.maxX, y: rect.minY), radius: notch, startAngle: .degrees(180), endAngle: .degrees(90), clockwise: true)
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - notch))
+            path.addArc(center: CGPoint(x: rect.maxX, y: rect.maxY), radius: notch, startAngle: .degrees(270), endAngle: .degrees(180), clockwise: true)
+            path.addLine(to: CGPoint(x: rect.minX + notch, y: rect.maxY))
+            path.addArc(center: CGPoint(x: rect.minX, y: rect.maxY), radius: notch, startAngle: .degrees(0), endAngle: .degrees(270), clockwise: true)
+            path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + notch))
+            path.addArc(center: CGPoint(x: rect.minX, y: rect.minY), radius: notch, startAngle: .degrees(90), endAngle: .degrees(0), clockwise: true)
+            path.closeSubpath()
+            return path
+        }
+    }
 }
 
-/// A stack of rows set straight on the page, with a ruled line above and below.
-/// Separate the rows with `LedgerRule`.
+/// A stack of rows set straight on the page, like a table of contents. Open space separates them.
 struct Ledger<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
-            Rule()
             content
-            Rule()
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
-/// A small label with a ledger under it, and an optional quiet note below.
+/// A small label over one fine line, then its rows, with an optional quiet note below.
 struct LedgerSection<Content: View>: View {
     let title: String
     var footer: String? = nil
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 0) {
             SmallCapsLabel(title)
                 .accessibilityAddTraits(.isHeader)
+                .padding(.bottom, 9)
+            Rule()
+                .padding(.bottom, 4)
             Ledger { content }
             if let footer {
                 Text(footer)
                     .font(.versedNote)
                     .foregroundStyle(.secondaryText)
+                    .padding(.top, 8)
             }
         }
     }
-}
-
-/// The thin line between two rows.
-struct LedgerRule: View {
-    var body: some View { Rule() }
 }
 
 /// One row: a title, an optional detail on the right, and a small arrow.
@@ -189,12 +203,14 @@ struct LedgerRowLabel: View {
     let title: String
     var detail: String? = nil
     /// The small icon at the end of the row, or `nil` for a row that doesn't go anywhere.
-    var symbol: String? = "chevron.forward"
+    var symbol: Glyph? = .chevronForward
+    /// Turns the icon, for a row that opens and closes.
+    var symbolAngle: Angle = .zero
     /// Dots from the title to the detail, like a book's table of contents.
     var hasLeader = false
 
     /// The arrow for rows that leave the app.
-    static let externalLinkSymbol = "arrow.up.right"
+    static let externalLinkSymbol = Glyph.arrowUpRight
 
     @Environment(\.dynamicTypeSize) private var typeSize
 
@@ -211,6 +227,7 @@ struct LedgerRowLabel: View {
                 Text(title)
                     .font(.versedRow)
                     .foregroundStyle(.brand)
+                    .layoutPriority(1)
                 if !typeSize.isAccessibilitySize {
                     if hasLeader {
                         LeaderDots().alignmentGuide(.firstTextBaseline) { $0[.bottom] }
@@ -223,6 +240,7 @@ struct LedgerRowLabel: View {
                         .font(.versedDetail)
                         .foregroundStyle(.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
+                        .layoutPriority(1)
                 }
             }
             if typeSize.isAccessibilitySize {
@@ -230,6 +248,7 @@ struct LedgerRowLabel: View {
             }
             if let symbol {
                 LedgerRowArrow(symbol: symbol)
+                    .rotationEffect(symbolAngle)
             }
         }
         .multilineTextAlignment(.leading)
@@ -263,11 +282,7 @@ struct ChoiceRow: View {
                 }
                 .multilineTextAlignment(.leading)
                 Spacer(minLength: 0)
-                Image(systemName: "checkmark")
-                    .font(.system(size: 13, weight: .regular))
-                    .foregroundStyle(.brand)
-                    .opacity(isSelected ? 1 : 0)
-                    .accessibilityHidden(true)
+                DrawnCheck(isDrawn: isSelected)
             }
             .ledgerRowPadding()
             .contentShape(Rectangle())
@@ -277,39 +292,99 @@ struct ChoiceRow: View {
         .accessibilityLabel(title)
         .accessibilityValue(detail ?? "")
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+        .sensoryFeedback(trigger: isSelected) { _, nowSelected in nowSelected ? .selection : nil }
     }
 }
 
-/// A date in a ruled row, set in the page's own type. Tapping it opens a calendar beneath it.
+/// A check mark that writes itself in when chosen, and is gone at once when not.
+struct DrawnCheck: View {
+    let isDrawn: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        CheckStroke()
+            .trim(from: 0, to: isDrawn ? 1 : 0)
+            .stroke(Color.brand, style: StrokeStyle(lineWidth: 1.3, lineCap: .round, lineJoin: .round))
+            .frame(width: 14, height: 11)
+            .animation(isDrawn && !reduceMotion ? .easeOut(duration: 0.26) : nil, value: isDrawn)
+            .accessibilityHidden(true)
+    }
+
+    private struct CheckStroke: Shape {
+        func path(in rect: CGRect) -> Path {
+            var path = Path()
+            path.move(to: CGPoint(x: rect.minX, y: rect.midY))
+            path.addLine(to: CGPoint(x: rect.width * 0.36, y: rect.maxY))
+            path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+            return path
+        }
+    }
+}
+
+/// A date in a row, set in the page's own type. Tapping it opens a calendar beneath it.
 struct DateRow: View {
     let title: String
     @Binding var date: Date
     let earliest: Date
 
-    @State private var isOpen = false
-
     var body: some View {
-        VStack(spacing: 0) {
-            Button {
-                isOpen.toggle()
-            } label: {
-                LedgerRowLabel(
-                    title: title,
-                    detail: date.formatted(.dateTime.month(.abbreviated).day().year()),
-                    symbol: isOpen ? "chevron.up" : "chevron.down"
-                )
-            }
-            .buttonStyle(.ledgerRow)
-            if isOpen {
-                DatePicker(title, selection: $date, in: earliest..., displayedComponents: .date)
-                    .datePickerStyle(.graphical)
-                    .labelsHidden()
-            }
+        OpeningRow(title: title, detail: date.formatted(.dateTime.month(.abbreviated).day().year())) {
+            DatePicker(title, selection: $date, in: earliest..., displayedComponents: .date)
+                .datePickerStyle(.graphical)
+                .labelsHidden()
         }
     }
 }
 
-/// A few short choices side by side, with the one picked as a solid navy block.
+/// A time of day in a row. Tapping it opens a wheel beneath it.
+struct TimeRow: View {
+    let title: String
+    @Binding var time: Date
+
+    var body: some View {
+        OpeningRow(title: title, detail: time.formatted(date: .omitted, time: .shortened)) {
+            DatePicker(title, selection: $time, displayedComponents: .hourAndMinute)
+                .datePickerStyle(.wheel)
+                .labelsHidden()
+                .frame(maxWidth: .infinity)
+        }
+        .accessibilityIdentifier("\(title) Picker")
+    }
+}
+
+/// A row that opens what's beneath it, moving everything below in step.
+private struct OpeningRow<Content: View>: View {
+    let title: String
+    let detail: String
+    @ViewBuilder let content: Content
+
+    @State private var isOpen = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    var body: some View {
+        VStack(spacing: 0) {
+            Button {
+                withAnimation(reduceMotion ? nil : .spring(duration: 0.38, bounce: 0)) { isOpen.toggle() }
+            } label: {
+                LedgerRowLabel(
+                    title: title,
+                    detail: detail,
+                    symbol: .chevronDown,
+                    symbolAngle: .degrees(isOpen ? 180 : 0)
+                )
+            }
+            .buttonStyle(.ledgerRow)
+            RevealLayout(progress: isOpen ? 1 : 0) {
+                content.opacity(isOpen ? 1 : 0)
+            }
+            .clipped()
+            .allowsHitTesting(isOpen)
+            .accessibilityHidden(!isOpen)
+        }
+    }
+}
+
+/// A few short choices side by side. A solid navy plate slides to the one picked.
 /// Stacked at the largest text sizes, so a label never breaks in the middle.
 struct BlockPicker<Option: Hashable & Identifiable>: View {
     let options: [Option]
@@ -317,33 +392,86 @@ struct BlockPicker<Option: Hashable & Identifiable>: View {
     let label: (Option) -> String
 
     @Environment(\.dynamicTypeSize) private var typeSize
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Namespace private var plate
 
     var body: some View {
-        let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 4)) : AnyLayout(HStackLayout(spacing: 4))
+        let layout = typeSize.isAccessibilitySize ? AnyLayout(VStackLayout(spacing: 0)) : AnyLayout(HStackLayout(spacing: 0))
         layout {
             ForEach(options) { option in
                 let isSelected = selection == option
                 Button {
-                    selection = option
+                    withAnimation(reduceMotion ? nil : .versed) { selection = option }
                 } label: {
                     Text(label(option))
                         .font(.versedDetail)
                         .foregroundStyle(isSelected ? Color("ProminentButtonLabel") : .brand)
                         .padding(.vertical, 8)
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(isSelected ? Color("ProminentButton") : .clear, in: Hardcover.corner)
+                        .background {
+                            if isSelected {
+                                Hardcover.corner
+                                    .fill(Color("ProminentButton"))
+                                    .matchedGeometryEffect(id: "plate", in: plate)
+                            }
+                        }
                         .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .accessibilityAddTraits(isSelected ? .isSelected : [])
             }
         }
-        .padding(.vertical, 6)
+        .overlay(Hardcover.corner.strokeBorder(Color.hairline, lineWidth: 1))
+        .padding(.top, 6)
+        .sensoryFeedback(.selection, trigger: selection)
+    }
+}
+
+/// An on/off switch cut like the rest of the book: a nearly square slot with a plate that slides.
+/// VoiceOver and UI tests still find a real switch.
+struct HardcoverToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        Switch(configuration: configuration)
+    }
+
+    private struct Switch: View {
+        let configuration: Configuration
+        @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+        private static let width: CGFloat = 46
+        private static let height: CGFloat = 26
+        private static let inset: CGFloat = 3
+
+        var body: some View {
+            let isOn = configuration.isOn
+            HStack {
+                configuration.label
+                Spacer(minLength: 12)
+                ZStack(alignment: isOn ? .trailing : .leading) {
+                    Hardcover.corner.fill(Color("ProminentButton").opacity(isOn ? 1 : 0))
+                    Hardcover.corner.strokeBorder(Color.brand.opacity(isOn ? 0 : 0.45), lineWidth: 1)
+                    RoundedRectangle(cornerRadius: 2, style: .continuous)
+                        .fill(isOn ? Color("ProminentButtonLabel") : Color.brand)
+                        .frame(width: Self.height - Self.inset * 2, height: Self.height - Self.inset * 2)
+                        .padding(Self.inset)
+                }
+                .frame(width: Self.width, height: Self.height)
+            }
+            .contentShape(Rectangle())
+            .onTapGesture {
+                withAnimation(reduceMotion ? nil : .versed) { configuration.isOn.toggle() }
+            }
+            .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.7), trigger: isOn)
+            .accessibilityRepresentation {
+                Toggle(isOn: configuration.$isOn) { configuration.label }
+                    .toggleStyle(.switch)
+            }
+        }
     }
 }
 
 /// The dotted line that leads the eye across a table of contents.
-private struct LeaderDots: View {
+struct LeaderDots: View {
     var body: some View {
         Line()
             .stroke(Color.secondaryText.opacity(0.55), style: StrokeStyle(lineWidth: 1, lineCap: .round, dash: [0.1, 5]))
@@ -364,35 +492,33 @@ private struct LeaderDots: View {
 
 /// The small arrow at the end of a row.
 struct LedgerRowArrow: View {
-    var symbol = "chevron.forward"
+    var symbol = Glyph.chevronForward
 
     var body: some View {
-        Image(systemName: symbol)
-            .font(.system(size: 12, weight: .regular))
+        GlyphView(symbol, size: 11)
             .foregroundStyle(.secondaryText)
-            .accessibilityHidden(true)
     }
 }
 
 extension View {
     /// The spacing inside a row, tall enough to tap easily.
     func ledgerRowPadding() -> some View {
-        padding(.vertical, 12)
-            .frame(maxWidth: .infinity, minHeight: 52, alignment: .leading)
+        padding(.vertical, 11)
+            .frame(maxWidth: .infinity, minHeight: 48, alignment: .leading)
     }
 
     /// The shared margins of a screen's contents.
     func versedPage() -> some View {
         padding(.horizontal, Hardcover.margin)
-            .padding(.top, 14)
-            .padding(.bottom, 28)
+            .padding(.top, 20)
+            .padding(.bottom, 32)
     }
 
-    /// The shared look of a scrolling screen: plain paper, with none of the blur and fade strips
+    /// The shared look of a scrolling screen: the paper page, with none of the blur and fade strips
     /// that newer iOS versions draw at the edges of a scrolling screen.
     func versedScreen() -> some View {
         modifier(TabBarClearance())
-            .background(Color.appBackground)
+            .background { PaperSurface() }
             .hidesScrollEdgeEffects()
     }
 
@@ -405,11 +531,11 @@ extension View {
         }
     }
 
-    /// Every sheet in the app is the same: full height, on plain paper.
+    /// Every sheet in the app is the same: full height, on the paper page.
     func versedSheet() -> some View {
         environment(\.tabBarClearance, 0)
             .presentationDetents([.large])
-            .presentationBackground(Color.appBackground)
+            .presentationBackground { PaperSurface() }
             .presentationDragIndicator(.hidden)
     }
 
@@ -431,70 +557,112 @@ private struct PressEffect: ViewModifier {
     }
 }
 
-/// A tappable row: the words dim while pressed.
+/// A tappable row: a faint shade of ink under the finger that lifts slowly on release, as native lists do.
 struct LedgerRowButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .opacity(configuration.isPressed ? 0.45 : 1)
+            .background {
+                Hardcover.corner
+                    .fill(Color.brand.opacity(configuration.isPressed ? 0.07 : 0))
+                    .padding(.horizontal, -10)
+            }
+            .animation(configuration.isPressed ? .easeOut(duration: 0.05) : .easeOut(duration: 0.32), value: configuration.isPressed)
     }
 }
 
-/// The main button: a solid navy block with cream words (cream with navy words in dark mode).
+/// A chapter number: the shade stays inside its own square, so neighbors aren't touched.
+struct ChapterCellButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .background {
+                Hardcover.corner
+                    .fill(Color.brand.opacity(configuration.isPressed ? 0.09 : 0))
+                    .padding(4)
+            }
+            .animation(configuration.isPressed ? .easeOut(duration: 0.05) : .easeOut(duration: 0.32), value: configuration.isPressed)
+    }
+}
+
+/// A solid button with a little thickness: it sits on a darker lower edge and presses down onto it.
+private struct PressedPlate<Label: View>: View {
+    let label: Label
+    let isPressed: Bool
+    let fill: Color
+    let ink: Color
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private static var edge: CGFloat { 1.5 }
+
+    var body: some View {
+        label
+            .font(.versedRow)
+            .foregroundStyle(ink)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 28)
+            .background {
+                Hardcover.corner
+                    .fill(fill)
+                    .overlay { TextureTile(name: TextureTile.paper).clipShape(Hardcover.corner) }
+            }
+            .offset(y: isPressed && !reduceMotion ? Self.edge : 0)
+            .background {
+                Hardcover.corner
+                    .fill(fill)
+                    .overlay { Hardcover.corner.fill(Color.black.opacity(0.34)) }
+                    .offset(y: Self.edge)
+            }
+            .opacity(isPressed && reduceMotion ? 0.85 : 1)
+            .animation(.spring(duration: 0.2, bounce: 0.15), value: isPressed)
+            .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.55), trigger: isPressed) { _, nowPressed in nowPressed }
+    }
+}
+
+/// A quieter button with a fine outline, shaded under the finger.
+private struct OutlinedPlate<Label: View>: View {
+    let label: Label
+    let isPressed: Bool
+    let ink: Color
+
+    var body: some View {
+        label
+            .font(.versedRow)
+            .foregroundStyle(ink)
+            .padding(.vertical, 14)
+            .padding(.horizontal, 28)
+            .background(ink.opacity(isPressed ? 0.09 : 0), in: Hardcover.corner)
+            .overlay(Hardcover.corner.strokeBorder(ink.opacity(0.42), lineWidth: 0.75))
+            .contentShape(Hardcover.corner)
+            .pressEffect(isPressed, scale: 0.985)
+    }
+}
+
+/// The main button: solid navy with cream words (cream with navy words in dark mode).
 /// It's as wide as its label; add `.frame(maxWidth: .infinity)` to the label to fill the row.
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.versedRow)
-            .foregroundStyle(Color("ProminentButtonLabel"))
-            .padding(.vertical, 14)
-            .padding(.horizontal, 28)
-            .background(Color("ProminentButton"), in: Hardcover.corner)
-            .opacity(configuration.isPressed ? 0.85 : 1)
-            .pressEffect(configuration.isPressed)
+        PressedPlate(label: configuration.label, isPressed: configuration.isPressed, fill: Color("ProminentButton"), ink: Color("ProminentButtonLabel"))
     }
 }
 
-/// A quieter button: navy words in a thin outline.
+/// A quieter button: navy words in a fine outline.
 struct SecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.versedRow)
-            .foregroundStyle(.brand)
-            .padding(.vertical, 14)
-            .padding(.horizontal, 28)
-            .overlay(Hardcover.corner.strokeBorder(Color.brand.opacity(0.35)))
-            .contentShape(Hardcover.corner)
-            .opacity(configuration.isPressed ? 0.6 : 1)
-            .pressEffect(configuration.isPressed)
+        OutlinedPlate(label: configuration.label, isPressed: configuration.isPressed, ink: .brand)
     }
 }
 
 /// The main button on a navy block: solid cream with navy words, in light and dark mode.
 struct CoverPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.versedRow)
-            .foregroundStyle(.cover)
-            .padding(.vertical, 14)
-            .padding(.horizontal, 28)
-            .background(Color.onCover, in: Hardcover.corner)
-            .opacity(configuration.isPressed ? 0.85 : 1)
-            .pressEffect(configuration.isPressed)
+        PressedPlate(label: configuration.label, isPressed: configuration.isPressed, fill: .onCover, ink: .cover)
     }
 }
 
-/// A quieter button on a navy block: cream words in a thin cream outline.
+/// A quieter button on a navy block: cream words in a fine cream outline.
 struct CoverSecondaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.versedRow)
-            .foregroundStyle(.onCover)
-            .padding(.vertical, 14)
-            .padding(.horizontal, 28)
-            .overlay(Hardcover.corner.strokeBorder(Color.onCover.opacity(0.6)))
-            .contentShape(Hardcover.corner)
-            .opacity(configuration.isPressed ? 0.6 : 1)
-            .pressEffect(configuration.isPressed)
+        OutlinedPlate(label: configuration.label, isPressed: configuration.isPressed, ink: .onCover)
     }
 }
 

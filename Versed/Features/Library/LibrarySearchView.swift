@@ -64,7 +64,6 @@ struct LibrarySearchView: View {
                     if !results.isEmpty {
                         Ledger {
                             ForEach(results, id: \.self) { result in
-                                if result != results.first { LedgerRule() }
                                 Button {
                                     onOpen(result)
                                 } label: {

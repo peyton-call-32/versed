@@ -23,13 +23,10 @@ struct ReadingScheduleView: View {
     var body: some View {
         ScrollViewReader { proxy in
             ScrollView {
-                VStack(spacing: 22) {
+                VStack(spacing: Hardcover.sectionSpacing) {
                     ForEach(courses, id: \.name) { course in
                         LedgerSection(title: course.name) {
                             ForEach(course.weeks) { week in
-                                if week.id != course.weeks.first?.id {
-                                    LedgerRule()
-                                }
                                 WeekRow(week: week, isThisWeek: week.id == thisWeekID) {
                                     openWeek(week.id)
                                 }

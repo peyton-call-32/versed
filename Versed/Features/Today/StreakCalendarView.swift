@@ -8,7 +8,7 @@ struct StreakCalendarView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var month = ReadingMonth(containing: .now)
     /// Grows with the reader's text size, to stay in step with the big number beside it.
-    @ScaledMetric(relativeTo: .largeTitle) private var flameSize = 38.0
+    @ScaledMetric(relativeTo: .largeTitle) private var ribbonSize = 40.0
 
     private var streak: Int { ReadingStreak.count(readDays: readDays) }
 
@@ -21,7 +21,6 @@ struct StreakCalendarView: View {
                     MonthCalendar(month: $month, readDays: readDays)
                     HStack(spacing: 0) {
                         StreakStat(title: "Best Streak", value: ReadingStreak.best(readDays: readDays))
-                        Rectangle().fill(Color.hairline).frame(width: 1).padding(.vertical, 10).accessibilityHidden(true)
                         StreakStat(title: "Days Read", value: readDays.count)
                     }
                     .fixedSize(horizontal: false, vertical: true)
@@ -40,9 +39,7 @@ struct StreakCalendarView: View {
     @ViewBuilder private var streakHeading: some View {
         VStack(spacing: 2) {
             HStack(spacing: 8) {
-                FlameMark()
-                    .stroke(lineWidth: 1)
-                    .frame(width: flameSize * 0.72, height: flameSize)
+                GlyphView(.ribbon, size: ribbonSize, lineWidth: 1, fill: streak > 0 ? 1 : 0)
                 if streak > 0 {
                     Text("\(streak)")
                         .font(.versedNumber(size: 84))
@@ -63,6 +60,10 @@ private struct MonthCalendar: View {
     @Binding var month: ReadingMonth
     let readDays: Set<String>
 
+    /// Which way the month last moved, so the next one slides in from that side.
+    @State private var movesForward = true
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
     private let currentMonth = ReadingMonth(containing: .now)
 
@@ -75,6 +76,7 @@ private struct MonthCalendar: View {
         Ledger {
             VStack(spacing: 8) {
                 monthHeader
+                    .sensoryFeedback(.selection, trigger: month.start)
                 // Seven columns need a limit: past this, two-digit days wouldn't fit across the phone.
                 Group {
                     LazyVGrid(columns: columns, spacing: 0) {
@@ -93,17 +95,21 @@ private struct MonthCalendar: View {
                             CalendarDayCell(day: day)
                         }
                     }
+                    // A new grid for each month, so it can slide in as a whole.
+                    .id(month.start)
+                    .transition(reduceMotion ? .opacity : .push(from: movesForward ? .trailing : .leading))
                 }
                 .dynamicTypeSize(...DynamicTypeSize.accessibility2)
             }
+            .clipped()
             .padding(.vertical, 8)
         }
     }
 
     private var monthHeader: some View {
         HStack {
-            arrow("chevron.backward", label: "Previous month", isEnabled: month.start > earliestMonth.start) {
-                month = month.adding(months: -1)
+            arrow(.chevronBack, label: "Previous month", isEnabled: month.start > earliestMonth.start) {
+                move(by: -1)
             }
             Spacer(minLength: 4)
             Text(month.title)
@@ -112,16 +118,22 @@ private struct MonthCalendar: View {
                 .multilineTextAlignment(.center)
                 .accessibilityAddTraits(.isHeader)
             Spacer(minLength: 4)
-            arrow("chevron.forward", label: "Next month", isEnabled: month.start < currentMonth.start) {
-                month = month.adding(months: 1)
+            arrow(.chevronForward, label: "Next month", isEnabled: month.start < currentMonth.start) {
+                move(by: 1)
             }
         }
     }
 
-    private func arrow(_ symbol: String, label: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
+    private func move(by months: Int) {
+        movesForward = months > 0
+        withAnimation(reduceMotion ? nil : .spring(duration: 0.36, bounce: 0)) {
+            month = month.adding(months: months)
+        }
+    }
+
+    private func arrow(_ symbol: Glyph, label: String, isEnabled: Bool, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            Image(systemName: symbol)
-                .font(.system(size: 15, weight: .light))
+            GlyphView(symbol, size: 15)
                 .foregroundStyle(.brand)
                 .opacity(isEnabled ? 1 : 0.25)
                 .frame(width: 44, height: 44)
@@ -217,23 +229,4 @@ private struct StreakStat: View {
 
 #Preview {
     StreakCalendarView(readDays: ["2026-11-01", "2026-11-02", "2026-11-03", "2026-11-04"])
-}
-
-/// A plain flame, drawn as one clean line so it stays crisp at the small sizes it's used.
-struct FlameMark: Shape {
-    func path(in rect: CGRect) -> Path {
-        func point(_ x: CGFloat, _ y: CGFloat) -> CGPoint {
-            CGPoint(x: rect.minX + rect.width * x, y: rect.minY + rect.height * y)
-        }
-        var path = Path()
-        path.move(to: point(0.56, 0))
-        path.addCurve(to: point(0.96, 0.66), control1: point(0.62, 0.24), control2: point(0.96, 0.38))
-        path.addCurve(to: point(0.5, 1), control1: point(0.96, 0.87), control2: point(0.75, 1))
-        path.addCurve(to: point(0.04, 0.64), control1: point(0.25, 1), control2: point(0.04, 0.86))
-        path.addCurve(to: point(0.2, 0.28), control1: point(0.04, 0.49), control2: point(0.12, 0.39))
-        path.addCurve(to: point(0.36, 0.5), control1: point(0.21, 0.39), control2: point(0.28, 0.47))
-        path.addCurve(to: point(0.56, 0), control1: point(0.33, 0.3), control2: point(0.4, 0.13))
-        path.closeSubpath()
-        return path
-    }
 }

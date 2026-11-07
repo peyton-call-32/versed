@@ -9,23 +9,28 @@ enum AppTab: String, CaseIterable, Identifiable {
 
     var id: Self { self }
 
-    /// The outline icon, which fills in while the tab is selected.
-    var symbol: String {
+    /// The icon, which fills in while the tab is selected.
+    var glyph: Glyph {
         switch self {
-        case .today: "calendar"
-        case .library: "book"
-        case .saved: "heart"
-        case .settings: "gearshape"
+        case .today: .ribbon
+        case .library: .books
+        case .saved: .heart
+        case .settings: .sliders
         }
     }
 }
 
-/// The band at the foot of every main screen, set flat across the page under a ruled line.
-/// A short line above the open tab slides across when the tab changes. On a navy chapter
-/// opening it turns navy too, so it's part of the page.
+private extension Spring {
+    /// A soft settle for an icon coming back up after a tap.
+    static let versedSettle = Spring(duration: 0.3, bounce: 0.3)
+}
+
+/// The band at the foot of every main screen: a solid strip of the same paper, laid over the page
+/// so it casts a faint shadow upward. A small swelled rule under the open tab slides across when the
+/// tab changes. On a navy chapter opening it turns navy too, with no shadow, so it's part of the page.
 struct VersedTabBar: View {
     /// The band's height, above the phone's own bottom edge.
-    static let height: CGFloat = 54
+    static let height: CGFloat = 56
 
     @Binding var selection: AppTab
     var isOnCover = false
@@ -41,7 +46,6 @@ struct VersedTabBar: View {
 
     var body: some View {
         VStack(spacing: 0) {
-            Rule(color: isOnCover ? Color.onCover.opacity(0.3) : .hairline)
             HStack(spacing: 0) {
                 ForEach(AppTab.allCases) { tab in
                     button(for: tab)
@@ -51,7 +55,16 @@ struct VersedTabBar: View {
             .frame(minHeight: Self.height)
         }
         .animation(reduceMotion ? nil : .versed, value: selection)
-        .background((isOnCover ? Color.cover : Color.appBackground).ignoresSafeArea(edges: .bottom))
+        .background {
+            ZStack {
+                if isOnCover {
+                    ClothSurface().ignoresSafeArea(edges: .bottom)
+                } else {
+                    PaperSurface()
+                        .paperEdgeShadow(rise: -1)
+                }
+            }
+        }
         // The whole band takes touches, so a tap in its corners can't reach a list row underneath.
         .contentShape(Rectangle())
         .onTapGesture {}
@@ -73,11 +86,14 @@ struct VersedTabBar: View {
             }
         } label: {
             VStack(spacing: 2) {
-                Image(systemName: tab.symbol)
-                    .symbolVariant(isSelected ? .fill : .none)
-                    .font(.system(size: 17, weight: .light))
-                    .symbolEffect(.bounce, value: bounces[tab, default: 0])
-                    .frame(height: 22)
+                GlyphView(tab.glyph, size: 21, lineWidth: 1, fill: isSelected ? 1 : 0)
+                    .keyframeAnimator(initialValue: 1.0, trigger: bounces[tab, default: 0]) { icon, scale in
+                        icon.scaleEffect(scale)
+                    } keyframes: { _ in
+                        SpringKeyframe(0.86, duration: 0.09)
+                        SpringKeyframe(1, duration: 0.3, spring: .versedSettle)
+                    }
+                    .frame(height: 24)
                 Text(tab.rawValue)
                     .font(.versedVerse(size: 12, relativeTo: .caption))
                     .lineLimit(1)
@@ -85,12 +101,13 @@ struct VersedTabBar: View {
             }
             .foregroundStyle(isSelected ? ink : quietInk)
             .frame(maxWidth: .infinity, minHeight: Self.height)
-            .overlay(alignment: .top) {
+            .overlay(alignment: .bottom) {
                 if isSelected {
-                    Rectangle()
+                    SwelledRuleShape()
                         .fill(ink)
-                        .frame(width: 28, height: 1.5)
+                        .frame(width: 30, height: 2)
                         .matchedGeometryEffect(id: "open tab", in: marker)
+                        .padding(.bottom, 1)
                 }
             }
             .contentShape(Rectangle())

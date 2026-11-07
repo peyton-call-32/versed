@@ -19,7 +19,7 @@ struct ReorderPlansView: View {
                         .foregroundStyle(.brand)
                         .frame(minHeight: 52)
                         .listRowBackground(Color.appBackground)
-                        .listRowSeparatorTint(.hairline)
+                        .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 0, leading: Hardcover.margin, bottom: 0, trailing: Hardcover.margin))
                 }
                 .onMove(perform: move)

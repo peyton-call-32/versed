@@ -51,8 +51,7 @@ struct ChapterMenu: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)
                     .contentTransition(.opacity)
-                Image(systemName: "chevron.down")
-                    .font(.system(size: 9, weight: .regular))
+                GlyphView(.chevronDown, size: 9)
             }
             .foregroundStyle(isOnCover ? Color.onCover : Color.brand)
             .padding(.horizontal, 12)
@@ -96,14 +95,14 @@ private struct ChapterMenuSheet: View {
         NavigationStack {
             ScrollViewReader { proxy in
                 ScrollView {
-                    VStack(spacing: 22) {
+                    VStack(spacing: Hardcover.sectionSpacing) {
                         if showsBackToStart {
                             Ledger {
                                 Button {
                                     navigation.goToStart()
                                     dismiss()
                                 } label: {
-                                    LedgerRowLabel(title: options?.backToStartTitle ?? "Back to Start", symbol: "arrow.up")
+                                    LedgerRowLabel(title: options?.backToStartTitle ?? "Back to Start", symbol: .arrowUp)
                                 }
                                 .buttonStyle(.ledgerRow)
                             }
@@ -152,7 +151,6 @@ private struct ChapterMenuSheet: View {
                 .buttonStyle(.ledgerRow)
             }
             if let planDetails = options?.planDetails {
-                if options?.otherWeeks != nil { LedgerRule() }
                 Button {
                     dismiss()
                     planDetails()
@@ -174,7 +172,7 @@ private struct ChapterMenuSheet: View {
             } label: {
                 ChapterCellLabel(chapter: chapter, isCurrent: isCurrent)
             }
-            .buttonStyle(.ledgerRow)
+            .buttonStyle(ChapterCellButtonStyle())
             .accessibilityLabel(group.book.reference(chapter: chapter))
             .accessibilityAddTraits(isCurrent ? .isSelected : [])
             .id(id)

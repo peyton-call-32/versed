@@ -11,6 +11,8 @@
 		0455C75BFABA21B334C0DBDF /* PassageTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21B7911FA10AE3B8778E4363 /* PassageTests.swift */; };
 		0B10724C4C9A8EC53B747D33 /* ShrinkToFit.swift in Sources */ = {isa = PBXBuildFile; fileRef = D623E81C88B3290F8EE72F76 /* ShrinkToFit.swift */; };
 		0C5E553E78AD27C76F2970D6 /* ReadingPlan.swift in Sources */ = {isa = PBXBuildFile; fileRef = 709527532C7FC00244602F37 /* ReadingPlan.swift */; };
+		0CF14CB9F2592A71F4B0911F /* Glyphs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0E2195D7CF0D51689F1B8AA5 /* Glyphs.swift */; };
+		0D54AED672EFEEA406A354D4 /* Materials.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3AD406352350795C66B9152 /* Materials.swift */; };
 		0DF3AED73B14A2282D9F5790 /* PlanEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E94351656964B793864F948 /* PlanEngineTests.swift */; };
 		10622328D65835CBD1481645 /* Appearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FBF410BFC7EE8EBFD096C42 /* Appearance.swift */; };
 		11AC7430904C6190BCD5BB7C /* AboutSectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 87D404920C6AE2EB9B87176B /* AboutSectionTests.swift */; };
@@ -23,6 +25,7 @@
 		1C46E45D0E1C6EFDA5892C3D /* ReadingStreakTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 644798A7072B0E37BBDBC5BA /* ReadingStreakTests.swift */; };
 		1C6AEF47986F29417DA6A6F1 /* Newsreader-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0166B0C2EB9894D47EEEEC8A /* Newsreader-Regular.ttf */; };
 		20171DC2A48F9F0625F89580 /* WindowAppearance.swift in Sources */ = {isa = PBXBuildFile; fileRef = B175E88BEA14206E0BADF984 /* WindowAppearance.swift */; };
+		224394750B21607F63BD50A6 /* TextureContrastTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 117C50BAAB9D7D9C35A6CFCF /* TextureContrastTests.swift */; };
 		227F6C7616BCBB908203BB2F /* Newsreader-License.txt in Resources */ = {isa = PBXBuildFile; fileRef = C851739BFD7A619BA07EB355 /* Newsreader-License.txt */; };
 		23D2425DB4B256E5B8879271 /* VersedToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0645DBBB2147FBB32398695E /* VersedToolbar.swift */; };
 		23D960CEABA4DDC50C27E7D0 /* Scripture.swift in Sources */ = {isa = PBXBuildFile; fileRef = 401A45B314AB1A84BB775669 /* Scripture.swift */; };
@@ -130,6 +133,8 @@
 		0B9EDC4498DCFB566586FA2E /* ReadingScheduleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingScheduleView.swift; sourceTree = "<group>"; };
 		0C8637332E91BBE1A3EB8AE5 /* ReadingSchedule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingSchedule.swift; sourceTree = "<group>"; };
 		0D859F2440927963A86C725B /* VerseTextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseTextTests.swift; sourceTree = "<group>"; };
+		0E2195D7CF0D51689F1B8AA5 /* Glyphs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glyphs.swift; sourceTree = "<group>"; };
+		117C50BAAB9D7D9C35A6CFCF /* TextureContrastTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextureContrastTests.swift; sourceTree = "<group>"; };
 		1214A84BDDB01C93A2637D9C /* VersedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersedApp.swift; sourceTree = "<group>"; };
 		193B3C5005B089F0C944A282 /* ReadingMonth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingMonth.swift; sourceTree = "<group>"; };
 		1ABA253A5A766E0E141E6BCC /* bofm.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = bofm.json; sourceTree = "<group>"; };
@@ -212,6 +217,7 @@
 		E14A1D81CE6CFC3D793B03A9 /* VersedTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = VersedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		E7996FA7EC88EA0494273667 /* schedule-2027.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "schedule-2027.json"; sourceTree = "<group>"; };
 		F1ADF58D40B3A1EE961844D7 /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		F3AD406352350795C66B9152 /* Materials.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Materials.swift; sourceTree = "<group>"; };
 		F64D8F2C9FE5FBB08270B001 /* VerseText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VerseText.swift; sourceTree = "<group>"; };
 		F6552C3C4B4A1D73FFCC5079 /* ReadingPortion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingPortion.swift; sourceTree = "<group>"; };
 		FA4C7D46EC0C61DEC2F531CA /* IntroView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntroView.swift; sourceTree = "<group>"; };
@@ -271,6 +277,7 @@
 				644798A7072B0E37BBDBC5BA /* ReadingStreakTests.swift */,
 				DA06D5EF2CB15AC34E1A3EFF /* SavedVerseStoreTests.swift */,
 				29EBE0202008EEC564E4B8E5 /* ScriptureLibraryTests.swift */,
+				117C50BAAB9D7D9C35A6CFCF /* TextureContrastTests.swift */,
 				0D859F2440927963A86C725B /* VerseTextTests.swift */,
 			);
 			path = VersedTests;
@@ -465,6 +472,8 @@
 			children = (
 				FF7355C4C79664759661A138 /* AppColors.swift */,
 				96E3602A28F395B078808444 /* ChapterGrid.swift */,
+				0E2195D7CF0D51689F1B8AA5 /* Glyphs.swift */,
+				F3AD406352350795C66B9152 /* Materials.swift */,
 				6480B21234F22A21E774CC97 /* ReadingChrome.swift */,
 				D623E81C88B3290F8EE72F76 /* ShrinkToFit.swift */,
 				DE00D0ADF6E876E95F1E0712 /* VersedTabBar.swift */,
@@ -638,11 +647,13 @@
 				DBC26FB646523E8A0502135A /* FeedItem.swift in Sources */,
 				33E86C0A28825C88C9B56FB1 /* FeedNavigation.swift in Sources */,
 				EF6B569AE42C38B6FEE132C7 /* FeedView.swift in Sources */,
+				0CF14CB9F2592A71F4B0911F /* Glyphs.swift in Sources */,
 				29D2F59E6DCD1C13228C4D9C /* IntroView.swift in Sources */,
 				525DEE7F052B4CAFC7654B2E /* LibraryBooks.swift in Sources */,
 				8CCD0B1B9E9BBC998930D49B /* LibraryCarousel.swift in Sources */,
 				162F987BF9B8D353A4A3F68A /* LibrarySearchView.swift in Sources */,
 				BDB9C1E2CFCC41E75F489074 /* LibraryView.swift in Sources */,
+				0D54AED672EFEEA406A354D4 /* Materials.swift in Sources */,
 				560848AA8F14F65D947816E1 /* PagedReadingView.swift in Sources */,
 				1A0BED16B6E50C0750F8CDA3 /* Passage.swift in Sources */,
 				F8791EBC2B50A76001CA99F3 /* PlanDetailView.swift in Sources */,
@@ -706,6 +717,7 @@
 				1C46E45D0E1C6EFDA5892C3D /* ReadingStreakTests.swift in Sources */,
 				13E2D3099B8B938E2BEAA8E9 /* SavedVerseStoreTests.swift in Sources */,
 				A7057CC524186095DBBFE5A0 /* ScriptureLibraryTests.swift in Sources */,
+				224394750B21607F63BD50A6 /* TextureContrastTests.swift in Sources */,
 				EF3034C7F35F0B09181DF74C /* VerseTextTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

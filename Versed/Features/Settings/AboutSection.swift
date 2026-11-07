@@ -28,26 +28,22 @@ struct AboutSection: View {
                 .foregroundStyle(.secondaryText)
                 .ledgerRowPadding()
 
-            LedgerRule()
             Link(destination: Self.scriptureSourceURL) {
                 LedgerRowLabel(title: "Scripture Text", detail: "bcbooks/scriptures-json", symbol: LedgerRowLabel.externalLinkSymbol)
             }
             .buttonStyle(.ledgerRow)
             .accessibilityHint("Public domain. Opens the source in Safari.")
 
-            LedgerRule()
             Link(destination: Self.privacyPolicyURL) {
                 LedgerRowLabel(title: "Privacy Policy", symbol: LedgerRowLabel.externalLinkSymbol)
             }
             .buttonStyle(.ledgerRow)
 
-            LedgerRule()
             Link(destination: URL(string: "mailto:\(Self.contactEmail)")!) {
                 LedgerRowLabel(title: "Contact", detail: Self.contactEmail, symbol: LedgerRowLabel.externalLinkSymbol)
             }
             .buttonStyle(.ledgerRow)
 
-            LedgerRule()
             LedgerRowLabel(title: "Version", detail: Self.versionText(), symbol: nil)
         }
     }

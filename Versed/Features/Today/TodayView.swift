@@ -75,8 +75,13 @@ struct TodayView: View {
             }
             .scrollBounceBehavior(.basedOnSize)
             .safeAreaInset(edge: .top, spacing: 0) {
-                // The line the ribbon hangs from, with solid paper above it so nothing scrolls under the clock.
-                Rule().background(Color.appBackground.ignoresSafeArea(edges: .top))
+                // The ribbon comes out from under this strip of paper, whose edge casts a faint shadow.
+                // It also keeps anything from scrolling under the clock.
+                Color.clear
+                    .frame(height: 0)
+                    .background {
+                        PaperSurface().paperEdgeShadow(rise: 1)
+                    }
             }
             .versedScreen()
             .toolbar(.hidden, for: .navigationBar)
@@ -125,13 +130,9 @@ struct TodayView: View {
     private var planList: some View {
         let engine = engine
         return VStack(alignment: .leading, spacing: 0) {
-            Color.clear.frame(height: 74)
-            ForEach(Array(orderedPlans.enumerated()), id: \.element.id) { index, plan in
+            Color.clear.frame(height: 56)
+            ForEach(orderedPlans, id: \.id) { plan in
                 let isOpen = openPlanID == plan.id
-                // A plain line between closed plans. The open plan's navy block needs none.
-                if !isOpen, index == 0 || orderedPlans[index - 1].id != openPlanID {
-                    Rule().padding(.horizontal, Hardcover.margin)
-                }
                 PlanSection(
                     title: engine.title(of: plan.state.source),
                     status: engine.status(of: plan.state),
@@ -146,10 +147,10 @@ struct TodayView: View {
                     onRead: { path.append(.reading(plan.id)) },
                     onDetails: { path.append(.details(plan.id)) }
                 )
+                // The open block's shadow falls on the plan below it.
+                .zIndex(isOpen ? 1 : 0)
             }
-            if orderedPlans.last?.id != openPlanID {
-                Rule().padding(.horizontal, Hardcover.margin)
-            }
+            Color.clear.frame(height: 10)
             Button {
                 sheet = .picker
             } label: {
@@ -180,14 +181,12 @@ struct TodayView: View {
                     LedgerRowLabel(title: WeeklyPlanName.title, detail: "Weekly schedule")
                 }
                 .buttonStyle(.ledgerRow)
-                LedgerRule()
                 Button {
                     sheet = .setup(.volume("bofm"))
                 } label: {
                     LedgerRowLabel(title: "Book of Mormon", detail: "At your pace")
                 }
                 .buttonStyle(.ledgerRow)
-                LedgerRule()
                 Button {
                     sheet = .picker
                 } label: {
@@ -244,8 +243,8 @@ struct TodayView: View {
 }
 
 /// One plan: its name, which opens and closes it, and when open, the reading set large with
-/// how long it takes and the way in. An open plan is a solid navy block across the page, so it's
-/// plain which plan is which.
+/// how long it takes and the way in. An open plan is a band of navy cloth across the page. Its
+/// name steps down to a small label there, so the reading is the one big thing on it.
 private struct PlanSection: View {
     let title: String
     let status: PlanStatus
@@ -263,23 +262,23 @@ private struct PlanSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             Button(action: onToggle) {
-                HStack(spacing: 12) {
-                    (Text(title) + Text(isDone ? "  " : "") + checkmark)
-                        .font(.versedTitle(size: 38, relativeTo: .title))
-                        .foregroundStyle(ink)
-                        .multilineTextAlignment(.leading)
-                        .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 10) {
+                    planName
+                    if isDone {
+                        GlyphView(.check, size: isOpen ? 11 : 15, lineWidth: 1.3)
+                            .foregroundStyle(ink)
+                    }
                     Spacer(minLength: 0)
-                    Image(systemName: "chevron.forward")
-                        .font(.system(size: 14, weight: .light))
+                    GlyphView(.chevronForward, size: 13)
                         .foregroundStyle(quietInk)
                         .rotationEffect(.degrees(isOpen ? 90 : 0))
                 }
-                .padding(.vertical, 16)
-                .frame(maxWidth: .infinity, minHeight: 80, alignment: .leading)
+                .padding(.top, isOpen ? 20 : 10)
+                .padding(.bottom, isOpen ? 10 : 10)
+                .frame(maxWidth: .infinity, minHeight: isOpen ? 52 : 68, alignment: .leading)
                 .contentShape(Rectangle())
             }
-            .buttonStyle(.ledgerRow)
+            .buttonStyle(PlanNameButtonStyle())
             .accessibilityLabel(title)
             .accessibilityValue(spokenValue)
             .accessibilityHint(isOpen ? "Closes this plan." : "Opens this plan.")
@@ -294,13 +293,33 @@ private struct PlanSection: View {
             .accessibilityHidden(!isOpen)
         }
         .padding(.horizontal, Hardcover.margin)
-        .background(isOpen ? Color.cover : .clear)
+        .background {
+            ClothBand()
+                .opacity(isOpen ? 1 : 0)
+                // Solid almost at once when opening, so it never passes through a washed-out gray.
+                .animation(isOpen ? .easeOut(duration: 0.1) : .easeIn(duration: 0.24), value: isOpen)
+        }
     }
 
-    private var checkmark: Text {
-        isDone
-            ? Text(Image(systemName: "checkmark")).font(.system(size: 15, weight: .regular)).baselineOffset(3)
-            : Text("")
+    /// Set large while closed, and as a small label above the reading while open.
+    private var planName: some View {
+        ZStack(alignment: .leading) {
+            Text(title)
+                .font(.versedTitle(size: 38, relativeTo: .title))
+                .foregroundStyle(ink)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                // Gone almost at once when opening, so it never crosses the reading rising beneath it.
+                .opacity(isOpen ? 0 : 1)
+                .animation(isOpen ? .easeOut(duration: 0.08) : .easeIn(duration: 0.22).delay(0.1), value: isOpen)
+                .frame(height: isOpen ? 0 : nil, alignment: .top)
+                .clipped()
+            SmallCapsLabel(title, color: .onCover)
+                .opacity(isOpen ? 1 : 0)
+                .animation(isOpen ? .easeIn(duration: 0.2).delay(0.1) : .easeOut(duration: 0.08), value: isOpen)
+                .frame(height: isOpen ? nil : 0, alignment: .top)
+                .clipped()
+        }
     }
 
     private var spokenValue: String {
@@ -317,6 +336,7 @@ private struct PlanSection: View {
                 Text("You finished this plan.")
                     .font(.versedTitle(size: 30, relativeTo: .title2))
                     .foregroundStyle(ink)
+                    .stampedIntoCloth()
             }
             HStack(alignment: .firstTextBaseline) {
                 Text(status.isFinished ? status.periodText : (isDone ? "Read today" : time?.text ?? ""))
@@ -327,11 +347,11 @@ private struct PlanSection: View {
                     .buttonStyle(PlainWordButtonStyle(ink: ink))
                     .accessibilityLabel("Plan details, \(title)")
             }
-            .padding(.top, 2)
+            .padding(.top, 6)
             if !status.isFinished {
-                readButton.padding(.top, 8)
+                readButton.padding(.top, 10)
             }
-            Color.clear.frame(height: 24)
+            Color.clear.frame(height: 26)
         }
     }
 
@@ -353,6 +373,31 @@ private struct PlanSection: View {
     }
 }
 
+/// The open plan's band: navy cloth with a catch of light along its top edge, a darker lower edge,
+/// and the shadow of something lying on the page.
+private struct ClothBand: View {
+    var body: some View {
+        ZStack {
+            Color.cover.restingShadow(depth: 0.8)
+            TextureTile(name: TextureTile.cloth, strength: TextureTile.clothStrength)
+            VStack(spacing: 0) {
+                Rule(color: .white.opacity(0.12))
+                Spacer(minLength: 0)
+                Rule(color: .black.opacity(0.35))
+            }
+        }
+    }
+}
+
+/// A plan's name: dims a little under the finger, on the page or on the cloth.
+private struct PlanNameButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .opacity(configuration.isPressed ? 0.55 : 1)
+            .animation(configuration.isPressed ? .easeOut(duration: 0.05) : .easeOut(duration: 0.3), value: configuration.isPressed)
+    }
+}
+
 /// A reading's name set large: one book as big as the page allows, several set smaller together.
 private struct ReadingTitle: View {
     let reading: ReadingPortion
@@ -369,6 +414,7 @@ private struct ReadingTitle: View {
                         .foregroundStyle(ink)
                         .lineLimit(2)
                         .minimumScaleFactor(0.7)
+                        .stampedIntoCloth()
                     if let chapters = chapterText(book) {
                         Text(chapters)
                             .font(.versedNumber(size: books.count > 1 ? 24 : 28, relativeTo: .title2))

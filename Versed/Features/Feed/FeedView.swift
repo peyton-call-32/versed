@@ -98,7 +98,7 @@ struct FeedView: View {
         }
         .scrollIndicators(.hidden)
         .hidesScrollEdgeEffects()
-        .background(Color.appBackground)
+        .background { PaperSurface() }
         .ignoresSafeArea()
         .accessibilityHidden(showsCover)
         .overlay(alignment: .bottom) {
@@ -186,7 +186,10 @@ struct FeedView: View {
                 dismissCover()
             }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .background(Color.appBackground)
+                .background {
+                    // The first page is laid over the feed, so its edge casts a shadow as it slides away.
+                    PaperSurface().shadow(color: .cardShadow, radius: 14)
+                }
                 .contentShape(Rectangle())
                 .offset(y: coverOffset)
                 .gesture(

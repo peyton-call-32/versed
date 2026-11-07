@@ -48,9 +48,7 @@ struct ReadingClosingCard: View {
                         Link(destination: lessonURL) {
                             HStack(spacing: 8) {
                                 Text("Open This Week’s Lesson")
-                                Image(systemName: "arrow.up.right")
-                                    .imageScale(.small)
-                                    .accessibilityHidden(true)
+                                GlyphView(.arrowUpRight, size: 10)
                             }
                         }
                         .buttonStyle(.primary)

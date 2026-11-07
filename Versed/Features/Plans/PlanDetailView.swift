@@ -18,11 +18,10 @@ struct PlanDetailView: View {
         let status = engine.status(of: state)
         let upcoming = engine.upcoming(for: state)
         ScrollView {
-            VStack(spacing: 22) {
+            VStack(spacing: Hardcover.sectionSpacing) {
                 LedgerSection(title: "Progress") {
                     LedgerRowLabel(title: status.periodText, detail: "\(Int((status.progress * 100).rounded()))% read", symbol: nil)
                     if let reading = status.reading {
-                        LedgerRule()
                         LedgerRowLabel(title: reading.displayLabel, detail: status.doneText ?? "Up next", symbol: nil)
                     }
                 }
@@ -30,8 +29,7 @@ struct PlanDetailView: View {
                 if !upcoming.isEmpty {
                     LedgerSection(title: "Coming Up") {
                         ForEach(upcoming, id: \.self) { item in
-                            if item != upcoming.first { LedgerRule() }
-                            LedgerRowLabel(title: item.when, detail: item.label, symbol: nil)
+                            LedgerRowLabel(title: item.when, detail: item.label, symbol: nil, hasLeader: true)
                         }
                     }
                 }

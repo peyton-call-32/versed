@@ -81,7 +81,7 @@ struct PlanSetupView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 22) {
+                VStack(spacing: Hardcover.sectionSpacing) {
                     if source.isWeeklySchedule {
                         startingPoint
                         if !joinsThisWeek && engine.courses.count > 1 { courseChoice }
@@ -120,7 +120,6 @@ struct PlanSetupView: View {
                 detail: engine.schedule.currentWeek().map { "\($0.dateRangeText()): \($0.displayLabel)" },
                 isSelected: joinsThisWeek
             ) { joinsThisWeek = true }
-            LedgerRule()
             ChoiceRow(
                 title: "Start from the Beginning",
                 detail: "Week 1 starts now, at your own pace.",
@@ -132,7 +131,6 @@ struct PlanSetupView: View {
     private var courseChoice: some View {
         LedgerSection(title: "Which Year") {
             ForEach(engine.courses, id: \.self) { option in
-                if option != engine.courses.first { LedgerRule() }
                 ChoiceRow(title: option, isSelected: course == option) { course = option }
             }
         }
@@ -141,11 +139,9 @@ struct PlanSetupView: View {
     private var lengthChoice: some View {
         LedgerSection(title: "How Long") {
             ForEach(lengths) { option in
-                if option != lengths.first { LedgerRule() }
                 ChoiceRow(title: option.label, isSelected: length == option) { length = option }
             }
             if length == .byDate {
-                LedgerRule()
                 DateRow(title: "Finish By", date: $finishDate, earliest: today)
             }
         }

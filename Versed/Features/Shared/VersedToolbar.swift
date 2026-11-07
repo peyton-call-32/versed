@@ -40,8 +40,7 @@ private struct BackArrow: View {
         Button {
             dismiss()
         } label: {
-            Image(systemName: "chevron.backward")
-                .font(.system(size: 18, weight: .light))
+            GlyphView(.chevronBack, size: 18, lineWidth: 1.2)
                 .foregroundStyle(color)
                 // iOS sets toolbar items 16 points in. This lines the arrow up with the page's margin.
                 .padding(.leading, Hardcover.margin - 16)

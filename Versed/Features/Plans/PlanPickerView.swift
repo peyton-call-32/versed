@@ -19,7 +19,6 @@ struct PlanPickerView: View {
                     }
                     .buttonStyle(.ledgerRow)
                     ForEach(engine.library.volumes) { volume in
-                        LedgerRule()
                         if volume.books.count == 1 {
                             pickRow(title: volume.title, source: .volume(volume.id))
                         } else {
@@ -54,7 +53,6 @@ struct PlanPickerView: View {
             Ledger {
                 pickRow(title: "All of the \(volume.title)", source: .volume(volume.id))
                 ForEach(volume.books) { book in
-                    LedgerRule()
                     pickRow(title: book.name, source: .book(book.id))
                 }
             }
