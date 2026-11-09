@@ -1,7 +1,7 @@
 import SwiftUI
 
-// What the app's surfaces are made of. Depth comes from real bookbinding materials and from the
-// shadows real objects would cast, never from gradients, glass, or glow. The tiles are drawn by
+// What the app's surfaces are made of. Depth comes from paper, smooth navy covers, and the
+// shadows real objects would cast, never from gradients, glass, or glow. The paper's grain is drawn by
 // Scripts/make_textures.swift.
 
 /// A seamless texture laid over a color. Touches pass straight through, and being decorative, VoiceOver never sees it.
@@ -10,11 +10,8 @@ struct TextureTile: View {
     var strength: Double = 1
 
     static let paper = "PaperGrain"
-    static let cloth = "BookCloth"
     /// How strongly the page's own grain is printed. `TextureContrastTests` checks it keeps text readable.
     static let paperStrength = 0.42
-    /// Felt more than seen: the weave should never compete with the words on it.
-    static let clothStrength = 0.72
 
     /// Apple's accessibility audit misreads any grain behind text as poor contrast, so its test
     /// turns textures off to check the colors, and `TextureContrastTests` covers the textures.
@@ -39,11 +36,11 @@ struct PaperSurface: View {
     }
 }
 
-/// Navy bookcloth, for covers, chapter openings, and the open plan.
+/// Smooth navy, for covers, chapter openings, and the open plan. Plain on purpose: the frames,
+/// edges, and pressed-in type give it its depth.
 struct ClothSurface: View {
     var body: some View {
         Color.cover
-            .overlay { TextureTile(name: TextureTile.cloth, strength: TextureTile.clothStrength) }
     }
 }
 

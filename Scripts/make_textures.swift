@@ -1,9 +1,9 @@
-// Draws the two seamless textures the app's surfaces are printed on: paper grain and bookcloth.
+// Draws the seamless paper grain the app's pages are printed on.
 // Each pixel is a touch of black or white, so one tile works on both the light and the dark colors.
 //
 // Run from the project folder:
 //   swift Scripts/make_textures.swift
-// It writes PaperGrain and BookCloth into Versed/Resources/Assets.xcassets.
+// It writes PaperGrain into Versed/Resources/Assets.xcassets.
 // A fixed seed means every run draws exactly the same tiles.
 
 import AppKit
@@ -63,32 +63,6 @@ func paperGrain() -> [Double] {
     return zip(fine, fibers).map { $0 * 2.6 + $1 }
 }
 
-/// Threads crossing over and under each other, each a little uneven, like linen bookcloth.
-func bookCloth() -> [Double] {
-    var random = Random(state: 1611)
-    // A width that divides the tile evenly, so the weave meets itself at the edges.
-    let threadWidth = 4
-    let threads = size / threadWidth
-    let warp = (0..<threads).map { _ in random.signed() * 0.34 }
-    let weft = (0..<threads).map { _ in random.signed() * 0.34 }
-    var noise = (0..<size * size).map { _ in random.signed() }
-    noise = blurred(noise)
-    var values = [Double](repeating: 0, count: size * size)
-    for y in 0..<size {
-        for x in 0..<size {
-            let column = x / threadWidth
-            let row = y / threadWidth
-            let isWarpOnTop = (column + row).isMultiple(of: 2)
-            let along = isWarpOnTop ? y % threadWidth : x % threadWidth
-            let across = isWarpOnTop ? x % threadWidth : y % threadWidth
-            // Each thread is lit along its middle and dark where it dips under the next one.
-            let shape = ((1...2).contains(across) ? 0.5 : -0.3) + ((1...2).contains(along) ? 0.25 : -0.1)
-            let unevenness = isWarpOnTop ? warp[column] : weft[row]
-            values[y * size + x] = shape + unevenness + noise[y * size + x] * 0.8
-        }
-    }
-    return values
-}
 
 /// Saves a tile as a 3x image, so it stays fine and sharp on an iPhone's screen.
 func write(_ values: [Double], strength: Double, name: String) throws {
@@ -123,4 +97,3 @@ func write(_ values: [Double], strength: Double, name: String) throws {
 }
 
 try write(paperGrain(), strength: 0.05, name: "PaperGrain")
-try write(bookCloth(), strength: 0.11, name: "BookCloth")

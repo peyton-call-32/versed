@@ -373,13 +373,12 @@ private struct PlanSection: View {
     }
 }
 
-/// The open plan's band: navy cloth with a catch of light along its top edge, a darker lower edge,
+/// The open plan's band: smooth navy with a catch of light along its top edge, a darker lower edge,
 /// and the shadow of something lying on the page.
 private struct ClothBand: View {
     var body: some View {
         ZStack {
             Color.cover.restingShadow(depth: 0.8)
-            TextureTile(name: TextureTile.cloth, strength: TextureTile.clothStrength)
             VStack(spacing: 0) {
                 Rule(color: .white.opacity(0.12))
                 Spacer(minLength: 0)

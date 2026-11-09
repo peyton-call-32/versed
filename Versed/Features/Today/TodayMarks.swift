@@ -39,10 +39,7 @@ struct StreakRibbon: View {
             .padding(.top, 14)
             .frame(width: Self.width, height: Self.height, alignment: .top)
             .background {
-                ZStack {
-                    Swallowtail().fill(.cover).shadow(color: .cardShadow, radius: 4, x: 1, y: 3)
-                    TextureTile(name: TextureTile.cloth, strength: TextureTile.clothStrength).clipShape(Swallowtail())
-                }
+                Swallowtail().fill(.cover).shadow(color: .cardShadow, radius: 4, x: 1, y: 3)
             }
             .contentShape(Swallowtail())
         }

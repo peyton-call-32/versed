@@ -18,11 +18,6 @@ final class TextureContrastTests: XCTestCase {
         }
     }
 
-    func testTextStaysReadableOnCloth() throws {
-        let surface = try color("Cover", .light)
-        let extremes = try extremes(of: TextureTile.cloth, strength: TextureTile.clothStrength, over: surface)
-        try assertReadable(color("OnCover", .light), on: extremes, "cream on cloth")
-    }
 
     private typealias RGB = (red: Double, green: Double, blue: Double)
 
