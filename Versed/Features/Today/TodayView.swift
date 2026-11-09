@@ -134,9 +134,10 @@ struct TodayView: View {
             let ordered = orderedPlans
             ForEach(Array(ordered.enumerated()), id: \.element.id) { index, plan in
                 let isOpen = openPlanID == plan.id
-                // A fine line between two closed plans. The open band needs none: it sets itself apart.
-                if index > 0, !isOpen, openPlanID != ordered[index - 1].id {
-                    Rule().padding(.horizontal, Hardcover.margin)
+                // Each closed plan is ruled above and below, like a row in a table of contents.
+                // The open band needs no line: its edges set it apart.
+                if !isOpen, index == 0 || openPlanID != ordered[index - 1].id {
+                    Rule.defined.padding(.horizontal, Hardcover.margin)
                 }
                 PlanSection(
                     title: engine.title(of: plan.state.source),
@@ -156,7 +157,7 @@ struct TodayView: View {
                 .zIndex(isOpen ? 1 : 0)
             }
             if let last = ordered.last, openPlanID != last.id {
-                Rule().padding(.horizontal, Hardcover.margin)
+                Rule.defined.padding(.horizontal, Hardcover.margin)
             }
             Color.clear.frame(height: 10)
             Button {

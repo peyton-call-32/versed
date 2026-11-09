@@ -113,15 +113,20 @@ struct Ornament: View {
     }
 }
 
-/// One thin ruled line, a single pixel on any screen.
+/// One thin ruled line, a single pixel on any screen unless given a weight.
 struct Rule: View {
     var color: Color = .hairline
+    /// The line's thickness in points. `nil` is one pixel.
+    var weight: CGFloat? = nil
     @Environment(\.displayScale) private var displayScale
+
+    /// A firmer line in the ink's own color, for rows that must read as separate, like Today's plans.
+    static var defined: Rule { Rule(color: .brand.opacity(0.32), weight: 1) }
 
     var body: some View {
         Rectangle()
             .fill(color)
-            .frame(height: 1 / displayScale)
+            .frame(height: weight ?? 1 / displayScale)
             .accessibilityHidden(true)
     }
 }
