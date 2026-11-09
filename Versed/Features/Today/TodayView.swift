@@ -131,8 +131,13 @@ struct TodayView: View {
         let engine = engine
         return VStack(alignment: .leading, spacing: 0) {
             Color.clear.frame(height: 56)
-            ForEach(orderedPlans, id: \.id) { plan in
+            let ordered = orderedPlans
+            ForEach(Array(ordered.enumerated()), id: \.element.id) { index, plan in
                 let isOpen = openPlanID == plan.id
+                // A fine line between two closed plans. The open band needs none: it sets itself apart.
+                if index > 0, !isOpen, openPlanID != ordered[index - 1].id {
+                    Rule().padding(.horizontal, Hardcover.margin)
+                }
                 PlanSection(
                     title: engine.title(of: plan.state.source),
                     status: engine.status(of: plan.state),
@@ -149,6 +154,9 @@ struct TodayView: View {
                 )
                 // The open block's shadow falls on the plan below it.
                 .zIndex(isOpen ? 1 : 0)
+            }
+            if let last = ordered.last, openPlanID != last.id {
+                Rule().padding(.horizontal, Hardcover.margin)
             }
             Color.clear.frame(height: 10)
             Button {
@@ -243,7 +251,7 @@ struct TodayView: View {
 }
 
 /// One plan: its name, which opens and closes it, and when open, the reading set large with
-/// how long it takes and the way in. An open plan is a band of navy cloth across the page. Its
+/// how long it takes and the way in. An open plan is a band of smooth navy across the page. Its
 /// name steps down to a small label there, so the reading is the one big thing on it.
 private struct PlanSection: View {
     let title: String

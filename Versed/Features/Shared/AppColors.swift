@@ -4,7 +4,7 @@ import SwiftUI
 // navy ink on warm paper (cream on deep navy in dark mode), one family of serif type, and nearly
 // square corners. Rows sit on the page like a table of contents, with a line only at the head of a
 // section. Nothing glows. Only real objects cast a shadow (see Materials.swift).
-// Chapter openings and the Library's book covers are navy bookcloth with cream type in both modes.
+// Chapter openings and the Library's book covers are smooth navy with cream type in both modes.
 // Every color is in the asset catalog with a light and a dark version.
 
 extension ShapeStyle where Self == Color {
@@ -583,16 +583,19 @@ struct ChapterCellButtonStyle: ButtonStyle {
     }
 }
 
-/// A solid button with a little thickness: it sits on a darker lower edge and presses down onto it.
+/// A solid button made like a real plate: a face with a catch of light along its top and a fine
+/// darker rim, sitting on a thicker edge that casts a tight shadow. Pressing pushes the face down onto it.
 private struct PressedPlate<Label: View>: View {
     let label: Label
     let isPressed: Bool
     let fill: Color
     let ink: Color
+    /// How much light catches the top of the face: more on a pale plate, less on a dark one.
+    var highlight: Double = 0.5
 
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private static var edge: CGFloat { 1.5 }
+    private static var edge: CGFloat { 2.5 }
 
     var body: some View {
         label
@@ -600,21 +603,30 @@ private struct PressedPlate<Label: View>: View {
             .foregroundStyle(ink)
             .padding(.vertical, 14)
             .padding(.horizontal, 28)
-            .background {
-                Hardcover.corner
-                    .fill(fill)
-                    .overlay { TextureTile(name: TextureTile.paper).clipShape(Hardcover.corner) }
-            }
+            .background { face }
             .offset(y: isPressed && !reduceMotion ? Self.edge : 0)
             .background {
                 Hardcover.corner
                     .fill(fill)
-                    .overlay { Hardcover.corner.fill(Color.black.opacity(0.34)) }
+                    .overlay { Hardcover.corner.fill(Color.black.opacity(0.4)) }
                     .offset(y: Self.edge)
+                    .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: Self.edge)
             }
             .opacity(isPressed && reduceMotion ? 0.85 : 1)
             .animation(.spring(duration: 0.2, bounce: 0.15), value: isPressed)
             .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.55), trigger: isPressed) { _, nowPressed in nowPressed }
+    }
+
+    private var face: some View {
+        Hardcover.corner
+            .fill(fill)
+            .overlay { TextureTile(name: TextureTile.paper).clipShape(Hardcover.corner) }
+            .overlay(alignment: .top) {
+                Rule(color: .white.opacity(highlight))
+                    .padding(.horizontal, Hardcover.cornerRadius)
+                    .padding(.top, 0.5)
+            }
+            .overlay { Hardcover.corner.strokeBorder(Color.black.opacity(0.16), lineWidth: 0.5) }
     }
 }
 
@@ -641,7 +653,7 @@ private struct OutlinedPlate<Label: View>: View {
 /// It's as wide as its label; add `.frame(maxWidth: .infinity)` to the label to fill the row.
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        PressedPlate(label: configuration.label, isPressed: configuration.isPressed, fill: Color("ProminentButton"), ink: Color("ProminentButtonLabel"))
+        PressedPlate(label: configuration.label, isPressed: configuration.isPressed, fill: Color("ProminentButton"), ink: Color("ProminentButtonLabel"), highlight: 0.16)
     }
 }
 
