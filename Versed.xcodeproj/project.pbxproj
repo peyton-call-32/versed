@@ -66,6 +66,7 @@
 		95EF8A1BFD69F36582C5796D /* TodayMarks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2578C09B692C1EC89C553E54 /* TodayMarks.swift */; };
 		9A05D5DDC9C69485F2E1C099 /* VersedApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1214A84BDDB01C93A2637D9C /* VersedApp.swift */; };
 		9B9286C3D538DAA61800893D /* DailyReminder.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A4887358AAB23B8B69D90D3 /* DailyReminder.swift */; };
+		9E700A3CAA675D89E69D3B18 /* CoverTitleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 133F59CB8D5363E31BE43BAF /* CoverTitleTests.swift */; };
 		A3125B1BB335AD5DFB4D1A48 /* bofm.json in Resources */ = {isa = PBXBuildFile; fileRef = 1ABA253A5A766E0E141E6BCC /* bofm.json */; };
 		A5BC1632997F210490099B08 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BDA23AFE56278C14C0B2BFF8 /* Assets.xcassets */; };
 		A6E7ED41BC5D872B835F5E82 /* schedule-2027.json in Resources */ = {isa = PBXBuildFile; fileRef = E7996FA7EC88EA0494273667 /* schedule-2027.json */; };
@@ -136,6 +137,7 @@
 		0E2195D7CF0D51689F1B8AA5 /* Glyphs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glyphs.swift; sourceTree = "<group>"; };
 		117C50BAAB9D7D9C35A6CFCF /* TextureContrastTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextureContrastTests.swift; sourceTree = "<group>"; };
 		1214A84BDDB01C93A2637D9C /* VersedApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VersedApp.swift; sourceTree = "<group>"; };
+		133F59CB8D5363E31BE43BAF /* CoverTitleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoverTitleTests.swift; sourceTree = "<group>"; };
 		193B3C5005B089F0C944A282 /* ReadingMonth.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadingMonth.swift; sourceTree = "<group>"; };
 		1ABA253A5A766E0E141E6BCC /* bofm.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = bofm.json; sourceTree = "<group>"; };
 		1B7899BDE47F6968F2FEE7AA /* ScriptureLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScriptureLibrary.swift; sourceTree = "<group>"; };
@@ -267,6 +269,7 @@
 			children = (
 				87D404920C6AE2EB9B87176B /* AboutSectionTests.swift */,
 				99E61F1BCE2FFB2681D37799 /* BundledFontTests.swift */,
+				133F59CB8D5363E31BE43BAF /* CoverTitleTests.swift */,
 				C1DADDCC97BBDD5E5D0CBB07 /* DailyReminderTests.swift */,
 				36231AEE0A980899FB8E3D40 /* FeedItemTests.swift */,
 				B75BE91AB1458C82C52C3167 /* LibraryTests.swift */,
@@ -707,6 +710,7 @@
 			files = (
 				11AC7430904C6190BCD5BB7C /* AboutSectionTests.swift in Sources */,
 				1737C814D11313BB1699B87F /* BundledFontTests.swift in Sources */,
+				9E700A3CAA675D89E69D3B18 /* CoverTitleTests.swift in Sources */,
 				64004C9F00BDC886D3FA8372 /* DailyReminderTests.swift in Sources */,
 				ED9AF7AD0AA39B000CA2F364 /* FeedItemTests.swift in Sources */,
 				B61E8AE6FAA4CE9179F5F64D /* LibraryTests.swift in Sources */,

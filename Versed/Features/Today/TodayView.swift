@@ -142,6 +142,7 @@ struct TodayView: View {
                 PlanSection(
                     title: engine.title(of: plan.state.source),
                     status: engine.status(of: plan.state),
+                    pace: plan.state.pace,
                     time: engine.readingTime(of: plan.state),
                     chapterWord: engine.chapterWord(of: plan.state),
                     isOpen: isOpen,
@@ -257,6 +258,7 @@ struct TodayView: View {
 private struct PlanSection: View {
     let title: String
     let status: PlanStatus
+    let pace: PlanPace
     let time: PlanReadingTime?
     let chapterWord: String
     let isOpen: Bool
@@ -272,19 +274,24 @@ private struct PlanSection: View {
         VStack(alignment: .leading, spacing: 0) {
             Button(action: onToggle) {
                 HStack(spacing: 10) {
-                    planName
-                    if isDone {
-                        GlyphView(.check, size: isOpen ? 11 : 15, lineWidth: 1.3)
-                            .foregroundStyle(ink)
+                    VStack(alignment: .leading, spacing: 4) {
+                        HStack(spacing: 10) {
+                            planName
+                            if isDone {
+                                GlyphView(.check, size: isOpen ? 11 : 15, lineWidth: 1.3)
+                                    .foregroundStyle(ink)
+                            }
+                        }
+                        nextReadingLine
                     }
                     Spacer(minLength: 0)
                     GlyphView(.chevronForward, size: 13)
                         .foregroundStyle(quietInk)
                         .rotationEffect(.degrees(isOpen ? 90 : 0))
                 }
-                .padding(.top, isOpen ? 20 : 10)
-                .padding(.bottom, isOpen ? 10 : 10)
-                .frame(maxWidth: .infinity, minHeight: isOpen ? 52 : 68, alignment: .leading)
+                .padding(.top, isOpen ? 20 : 18)
+                .padding(.bottom, isOpen ? 10 : 18)
+                .frame(maxWidth: .infinity, minHeight: isOpen ? 52 : 84, alignment: .leading)
                 .contentShape(Rectangle())
             }
             .buttonStyle(PlanNameButtonStyle())
@@ -329,6 +336,48 @@ private struct PlanSection: View {
                 .frame(height: isOpen ? nil : 0, alignment: .top)
                 .clipped()
         }
+    }
+
+    /// Under a closed plan's name: what it has to read now, by the day or the week as it was set up.
+    /// A small label says which, then each book sits on its own line so a busy week reads at a glance.
+    /// Hidden while open, where the reading itself is set large.
+    private var nextReadingLine: some View {
+        VStack(alignment: .leading, spacing: 3) {
+            if let lines = readingLines {
+                SmallCapsLabel(pace == .day ? "Today" : "This Week")
+                    .padding(.bottom, 1)
+                ForEach(lines, id: \.self) { line in
+                    Text(line)
+                        .font(.versedDetail)
+                        .foregroundStyle(.brand)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            } else {
+                Text(status.isFinished ? "Finished" : status.doneText ?? "")
+                    .font(.versedDetail)
+                    .foregroundStyle(.secondaryText)
+            }
+        }
+        .padding(.top, 4)
+        .opacity(isOpen ? 0 : 1)
+        .animation(isOpen ? .easeOut(duration: 0.08) : .easeIn(duration: 0.22).delay(0.1), value: isOpen)
+        .frame(height: isOpen ? 0 : nil, alignment: .top)
+        .clipped()
+        .accessibilityHidden(true)
+    }
+
+    /// One line per book, "Jeremiah 31–33, 36–39". A long week shows its first books and how many more.
+    /// `nil` once this period's reading is done, or the plan is finished.
+    private var readingLines: [String]? {
+        guard status.doneText == nil, let reading = status.reading else { return nil }
+        let books = reading.readingByBook.map { book in
+            ([book.name] + [book.chapters.joined(separator: ", ")].filter { !$0.isEmpty }).joined(separator: " ")
+        }
+        let shown = 3
+        guard books.count > shown else { return books }
+        let more = books.count - (shown - 1)
+        return Array(books.prefix(shown - 1)) + ["and \(more) more books"]
     }
 
     private var spokenValue: String {

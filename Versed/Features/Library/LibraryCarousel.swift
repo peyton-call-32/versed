@@ -93,8 +93,9 @@ struct LibraryCarousel: View {
     }
 }
 
-/// One book's front cover, made like the real thing: navy cloth with a groove along the hinge,
-/// a stamped frame, a pressed-in title, and the page block just showing past its edge.
+/// One book's front cover, made like the real thing: smooth navy boards with a rounded spine and a
+/// groove along the hinge, a stamped frame, a pressed-in title stacked like a title page, and the
+/// page block showing past its edges.
 private struct BookCover: View {
     let book: LibraryBook
 
@@ -108,14 +109,7 @@ private struct BookCover: View {
                 .padding(.leading, Self.hinge + 7)
                 .padding(.trailing, 9)
             VStack(spacing: 11) {
-                // A second line under the title leaves less room, so the title steps down to keep to two lines.
-                Text(book.title)
-                    .font(.versedTitle(size: book.subtitle == nil ? 30 : 27, relativeTo: .title))
-                    .foregroundStyle(.onCover)
-                    .multilineTextAlignment(.center)
-                    .lineLimit(3)
-                    .minimumScaleFactor(0.6)
-                    .stampedIntoCloth()
+                CoverTitle(title: book.title, hasSubtitle: book.subtitle != nil)
                 Ornament(color: .onCover, lineLength: 15)
                 if let subtitle = book.subtitle {
                     Text(subtitle)
@@ -135,25 +129,119 @@ private struct BookCover: View {
         // Edged with a fine line so the cover still stands out on the navy page in dark mode.
         .overlay(Hardcover.corner.strokeBorder(Color.onCover.opacity(0.14), lineWidth: 0.5))
         .background {
-            // The pages, just showing past the cover's lower right edge.
-            Rectangle()
-                .fill(Color.onCover)
-                .overlay { Rectangle().strokeBorder(Color.black.opacity(0.14), lineWidth: 0.5) }
-                .offset(x: 2, y: 2)
+            // The pages, showing past the cover's right and lower edges.
+            PageBlock()
+                .offset(x: PageBlock.depth, y: PageBlock.depth * 0.6)
                 .padding(.vertical, 2)
                 .padding(.leading, Self.hinge)
         }
         .restingShadow()
     }
 
+    /// The rounded spine catches light along its outer edge, then the hinge's groove runs beside it.
     private var hingeGroove: some View {
         HStack(spacing: 0) {
-            Color.black.opacity(0.1).frame(width: Self.hinge)
-            Color.black.opacity(0.32).frame(width: 1)
-            Color.white.opacity(0.09).frame(width: 0.75)
+            Color.white.opacity(0.1).frame(width: 1.5)
+            Color.black.opacity(0.06).frame(width: 2)
+            Color.black.opacity(0.16).frame(width: Self.hinge - 3.5)
+            Color.black.opacity(0.42).frame(width: 1)
+            Color.white.opacity(0.12).frame(width: 0.75)
         }
         .clipShape(Hardcover.corner)
         .allowsHitTesting(false)
+    }
+}
+
+/// The edges of the leaves past the cover, drawn as fine lines so they read as a stack of paper.
+private struct PageBlock: View {
+    /// How far the pages show past the cover's right edge.
+    static let depth: CGFloat = 6
+
+    var body: some View {
+        Canvas { context, size in
+            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.onCover))
+            // Edges of paper sit in the cover's shade, a little darker than the open page around them.
+            context.fill(Path(CGRect(origin: .zero, size: size)), with: .color(.black.opacity(0.07)))
+            var leaves = Path()
+            for step in stride(from: 0.9, to: Self.depth, by: 1.2) {
+                leaves.move(to: CGPoint(x: size.width - step, y: 0))
+                leaves.addLine(to: CGPoint(x: size.width - step, y: size.height - step * 0.6))
+                leaves.move(to: CGPoint(x: 0, y: size.height - step * 0.6))
+                leaves.addLine(to: CGPoint(x: size.width - step, y: size.height - step * 0.6))
+            }
+            context.stroke(leaves, with: .color(.black.opacity(0.3)), lineWidth: 0.5)
+            context.stroke(Path(CGRect(origin: .zero, size: size)), with: .color(.black.opacity(0.32)), lineWidth: 0.6)
+        }
+        .accessibilityHidden(true)
+    }
+}
+
+/// A book's title set the way a title page would stack it: the small joining words ("of", "and")
+/// on a line of their own, phrases like "Great Price" kept whole, and the whole title one size,
+/// small enough that its longest line fits.
+struct CoverTitle: View {
+    let title: String
+    var hasSubtitle = false
+
+    struct Line: Hashable {
+        let text: String
+        let isJoiningWord: Bool
+    }
+
+    private static let joiningWords: Set<String> = ["of", "and"]
+
+    /// "Pearl of Great Price" becomes Pearl / of / Great Price; "Come, Follow Me" breaks after the comma;
+    /// "Old Testament" takes a word to a line.
+    static func lines(for title: String) -> [Line] {
+        let words = title.split(separator: " ").map(String.init)
+        if words.contains(where: joiningWords.contains) {
+            var lines: [Line] = []
+            var phrase: [String] = []
+            for word in words {
+                if joiningWords.contains(word) {
+                    if !phrase.isEmpty { lines.append(Line(text: phrase.joined(separator: " "), isJoiningWord: false)) }
+                    lines.append(Line(text: word, isJoiningWord: true))
+                    phrase = []
+                } else {
+                    phrase.append(word)
+                }
+            }
+            if !phrase.isEmpty { lines.append(Line(text: phrase.joined(separator: " "), isJoiningWord: false)) }
+            return lines
+        }
+        if let comma = words.firstIndex(where: { $0.hasSuffix(",") }), comma < words.count - 1 {
+            return [words[...comma], words[(comma + 1)...]].map { Line(text: $0.joined(separator: " "), isJoiningWord: false) }
+        }
+        if words.count == 2 {
+            return words.map { Line(text: $0, isJoiningWord: false) }
+        }
+        return [Line(text: title, isJoiningWord: false)]
+    }
+
+    private var lines: [Line] { Self.lines(for: title) }
+
+    /// One size for every line, from the longest one, so no word is ever broken.
+    private var size: CGFloat {
+        let longest = lines.filter { !$0.isJoiningWord }.map(\.text.count).max() ?? 1
+        let fitting = min(28, max(21, 250 / CGFloat(longest)))
+        return hasSubtitle ? fitting * 0.92 : fitting
+    }
+
+    var body: some View {
+        VStack(spacing: 1) {
+            ForEach(lines, id: \.self) { line in
+                Text(line.text)
+                    .font(line.isJoiningWord ? .versedVerse(size: size * 0.5, relativeTo: .footnote) : .versedTitle(size: size, relativeTo: .title))
+                    .foregroundStyle(.onCover)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .padding(.vertical, line.isJoiningWord ? 1 : 0)
+                    .stampedIntoCloth()
+            }
+        }
+        .multilineTextAlignment(.center)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(title)
     }
 }
 
