@@ -101,6 +101,7 @@ private struct BookCover: View {
 
     /// Where the hinge's groove runs, in from the spine.
     private static let hinge: CGFloat = 10
+    private static let pictureRoom: CGFloat = 8
 
     var body: some View {
         ZStack {
@@ -135,6 +136,11 @@ private struct BookCover: View {
                 .padding(.vertical, 2)
                 .padding(.leading, Self.hinge)
         }
+        // Drawn once as a single picture, so a swipe moves it without redrawing every stamped letter.
+        // The padding leaves room for the pages showing past the edges.
+        .padding(Self.pictureRoom)
+        .drawingGroup()
+        .padding(-Self.pictureRoom)
         .restingShadow()
     }
 

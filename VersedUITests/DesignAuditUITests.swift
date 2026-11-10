@@ -214,4 +214,20 @@ final class DesignAuditUITests: XCTestCase {
         sleep(2)
         try? log.write(to: outputFolder.appendingPathComponent("\(appearance)-motion.log"), atomically: true, encoding: .utf8)
     }
+
+    /// Swipes through the Library's covers and back, for a screen recording of the change between books.
+    func test7LibrarySwipes() {
+        launch()
+        app.tab("Library").tap()
+        sleep(2)
+        let covers = app.descendants(matching: .any)["Library Covers"].firstMatch
+        for _ in 0..<3 {
+            covers.swipeLeft(velocity: .slow)
+            sleep(1)
+        }
+        for _ in 0..<3 {
+            covers.swipeRight()
+            sleep(1)
+        }
+    }
 }

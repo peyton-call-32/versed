@@ -18,7 +18,10 @@ struct LibraryView: View {
     @State private var sheet: Sheet?
     /// A search result, opened once the search sheet has closed.
     @State private var pickedResult: ScriptureSearchResult?
+    /// The book whose contents are listed, which follows the covers once they come to rest.
+    @State private var shownBookID: String?
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private enum Sheet: Identifiable {
         case library
@@ -56,7 +59,7 @@ struct LibraryView: View {
                     } else {
                         LibraryCarousel(books: books, selection: openBook)
                             .padding(.top, 10)
-                        contents
+                        changingContents
                             .padding(.horizontal, Hardcover.margin)
                             .padding(.top, 16)
                             .padding(.bottom, 28)
@@ -103,10 +106,34 @@ struct LibraryView: View {
         )
     }
 
-    /// What's inside the book on show.
+    /// What's inside the book on show. When a new cover comes to the middle, the old list fades out
+    /// as the new one fades in, rather than the page jumping from one to the other.
+    /// A swipe that passes several covers changes the list once, when the covers come to rest.
+    private var changingContents: some View {
+        let shown = shownBookID ?? openBook.wrappedValue
+        return ZStack(alignment: .top) {
+            contents(for: shown)
+                .id(shown)
+                .transition(.opacity)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .animation(reduceMotion ? nil : .easeInOut(duration: 0.25), value: shown)
+        .task(id: openBook.wrappedValue) {
+            let target = openBook.wrappedValue
+            guard shownBookID != nil, shownBookID != target else {
+                shownBookID = target
+                return
+            }
+            // Long enough for a passing cover not to count, short enough that a settled one feels immediate.
+            try? await Task.sleep(for: .milliseconds(180))
+            guard !Task.isCancelled else { return }
+            shownBookID = target
+        }
+    }
+
     @ViewBuilder
-    private var contents: some View {
-        if let book = books.first(where: { $0.id == openBook.wrappedValue }) {
+    private func contents(for bookID: String) -> some View {
+        if let book = books.first(where: { $0.id == bookID }) ?? books.first {
             switch book.kind {
             case .volume(let volume):
                 VolumeContents(
