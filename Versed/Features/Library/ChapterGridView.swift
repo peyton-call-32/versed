@@ -11,7 +11,7 @@ struct ChapterGridView: View {
             VStack(spacing: Hardcover.sectionSpacing) {
                 Ledger {
                     Button(action: startPlan) {
-                        LedgerRowLabel(title: "Make a Plan for This Book")
+                        LedgerRowLabel(title: book.makePlanTitle)
                     }
                     .buttonStyle(.ledgerRow)
                 }

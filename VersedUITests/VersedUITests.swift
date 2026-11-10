@@ -362,11 +362,11 @@ final class VersedUITests: XCTestCase {
     func testABookOffersAPlanWithoutRequiringOne() {
         app.tab("Library").tap()
         app.openVolume("Book of Mormon")
-        let volumePlan = app.buttons["Make a Plan for All 15 Books"]
-        for _ in 1...5 where !(volumePlan.exists && volumePlan.isHittable) { app.swipeUp() }
+        let volumePlan = app.buttons["Make a Plan for the Book of Mormon"]
+        XCTAssertTrue(volumePlan.waitForExistence(timeout: 5))
         XCTAssertTrue(volumePlan.isHittable)
         app.buttons["Alma"].tap()
-        XCTAssertTrue(app.buttons["Make a Plan for This Book"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Make a Plan for Alma"].waitForExistence(timeout: 5))
 
         // A chapter still opens right away, with no plan asked for.
         app.buttons["Alma 32"].tap()

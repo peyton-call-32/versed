@@ -5,6 +5,9 @@ struct Volume: Decodable, Identifiable, Sendable {
     let id: String
     let title: String
     let books: [Book]
+
+    /// "Make a Plan for the Old Testament".
+    var makePlanTitle: String { "Make a Plan for the \(title)" }
 }
 
 /// One book, such as 1 Nephi. The Doctrine and Covenants is stored as a single book whose chapters are sections.
@@ -28,6 +31,12 @@ struct Book: Decodable, Identifiable, Sendable {
 
     /// "Chapter", or "Section" for the Doctrine and Covenants.
     var chapterWord: String { chapterLabel ?? "Chapter" }
+
+    /// "Make a Plan for Alma", with "the" where a name needs it ("the Articles of Faith").
+    var makePlanTitle: String {
+        let needsThe: Set<String> = ["Doctrine and Covenants", "Articles of Faith"]
+        return "Make a Plan for \(needsThe.contains(name) ? "the " : "")\(name)"
+    }
 
     /// "Chapter 31" or "Section 76".
     func heading(chapter: Int) -> String {

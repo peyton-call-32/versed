@@ -253,7 +253,7 @@ private struct CoverButtonStyle: ButtonStyle {
 }
 
 /// The books in the volume on show, or its sections when it's a single book like the
-/// Doctrine and Covenants, with the way to make a plan for it underneath.
+/// Doctrine and Covenants, with the way to make a plan for it first.
 struct VolumeContents: View {
     let volume: Volume
     let startVolumePlan: () -> Void
@@ -265,23 +265,23 @@ struct VolumeContents: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Hardcover.sectionSpacing) {
-            if let singleBook {
-                sections(of: singleBook)
-            } else {
-                books
-            }
             Ledger {
                 if let singleBook {
                     Button { startBookPlan(singleBook) } label: {
-                        LedgerRowLabel(title: "Make a Plan for This Book")
+                        LedgerRowLabel(title: singleBook.makePlanTitle)
                     }
                     .buttonStyle(.ledgerRow)
                 } else {
                     Button(action: startVolumePlan) {
-                        LedgerRowLabel(title: "Make a Plan for All \(volume.books.count) Books")
+                        LedgerRowLabel(title: volume.makePlanTitle)
                     }
                     .buttonStyle(.ledgerRow)
                 }
+            }
+            if let singleBook {
+                sections(of: singleBook)
+            } else {
+                books
             }
         }
     }
