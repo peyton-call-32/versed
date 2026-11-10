@@ -588,19 +588,13 @@ struct ChapterCellButtonStyle: ButtonStyle {
     }
 }
 
-/// A solid button made like a real plate: a face with a catch of light along its top and a fine
-/// darker rim, sitting on a thicker edge that casts a tight shadow. Pressing pushes the face down onto it.
-private struct PressedPlate<Label: View>: View {
+/// A solid button: one flat color with nearly square corners, like a block of ink on the page.
+/// No grain, raised edge, or shadow. Pressing darkens it a touch.
+private struct SolidPlate<Label: View>: View {
     let label: Label
     let isPressed: Bool
     let fill: Color
     let ink: Color
-    /// How much light catches the top of the face: more on a pale plate, less on a dark one.
-    var highlight: Double = 0.5
-
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    private static var edge: CGFloat { 2.5 }
 
     var body: some View {
         label
@@ -608,30 +602,15 @@ private struct PressedPlate<Label: View>: View {
             .foregroundStyle(ink)
             .padding(.vertical, 14)
             .padding(.horizontal, 28)
-            .background { face }
-            .offset(y: isPressed && !reduceMotion ? Self.edge : 0)
             .background {
                 Hardcover.corner
                     .fill(fill)
-                    .overlay { Hardcover.corner.fill(Color.black.opacity(0.4)) }
-                    .offset(y: Self.edge)
-                    .shadow(color: .black.opacity(0.3), radius: 1, x: 0, y: Self.edge)
+                    .overlay { Hardcover.corner.fill(Color.black.opacity(isPressed ? 0.1 : 0)) }
             }
-            .opacity(isPressed && reduceMotion ? 0.85 : 1)
-            .animation(.spring(duration: 0.2, bounce: 0.15), value: isPressed)
+            .contentShape(Hardcover.corner)
+            .pressEffect(isPressed, scale: 0.985)
+            .animation(isPressed ? .easeOut(duration: 0.05) : .easeOut(duration: 0.25), value: isPressed)
             .sensoryFeedback(.impact(flexibility: .soft, intensity: 0.55), trigger: isPressed) { _, nowPressed in nowPressed }
-    }
-
-    private var face: some View {
-        Hardcover.corner
-            .fill(fill)
-            .overlay { TextureTile(name: TextureTile.paper).clipShape(Hardcover.corner) }
-            .overlay(alignment: .top) {
-                Rule(color: .white.opacity(highlight))
-                    .padding(.horizontal, Hardcover.cornerRadius)
-                    .padding(.top, 0.5)
-            }
-            .overlay { Hardcover.corner.strokeBorder(Color.black.opacity(0.16), lineWidth: 0.5) }
     }
 }
 
@@ -658,7 +637,7 @@ private struct OutlinedPlate<Label: View>: View {
 /// It's as wide as its label; add `.frame(maxWidth: .infinity)` to the label to fill the row.
 struct PrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        PressedPlate(label: configuration.label, isPressed: configuration.isPressed, fill: Color("ProminentButton"), ink: Color("ProminentButtonLabel"), highlight: 0.16)
+        SolidPlate(label: configuration.label, isPressed: configuration.isPressed, fill: Color("ProminentButton"), ink: Color("ProminentButtonLabel"))
     }
 }
 
@@ -672,7 +651,7 @@ struct SecondaryButtonStyle: ButtonStyle {
 /// The main button on a navy block: solid cream with navy words, in light and dark mode.
 struct CoverPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        PressedPlate(label: configuration.label, isPressed: configuration.isPressed, fill: .onCover, ink: .cover)
+        SolidPlate(label: configuration.label, isPressed: configuration.isPressed, fill: .onCover, ink: .cover)
     }
 }
 
