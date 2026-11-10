@@ -142,7 +142,12 @@ struct LibraryView: View {
                     startBookPlan: { startOrOpenPlan(for: .book($0.id)) }
                 )
             case .weeklyCourse(let course):
-                CourseContents(schedule: schedule, course: course) { path.append(.week($0)) }
+                CourseContents(
+                    schedule: schedule,
+                    course: course,
+                    startPlan: { startOrOpenWeeklyPlan(course: course) },
+                    openWeek: { path.append(.week($0)) }
+                )
             }
         }
     }
@@ -215,6 +220,17 @@ struct LibraryView: View {
             showToday(plan.id)
         } else {
             sheet = .setup(source)
+        }
+    }
+
+    /// Opens the weekly plan already running for this year (joined this week or from its start),
+    /// or sets one up.
+    private func startOrOpenWeeklyPlan(course: String) {
+        let store = ReadingPlanStore(context: modelContext, engine: engine)
+        if let plan = store.plan(for: .weeklySchedule(course: nil)) ?? store.plan(for: .weeklySchedule(course: course)) {
+            showToday(plan.id)
+        } else {
+            sheet = .setup(.weeklySchedule(course: nil))
         }
     }
 

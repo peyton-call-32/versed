@@ -362,11 +362,12 @@ private struct BookRow: View {
     }
 }
 
-/// A year of the weekly schedule: this week first when it's in that year, then every week,
-/// each opening its reading with no plan needed.
+/// A year of the weekly schedule, laid out like the other books: the way to make a plan first,
+/// then this week when it's in that year, then every week, each opening its reading with no plan needed.
 struct CourseContents: View {
     let schedule: ReadingSchedule
     let course: String
+    let startPlan: () -> Void
     let openWeek: (ReadingWeek.ID) -> Void
 
     private var weeks: [ReadingWeek] { schedule.weeks.filter { $0.course == course } }
@@ -374,10 +375,16 @@ struct CourseContents: View {
     var body: some View {
         let weeks = weeks
         VStack(alignment: .leading, spacing: Hardcover.sectionSpacing) {
+            Ledger {
+                Button(action: startPlan) {
+                    LedgerRowLabel(title: "Make a Plan for \(WeeklyPlanName.title)")
+                }
+                .buttonStyle(.ledgerRow)
+            }
             if let thisWeek = schedule.currentWeek(), thisWeek.course == course {
-                VStack(alignment: .leading, spacing: 8) {
-                    SmallCapsLabel("This Week")
-                    WeekRow(week: thisWeek, isThisWeek: true) { openWeek(thisWeek.id) }
+                LedgerSection(title: "This Week") {
+                    WeekRow(week: thisWeek, isThisWeek: false) { openWeek(thisWeek.id) }
+                        .accessibilityLabel("This week, \(thisWeek.dateRangeText()), \(thisWeek.label)")
                 }
             }
             LedgerSection(title: "\(weeks.count) Weeks") {

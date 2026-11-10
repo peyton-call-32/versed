@@ -230,4 +230,22 @@ final class DesignAuditUITests: XCTestCase {
             sleep(1)
         }
     }
+
+    /// The weekly schedule's cover in the Library, to check its list matches the other books'.
+    func test8LibraryWeeklyCourse() {
+        launch()
+        app.tab("Library").tap()
+        sleep(2)
+        let covers = app.descendants(matching: .any)["Library Covers"].firstMatch
+        let makePlan = app.buttons["Make a Plan for Come, Follow Me"]
+        for _ in 0..<8 where !makePlan.exists {
+            covers.swipeLeft()
+            sleep(1)
+        }
+        XCTAssertTrue(makePlan.exists)
+        shoot("library-weekly-course")
+        let start = app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.8))
+        start.press(forDuration: 0.1, thenDragTo: app.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.45)))
+        shoot("library-weekly-course-scrolled")
+    }
 }
