@@ -12,7 +12,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"
     MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "1"
+    CURRENT_PROJECT_VERSION: "2"
     # Peyton's Apple Developer team. Xcode makes and renews the signing certificates itself.
     DEVELOPMENT_TEAM: 49K5VLD6N9
     CODE_SIGN_STYLE: Automatic

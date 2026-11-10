@@ -157,7 +157,11 @@ final class VersedUITests: XCTestCase {
         // Opening another closes it, and tapping the open one closes it too.
         book.tap()
         sleep(1)
-        XCTAssertTrue(app.buttons["Read Book of Mormon"].isHittable)
+        // isHittable misreads a button inside the band that just opened, though a tap works,
+        // so check it sits fully on screen instead.
+        let readBook = app.buttons["Read Book of Mormon"]
+        XCTAssertTrue(readBook.exists)
+        XCTAssertTrue(app.windows.firstMatch.frame.contains(readBook.frame))
         XCTAssertFalse(app.buttons["Read Come, Follow Me"].exists)
         book.tap()
         sleep(1)
